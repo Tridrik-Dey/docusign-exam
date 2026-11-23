@@ -96,68 +96,124 @@
       },
       {
         "title": "5. Embedded signing: clientUserId, createRecipient, returnUrl events",
-        "minutes": 20,
+        "minutes": 25,
         "steps": [
           "Create a sent envelope whose signer has clientUserId 1001 (any string you control). Note that no signing email is sent.",
           "Request a recipient view with the same email, userName and clientUserId plus returnUrl http://localhost:3000/ds-return and authenticationMethod none.",
           "Open the returned url within 5 minutes, sign, and look at the browser address bar after redirect: event=signing_complete.",
           "Request a new view, open it, and choose Finish Later / Other Actions > Decline on separate attempts to see event=cancel and event=decline.",
           "Request a view, wait more than 5 minutes, then open it; also try reopening a URL you already used.",
-          "Compare with d:/Docusign exam/docusign-node-quickstart/app/embeddedSigning.js."
+          "Compare with d:/Docusign exam/docusign-node-quickstart/app/embeddedSigning.js.",
+          "Try it (embedding tool: Try it button in the plan): Create and send an envelope (status sent) with one signer that has clientUserId set (any value unique in the envelope, e.g. 1001).",
+          "Try it (embedding tool: Try it button in the plan): Call createRecipient with the SAME email, userName and clientUserId plus a returnUrl that points to your page (e.g. http://127.0.0.1:5173/?view=return).",
+          "Try it (embedding tool: Try it button in the plan): Paste the url into the Embedding lab and choose full-page redirect; sign.",
+          "Try it (embedding tool: Try it button in the plan): Read the event query parameter appended to the returnUrl.",
+          "Try it (embedding tool: Try it button in the plan): Create a second URL and decline or cancel instead; compare the event values.",
+          "Try it (embedding tool: Try it button in the plan): Create a recipient view URL and paste it into the page in redirect mode; then paste the SAME URL again.",
+          "Try it (embedding tool: Try it button in the plan): Create another URL and wait more than 5 minutes before opening it.",
+          "Try it (embedding tool: Try it button in the plan): Record what you see in both cases and the event reported.",
+          "Optional (Saturday): Optional (30-45 min): never trust the browser - confirm with Connect - Set up a webhook.site URL and add an envelope-level eventNotification (or use your Lab 3 account-level Connect configuration) for recipient-completed and envelope-completed. Run one embedded signing in focused view; record when sessionEnd fires and when the Connect message arrives. Run another and close the browser tab right after clicking Finish; check that Connect still reports completion. Manually open your returnUrl with ?event=signing_complete on an unsigned envelope and note that your app would be fooled if it trusted that value. Write the rule your back end follows: update business state only from Connect (or a GET of envelope status), use returnUrl/sessionEnd only to change the UI."
         ],
-        "api": "POST {base_uri}/restapi/v2.1/accounts/{accountId}/envelopes   (signer has \"clientUserId\": \"1001\")\n\nPOST {base_uri}/restapi/v2.1/accounts/{accountId}/envelopes/{envelopeId}/views/recipient\n{\n  \"returnUrl\": \"http://localhost:3000/ds-return?state=123\",\n  \"authenticationMethod\": \"none\",\n  \"email\": \"{signerEmail}\",\n  \"userName\": \"Lab Signer\",\n  \"clientUserId\": \"1001\"\n}",
+        "api": "POST {base_uri}/restapi/v2.1/accounts/{accountId}/envelopes   (signer has \"clientUserId\": \"1001\")\n\nPOST {base_uri}/restapi/v2.1/accounts/{accountId}/envelopes/{envelopeId}/views/recipient\n{\n  \"returnUrl\": \"http://localhost:3000/ds-return?state=123\",\n  \"authenticationMethod\": \"none\",\n  \"email\": \"{signerEmail}\",\n  \"userName\": \"Lab Signer\",\n  \"clientUserId\": \"1001\"\n}\n\nPOST {base_uri}/restapi/v2.1/accounts/{accountId}/envelopes\n{\"emailSubject\":\"Embed lab\",\"status\":\"sent\",\"documents\":[{\"documentId\":\"1\",\"name\":\"doc.pdf\",\"documentBase64\":\"{base64}\"}],\"recipients\":{\"signers\":[{\"email\":\"{you}\",\"name\":\"{name}\",\"recipientId\":\"1\",\"clientUserId\":\"1001\",\"tabs\":{\"signHereTabs\":[{\"documentId\":\"1\",\"pageNumber\":\"1\",\"xPosition\":\"100\",\"yPosition\":\"100\"}]}}]}}\nPOST {base_uri}/restapi/v2.1/accounts/{accountId}/envelopes/{envelopeId}/views/recipient\n{\"returnUrl\":\"http://127.0.0.1:5173/?view=return\",\"authenticationMethod\":\"none\",\"email\":\"{you}\",\"userName\":\"{name}\",\"clientUserId\":\"1001\"}\n\nPOST {base_uri}/restapi/v2.1/accounts/{accountId}/envelopes/{envelopeId}/views/recipient (same body as before)",
         "observe": [
           "Response: {\"url\": \"https://demo.docusign.net/Signing/...\"}.",
           "After the session Docusign redirects to returnUrl with ?event=... appended (signing_complete, cancel, decline, exception, fax_pending, session_timeout, ttl_expired, viewing_complete and others).",
-          "Expired or reused URLs fail; you must call createRecipient again."
+          "Expired or reused URLs fail; you must call createRecipient again.",
+          "The signer receives no email from Docusign because clientUserId marks them as embedded.",
+          "After signing the browser lands on returnUrl?event=signing_complete; other values include cancel, decline, session_timeout, ttl_expired, viewing_complete, access_code_failed.",
+          "createRecipient fails if email/userName/clientUserId do not match the recipient, or if the envelope is not in sent status.",
+          "Observe whether the reused or expired URL shows an error page or returns to returnUrl with event=ttl_expired (documented meaning: token not used within the timeout or already accessed).",
+          "A new URL must be generated each time the user (re)opens signing.",
+          "The signing session itself has a separate inactivity timeout (session_timeout)."
         ],
         "examTraps": [
           "clientUserId on the recipient makes it an embedded (captive) signer: no Docusign email, your app authenticates the user.",
           "email, userName and clientUserId in createRecipient must match the recipient exactly.",
           "The signing URL is valid for 5 minutes and single-use: generate it only when the user clicks Sign, never in advance or in an email.",
-          "The returnUrl event parameter is a hint for UX; confirm the real status with Connect, not by trusting the redirect."
-        ]
+          "The returnUrl event parameter is a hint for UX; confirm the real status with Connect, not by trusting the redirect.",
+          "Embedded signing needs clientUserId on the recipient at send time; without it you cannot generate a recipient view.",
+          "Recipient view URLs are only for sent envelopes; a draft uses createSender (embedded sending).",
+          "returnUrl event values are hints for the UI, not proof of completion.",
+          "Never email or store a recipient view URL; generate it on demand right before redirecting the user.",
+          "'Signer clicks the link tomorrow' is not possible with an embedded URL: generate a fresh one when they return to your app.",
+          "ttl_expired (URL not used in time or reused) is different from session_timeout (inactive in the session).",
+          "Completion must be confirmed server-side (Connect or GET envelope), never from returnUrl or sessionEnd alone.",
+          "Do not poll per envelope more than once every 15 minutes; Connect is the scalable answer.",
+          "Verify HMAC on Connect messages before trusting them."
+        ],
+        "tryIt": true
       },
       {
         "title": "6. Focused view vs classic view",
-        "minutes": 15,
+        "minutes": 20,
         "steps": [
           "Repeat exercise 5 but add frameAncestors [\"http://localhost:3000\", \"https://apps-d.docusign.com\"] and messageOrigins [\"https://apps-d.docusign.com\"] to createRecipient.",
           "Read focusedView.js and app/views/pages/examples/eg044Embed.ejs in the quickstart: the URL is passed to Docusign JS (https://js-d.docusign.com/bundle.js in demo), loadDocuSign(integrationKey), then signing.mount and signing.on('sessionEnd').",
           "If you can run the quickstart locally, run the focused view example and look at the sessionEnd event in the browser console (sessionEndType signing_complete).",
-          "List which features force classic view."
+          "List which features force classic view.",
+          "Try it (embedding tool: Try it button in the plan): Create a recipient view with frameAncestors and messageOrigins (see api) and open it in mode 2, plain iframe; note what happens.",
+          "Try it (embedding tool: Try it button in the plan): Create a new URL with the same body and open it in mode 3, Docusign JS (signing with displayFormat focused); sign and watch the event log.",
+          "Try it (embedding tool: Try it button in the plan): Create a URL WITHOUT frameAncestors/messageOrigins and try mode 3 again; record the failure.",
+          "Try it (embedding tool: Try it button in the plan): Create a URL with frameAncestors missing your origin (only https://apps-d.docusign.com) and try mode 3 again.",
+          "Try it (embedding tool: Try it button in the plan): Create an envelope whose embedded signer needs ID verification (or a payment tab) if your demo account allows it; otherwise do this as a reading exercise in 'Embedded signing' concepts.",
+          "Try it (embedding tool: Try it button in the plan): Try to open it in focused view; then open a new URL in classic view by redirect.",
+          "Try it (embedding tool: Try it button in the plan): Write a decision table: requirement -> classic redirect / classic with Docusign JS / focused view."
         ],
-        "api": "POST {base_uri}/restapi/v2.1/accounts/{accountId}/envelopes/{envelopeId}/views/recipient\n{\n  \"returnUrl\": \"http://localhost:3000/ds-return\",\n  \"authenticationMethod\": \"none\",\n  \"email\": \"{signerEmail}\", \"userName\": \"Lab Signer\", \"clientUserId\": \"1001\",\n  \"frameAncestors\": [\"http://localhost:3000\", \"https://apps-d.docusign.com\"],\n  \"messageOrigins\": [\"https://apps-d.docusign.com\"]\n}",
+        "api": "POST {base_uri}/restapi/v2.1/accounts/{accountId}/envelopes/{envelopeId}/views/recipient\n{\n  \"returnUrl\": \"http://localhost:3000/ds-return\",\n  \"authenticationMethod\": \"none\",\n  \"email\": \"{signerEmail}\", \"userName\": \"Lab Signer\", \"clientUserId\": \"1001\",\n  \"frameAncestors\": [\"http://localhost:3000\", \"https://apps-d.docusign.com\"],\n  \"messageOrigins\": [\"https://apps-d.docusign.com\"]\n}\n\nPOST {base_uri}/restapi/v2.1/accounts/{accountId}/envelopes/{envelopeId}/views/recipient\n{\"returnUrl\":\"http://127.0.0.1:5173/?view=return\",\"authenticationMethod\":\"none\",\"email\":\"{you}\",\"userName\":\"{name}\",\"clientUserId\":\"1001\",\"frameAncestors\":[\"http://127.0.0.1:5173\",\"https://apps-d.docusign.com\"],\"messageOrigins\":[\"https://apps-d.docusign.com\"]}\nBrowser: const ds = await window.DocuSign.loadDocuSign('{integrationKey}'); const s = ds.signing({url, displayFormat:'focused'}); s.on('ready', ...); s.on('sessionEnd', e => log(e.sessionEndType)); s.mount('#container');\n\nSame createRecipient call; envelope signer with identityVerification {\"workflowId\":\"{idvWorkflowId}\"} or a payment tab (only if enabled in your demo account).",
         "observe": [
           "Focused view shows only the document and a navigation button; with no tabs it falls back to a click-to-agree experience.",
           "Events (ready, sessionEnd) arrive in JavaScript instead of only via the returnUrl redirect.",
-          "Classic view is a redirect or an iframe to the signing URL."
+          "Classic view is a redirect or an iframe to the signing URL.",
+          "With correct origins, Docusign JS creates the iframe itself, raises ready when displayed and sessionEnd (sessionEndType signing_complete, cancel, decline, ttl_expired, ...) at the end, then removes the iframe; no browser redirect happens.",
+          "With origins missing, observe whether the frame is blocked (browser console shows a frame-ancestors/CSP refusal) or the session never becomes ready.",
+          "In the plain iframe, observe whether the classic session loads and whether, at the end, the returnUrl opens inside the frame (your page nested in itself).",
+          "Documented: focused view does not yet support payment tabs, ID verification, or some SBS pen providers; classic view supports the most authentication options (access code, KBA, IDV).",
+          "Classic in an iframe is not supported for all authentication options or SBS pen types; mobile signers need full-screen iframes.",
+          "Classic view can also be rendered through Docusign JS to get DOM events."
         ],
         "examTraps": [
           "Focused view needs frameAncestors (your site plus apps-d / apps.docusign.com) and messageOrigins; production needs a valid HTTPS domain.",
           "Payment tabs, ID verification (identityVerification), some SBS providers and AI-Assisted Review require classic view.",
-          "In production the JS bundle and frame ancestor hosts change from js-d / apps-d to js / apps."
-        ]
+          "In production the JS bundle and frame ancestor hosts change from js-d / apps-d to js / apps.",
+          "Focused view requires Docusign JS plus frameAncestors (your origin + apps-d/apps.docusign.com) and messageOrigins (apps-d/apps.docusign.com).",
+          "Focused view only works inside an iframe that Docusign JS builds; it ends with DOM events, not a redirect.",
+          "Production uses https://apps.docusign.com and HTTPS-only origins; demo values do not carry over.",
+          "IDV, payments or SBS in an embedded flow: choose classic view (redirect), not focused view.",
+          "Want minimal UI inside your page and none of those features: focused view with Docusign JS.",
+          "Click to Agree (focused view with no tabs) needs Document Visibility off on the account."
+        ],
+        "tryIt": true
       },
       {
         "title": "7. Embedded sending: draft + createSender",
-        "minutes": 15,
+        "minutes": 20,
         "steps": [
           "Create an envelope with status created (document and recipient, no tabs).",
           "Request a sender view with a returnUrl.",
           "Open the URL: drag a signature field onto the document and click Send.",
           "Check the address bar after redirect and then Envelopes:get to confirm the status is sent.",
-          "Compare with embeddedSending.js in the quickstart."
+          "Compare with embeddedSending.js in the quickstart.",
+          "Try it (embedding tool: Try it button in the plan): Create an envelope with status created (draft) and one remote signer.",
+          "Try it (embedding tool: Try it button in the plan): Call createSender with a returnUrl and open the URL in redirect mode.",
+          "Try it (embedding tool: Try it button in the plan): Change a tab or recipient in the sender view and send.",
+          "Try it (embedding tool: Try it button in the plan): Try createSender on an already sent envelope and record the result."
         ],
-        "api": "POST {base_uri}/restapi/v2.1/accounts/{accountId}/envelopes   (\"status\": \"created\")\n\nPOST {base_uri}/restapi/v2.1/accounts/{accountId}/envelopes/{envelopeId}/views/sender\n{\"returnUrl\": \"http://localhost:3000/ds-return\"}",
+        "api": "POST {base_uri}/restapi/v2.1/accounts/{accountId}/envelopes   (\"status\": \"created\")\n\nPOST {base_uri}/restapi/v2.1/accounts/{accountId}/envelopes/{envelopeId}/views/sender\n{\"returnUrl\": \"http://localhost:3000/ds-return\"}\n\nPOST {base_uri}/restapi/v2.1/accounts/{accountId}/envelopes  (same body, \"status\":\"created\")\nPOST {base_uri}/restapi/v2.1/accounts/{accountId}/envelopes/{envelopeId}/views/sender\n{\"returnUrl\":\"http://127.0.0.1:5173/?view=sender-return\"}",
         "observe": [
           "The sender view only works on a draft (created) envelope; on a sent envelope the call fails.",
-          "Your user prepares, tags and sends inside your app without opening the Docusign web app."
+          "Your user prepares, tags and sends inside your app without opening the Docusign web app.",
+          "The sender view lets your user prepare and send inside your app; the return lands on returnUrl with an event value (e.g. Send or Save).",
+          "The envelope status moves from created to sent only when the user sends.",
+          "Sender view URLs also expire quickly; create on demand."
         ],
         "examTraps": [
           "Scenario 'let our staff review and place fields before sending, inside our portal' -> draft envelope + EnvelopeViews:createSender, not createRecipient.",
-          "Embedded sending is about the sender; embedded signing (clientUserId) is about the signer. They are independent and can be combined."
-        ]
+          "Embedded sending is about the sender; embedded signing (clientUserId) is about the signer. They are independent and can be combined.",
+          "Let a user review/tag before sending inside your app: draft envelope (status created) + createSender, not createRecipient.",
+          "createRecipient = signer experience; createSender = sender/prepare experience.",
+          "Embedded sending does not make the recipients embedded; that still depends on clientUserId."
+        ],
+        "tryIt": true
       },
       {
         "title": "8. Changing in-flight envelopes: void, lock, correct, resend",
@@ -240,7 +296,15 @@
       "Focused view = Docusign JS + frameAncestors/messageOrigins; payments, IDV and AI-Assisted Review need classic view.",
       "Embedded sending = draft envelope + EnvelopeViews:createSender.",
       "Lock is temporary, void is permanent; correct recipients and resend rather than recreate.",
-      "Bulk send = list -> placeholder envelope (mailingListId) -> test -> send -> batch status, tracked with Connect."
+      "Bulk send = list -> placeholder envelope (mailingListId) -> test -> send -> batch status, tracked with Connect.",
+      "Embedded signer = clientUserId at send time + createRecipient with the same identity; the envelope must be sent.",
+      "Embedded sending = draft envelope (status created) + createSender.",
+      "View URLs expire in 5 minutes and are single use: generate on demand, never store or email them.",
+      "Focused view = Docusign JS + frameAncestors (your origin + apps-d/apps.docusign.com) + messageOrigins (apps-d/apps.docusign.com); ends with sessionEnd events, not a redirect.",
+      "Need IDV, payments or some SBS: use classic view (redirect is the safest).",
+      "Embedded web form = clientUserId + formUrl + instanceToken via Docusign JS; remote = sendOption + recipients with roleName.",
+      "Workflow instance_url can be redirected or iframed; embedded workflows cannot use Collect Data from an ID or focused view signing.",
+      "returnUrl events and sessionEnd drive the UI only; confirm completion with Connect or the API."
     ]
   },
   "connect_golive": {
@@ -583,7 +647,7 @@
       },
       {
         "title": "7. Saturday lab: web form instances, embedded and remote",
-        "minutes": 45,
+        "minutes": 50,
         "steps": [
           "Embedded: call createInstance on the template-based form with clientUserId and formValues to prefill. Keep formUrl and instanceToken from the response.",
           "Render it: run the quickstart web forms example 1 (eg001WebFormEmbed.ejs uses loadDocuSign(integrationKey) then docusign.webforms({url: formUrl, options: {instanceToken}}).mount(...)), or read that file if you cannot run it.",
@@ -591,20 +655,28 @@
           "Remote: call createInstance with sendOption now and recipients[] (roleName signer, name, email). Check your mailbox.",
           "Call getInstance for the remote instance before and after you complete it.",
           "Create an instance of the standalone form, submit it and confirm envelopes is empty.",
-          "Try adding authenticationMethod to the remote createInstance and note that recording recipient authentication is only for embedded template-based instances."
+          "Try adding authenticationMethod to the remote createInstance and note that recording recipient authentication is only for embedded template-based instances.",
+          "Try it (embedding tool: Try it button in the plan): Pick an active template-based web form ({formId}) and create an embedded instance with clientUserId and formValues.",
+          "Try it (embedding tool: Try it button in the plan): Paste formUrl and instanceToken into the page; open in mode 3 (webforms with options.instanceToken) and in redirect mode (formUrl#instanceToken=...) using new instances.",
+          "Try it (embedding tool: Try it button in the plan): Create a remote instance (sendOption now + recipients with roleName) and note that there is no URL to embed; the recipient gets email."
         ],
-        "api": "Embedded:\nPOST {webformsBase}/forms/{formId}/instances\n{\"clientUserId\": \"1234-5678\", \"formValues\": {\"Company\": \"Tally\", \"JobTitle\": \"Programmer Writer\", \"PhoneNumber\": \"555-555-5555\", \"Yes\": [\"Yes\"]}, \"expirationOffset\": 24}\n\nRemote:\nPOST {webformsBase}/forms/{formId}/instances\n{\"sendOption\": \"now\", \"formValues\": {\"Company\": \"Tally\"}, \"recipients\": [{\"roleName\": \"signer\", \"name\": \"Lab Signer\", \"email\": \"{signerEmail}\"}]}\n\nRead:\nGET {webformsBase}/forms/{formId}/instances/{instanceId}",
+        "api": "Embedded:\nPOST {webformsBase}/forms/{formId}/instances\n{\"clientUserId\": \"1234-5678\", \"formValues\": {\"Company\": \"Tally\", \"JobTitle\": \"Programmer Writer\", \"PhoneNumber\": \"555-555-5555\", \"Yes\": [\"Yes\"]}, \"expirationOffset\": 24}\n\nRemote:\nPOST {webformsBase}/forms/{formId}/instances\n{\"sendOption\": \"now\", \"formValues\": {\"Company\": \"Tally\"}, \"recipients\": [{\"roleName\": \"signer\", \"name\": \"Lab Signer\", \"email\": \"{signerEmail}\"}]}\n\nRead:\nGET {webformsBase}/forms/{formId}/instances/{instanceId}\n\nPOST {webformsBasePath}/accounts/{accountId}/forms/{formId}/instances\nEmbedded: {\"clientUserId\":\"1001\",\"formValues\":{\"{fieldName}\":\"value\"},\"expirationOffset\":24}\nRemote: {\"sendOption\":\"now\",\"recipients\":[{\"roleName\":\"signer1\",\"name\":\"{name}\",\"email\":\"{you}\"}]}\n(Take {webformsBasePath} from the Web Forms API reference / API Explorer for demo before your first call.)\nMaestro: Workflows:triggerWorkflow (POST under {maestroBasePath}/accounts/{accountId}/workflows/{workflowId}/...; copy the exact path from the API reference) with instance_name and trigger_inputs -> response instance_url",
         "observe": [
           "Embedded response includes formUrl and instanceToken for Docusign JS; remote instances email the recipients.",
           "status moves through INITIATED, INPROGRESS, SUBMITTED (or EXPIRED / FAILED); the instance also shows instanceRecipientStatus, formValues and envelopes[].",
-          "Embedded template-based: the envelope is created when the first user submits. Remote: the envelope is created when createInstance is processed."
+          "Embedded template-based: the envelope is created when the first user submits. Remote: the envelope is created when createInstance is processed.",
+          "instanceToken expires 5 minutes after creation even though the instance itself lives until tokenExpirationDateTime / expirationOffset; an expired one shows 'Unable to load form'.",
+          "Docusign JS webforms(...) raises ready, userActivity and sessionEnd events; redirecting leaves your app."
         ],
         "examTraps": [
           "User is in your app -> embedded instance with clientUserId (max 100 characters) rendered by Docusign JS; user is reached by email -> remote instance with sendOption and recipients[].roleName.",
           "Prefill with formValues using field names from Configurations:getForm.",
           "Track results with Instances:getInstance / listInstances (status, envelopes) rather than guessing from the browser.",
-          "authenticationMethod records are supported only for embedded signing of template-based forms, not remote or standalone."
-        ]
+          "authenticationMethod records are supported only for embedded signing of template-based forms, not remote or standalone.",
+          "Remote web form delivery needs sendOption + recipient/roleName values and does not work with standalone forms or attachment fields.",
+          "Embedded web form: clientUserId + Docusign JS (recommended) using formUrl and instanceToken."
+        ],
+        "tryIt": true
       },
       {
         "title": "8. Connected Fields send flow",

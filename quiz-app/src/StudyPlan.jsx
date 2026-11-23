@@ -4,6 +4,7 @@ import questions from './questions.json';
 import labs from './labs.json';
 import { DEFAULT_SCORES, SECTIONS } from './studyPlan.js';
 import { generateLongPlan, sectionStatus } from './longPlan.js';
+import { dynamicMemorize } from './dynamicMemorize.js';
 
 export const PREP_KEY = 'docusign-iam-prep-v2';
 const DONE_KEY = 'docusign-iam-plan-v2';
@@ -90,6 +91,7 @@ export default function StudyPlan({ practiceState, onAction }) {
 
   const day = plan.find((d) => d.date === selected) || plan[0];
   const dayIndex = plan.indexOf(day);
+  const memo = useMemo(() => dynamicMemorize(day, dayIndex), [day, dayIndex]);
   const daysLeft = Math.round((new Date(`${prep.examDate}T00:00:00`) - new Date(`${today}T00:00:00`)) / 86400000);
   const minutes = day.tasks.reduce((sum, t) => sum + (t.minutes || 0), 0);
 
@@ -189,13 +191,13 @@ export default function StudyPlan({ practiceState, onAction }) {
                 return (
                   <button
                     key={d.date}
-                    className={`plan-day phase-${d.phase} ${d.date === selected ? 'active' : ''} ${d.date === today ? 'today' : ''} ${d.date < today ? 'past' : ''}`}
+                    className={`plan-day phase-${d.phase} ${d.date === selected ? 'active' : ''} ${d.date === today ? 'today' : ''} ${d.date < today ? 'past' : ''} ${total && finished === total ? 'complete' : ''}`}
                     onClick={() => setSelected(d.date)}
                   >
                     <span className="plan-day-label">
                       <CalendarDays size={13} /> {d.label}
                       {d.date === today && <em>today</em>}
-                      <span className="plan-day-count">{total ? `${finished}/${total}` : ''}</span>
+                      <span className="plan-day-count">{total ? (finished === total ? '✓ done' : `${finished}/${total}`) : ''}</span>
                     </span>
                     <span className="plan-day-title">{d.title}</span>
                   </button>
@@ -207,7 +209,6 @@ export default function StudyPlan({ practiceState, onAction }) {
         <button className="side-action" onClick={() => onAction({ type: 'topic', domain: 'All' })}><ClipboardCheck size={17} /> Topic test</button>
         <button className="side-action" onClick={() => onAction({ type: 'drill', domain: 'All' })}><Search size={17} /> Decode drill</button>
         <button className="side-action" onClick={() => onAction({ type: 'mistakes', domain: 'All' })}><ListChecks size={17} /> My mistakes</button>
-        <button className="side-action" onClick={() => onAction({ type: 'embed' })}><Frame size={17} /> Embedding lab</button>
         <button className="side-action" onClick={() => onAction({ type: 'practice', domain: 'All' })}><BookOpen size={17} /> Practice all questions</button>
         <button className="side-action mock-entry" onClick={() => onAction({ type: 'mock' })}><Timer size={17} /> Mock exam / Papers A-F</button>
         <button className="side-action" onClick={newPlan}><RotateCcw size={17} /> Start a new plan</button>
@@ -240,20 +241,44 @@ export default function StudyPlan({ practiceState, onAction }) {
                     {t.text}
                     {t.minutes ? <small className="plan-min"> &middot; {t.minutes} min</small> : null}
                   </span>
-                  {meta && (
-                    <button className="plan-go" onClick={() => run(t.action)}>
-                      <Icon size={16} /> {meta.label}
-                    </button>
-                  )}
+                  <span className="plan-go-group">
+                    {meta && (
+                      <button className="plan-go" onClick={() => run(t.action)}>
+                        <Icon size={16} /> {meta.label}
+                      </button>
+                    )}
+                    {t.tryIt && (
+                      <button className="plan-go plan-try" onClick={() => onAction({ type: 'embed', ...t.tryIt })}>
+                        <Frame size={16} /> Try it
+                      </button>
+                    )}
+                  </span>
                 </div>
               );
             })}
           </div>
-          {day.memorize?.length > 0 && (
+          {memo.items.length > 0 && (
             <>
-              <h3 className="plan-h3">Memorize today</h3>
-              <ul className="plan-memo">
-                {day.memorize.map((m) => <li key={m}>{m}</li>)}
+              <h3 className="plan-h3">
+                Memorize today
+                <small className="plan-budget">
+                  {memo.mistakeCount ? `${memo.mistakeCount} from your mistakes` : 'no open mistakes yet'}
+                  {memo.items.length > memo.mistakeCount ? ` · ${memo.items.length - memo.mistakeCount} from the cheat sheet` : ''}
+                </small>
+                {memo.mistakeCount > 0 && (
+                  <button className="memo-link" onClick={() => onAction({ type: 'mistakes', domain: new Set(memo.items.filter((m) => m.kind === 'mistake').map((m) => m.section)).size === 1 ? memo.items[0].section : 'All' })}>
+                    see the questions
+                  </button>
+                )}
+              </h3>
+              <ul className="plan-memo memo-dynamic">
+                {memo.items.map((m) => (
+                  <li key={m.text} className={m.kind === 'mistake' ? 'memo-mistake' : 'memo-fact'}>
+                    <span className="memo-section">{m.section}</span>
+                    {m.kind === 'mistake' && (m.unsure ? <span className="topic-verdict unsure">unsure</span> : <span className="topic-verdict bad" title={`answered wrong ${m.wrong} time(s)`}>{m.wrong}x</span>)}
+                    {' '}{m.text}
+                  </li>
+                ))}
               </ul>
             </>
           )}

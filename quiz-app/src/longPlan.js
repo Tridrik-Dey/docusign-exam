@@ -32,7 +32,6 @@ export const LAB_PDF = {
   workflow: 'labs/lab_5_workflow.pdf',
   extension_apps: 'labs/lab_6_extension_apps.pdf',
   agreement_manager: 'labs/lab_7_agreement_manager.pdf',
-  embedding: 'labs/lab_8_embedding.pdf',
 };
 const STRONG_LAB = {
   'API Authentication': 'auth',
@@ -51,7 +50,16 @@ function fitToBudget(tasks, [min, max]) {
   if (!flexTotal || (total >= min && total <= max)) return tasks;
   const target = total > max ? max : min;
   const scale = Math.max(0.3, (flexTotal + target - total) / flexTotal);
-  return tasks.map((t) => (t.flex ? { ...t, minutes: Math.max(5, Math.round((t.minutes * scale) / 5) * 5) } : t));
+  const out = tasks.map((t) => (t.flex ? { ...t, minutes: Math.max(5, Math.round((t.minutes * scale) / 5) * 5) } : t));
+  // rounding can leave a day a few minutes over: trim the largest flexible item in 5-minute steps
+  let sum = out.reduce((m, t) => m + (t.minutes || 0), 0);
+  while (sum > max) {
+    const big = out.filter((t) => t.flex && t.minutes > 5).sort((x, y) => y.minutes - x.minutes)[0];
+    if (!big) break;
+    big.minutes -= 5;
+    sum -= 5;
+  }
+  return out;
 }
 
 function diffDays(a, b) {
@@ -84,10 +92,12 @@ export function generateLongPlan({ planStart, examDate, scores, topicHistory = [
     const picked = nums.map((n) => ex[n - 1]).filter(Boolean);
     const strip = (t) => t.replace(/^\d+\.\s*/, '');
     if (!picked.length) return { text: `Lab: ${fallback || 'see the lab guide'}`, minutes: 20, action: { type: 'pdf', file: LAB_PDF[key] } };
+    const tryIt = picked.some((e) => e.tryIt);
     return {
-      text: `Lab ${nums.join(' + ')}: ${picked.map((e) => strip(e.title)).join(' + ')}`,
+      text: `Lab ${nums.join(' + ')}: ${picked.map((e) => strip(e.title)).join(' + ')}${tryIt ? ' (includes a Try it step with the embedding tool)' : ''}`,
       minutes: picked.reduce((m, e) => m + (e.minutes || 15), 0),
       action: { type: 'pdf', file: LAB_PDF[key] },
+      tryIt: tryIt ? { lab: LAB_PDF[key], exercise: picked.map((e) => strip(e.title)).join(' + ') } : null,
     };
   }
   const redoLab = (key, sec) => ({ text: `Lab: redo the exercise behind your latest ${sec} misses (change one thing and predict the result first)`, minutes: 20, action: { type: 'pdf', file: LAB_PDF[key] } });
@@ -105,11 +115,11 @@ export function generateLongPlan({ planStart, examDate, scores, topicHistory = [
       const i = (labCursor[key] || 0) % ex.length;
       labCursor[key] = i + 1;
       const e = ex[i];
-      return { text: `Mini-lab (keep-alive, ${name}): exercise ${i + 1} - ${e.title.replace(/^\d+\.\s*/, '')}`, minutes: Math.max(minutes, Math.min(e.minutes || 15, 15)), action: { type: 'pdf', file: LAB_PDF[key] } };
+      const t = e.title.replace(/^\d+\.\s*/, '');
+      return { text: `Mini-lab (keep-alive, ${name}): exercise ${i + 1} - ${t}`, minutes: Math.max(minutes, Math.min(e.minutes || 15, 15)), action: { type: 'pdf', file: LAB_PDF[key] }, tryIt: e.tryIt ? { lab: LAB_PDF[key], exercise: t } : null };
     }
     return { text: `Keep-alive: ${name} (5 decode-drill questions + its red facts)`, minutes, action: { type: 'drill', domain: name }, flex: true };
   }
-  const embed = (what, minutes) => ({ text: `Embedding lab: ${what} (app page + Lab 8 guide)`, minutes, action: { type: 'embed' } });
   const topic = (name, size) => ({
     text: size <= 5 ? `Timed set: ${size} ${name} scenario questions (${Math.round(size * 1.5)} min), no feedback until the end` : `Topic test: ${name} (${size} questions, ${Math.round(size * 1.5)} min), then review every miss`,
     minutes: Math.round(size * 1.5) + (size <= 5 ? 2 : 10),
@@ -129,6 +139,7 @@ export function generateLongPlan({ planStart, examDate, scores, topicHistory = [
     const p2 = phaseNo === 2;
     const timed = wd === 1 || wd === 3;
     return [
+      wd === 0 ? { text: `Cheat sheet: ${sec} (2 pages: must-know facts, numbers, confusing pairs, business wording)`, minutes: 10, action: { type: 'pdf', file: byName[sec].cheat }, flex: true } : null,
       drill(sec, timed ? (p2 ? 25 : 15) : p2 ? 35 : 25),
       labTask,
       misses(sec, p2 ? 15 : 10),
@@ -161,7 +172,7 @@ export function generateLongPlan({ planStart, examDate, scores, topicHistory = [
       if (wd === 0) {
         title = 'Diagnostic 1: where exactly are the gaps? (eSignature API + Features & Web Forms)';
         focus = [ES, FE];
-        tasks = [topic(ES, 8), topic(FE, 8), { text: 'Write down the 3 points you were least sure of in each test; the next days start from them', minutes: 10, action: null }];
+        tasks = [topic(ES, 8), topic(FE, 8), { text: 'My mistakes: review your diagnostic misses and the questions you flagged as unsure (explanations included; they come first in the next tests)', minutes: 10, action: { type: 'mistakes', domain: 'All' } }];
       } else if (wd === 1) {
         title = 'Diagnostic 2: Docusign Connect + Go Live, and a 15-minute lab setup';
         focus = [CO, GL];
@@ -173,7 +184,6 @@ export function generateLongPlan({ planStart, examDate, scores, topicHistory = [
       } else if (!weekend) {
         title = 'eSignature API: decode + the tricky labs';
         tasks = weekday(ES, lab('esignature', [[4], [5], [7]][wd - 2]), wd, 1);
-        if (wd === 4) tasks.splice(2, 0, embed('open your recipient view as redirect, plain iframe and Docusign JS', 15));
       } else if (wd === 5) {
         title = 'Saturday: bulk send end to end + timed set';
         tasks = [lab('esignature', [9]), drill(ES, 20), topic(ES, 5), keepAlive(10)];
@@ -185,7 +195,7 @@ export function generateLongPlan({ planStart, examDate, scores, topicHistory = [
       focus = [ES];
       if (!weekend) {
         title = 'eSignature API: decode + labs (16% of the exam)';
-        const labs1 = [embed('classic vs focused view: frameAncestors + messageOrigins, what breaks without them (Lab 1 ex 6)', 20), lab('esignature', [8]), redoLab('esignature', 'eSignature API'), lab('esignature', [3]), redoLab('esignature', 'eSignature API')];
+        const labs1 = [lab('esignature', [6]), lab('esignature', [8]), redoLab('esignature', 'eSignature API'), lab('esignature', [3]), redoLab('esignature', 'eSignature API')];
         tasks = weekday(ES, labs1[wd], wd, 1);
       } else if (wd === 5) {
         title = 'Saturday: build one realistic flow end to end';
@@ -224,7 +234,7 @@ export function generateLongPlan({ planStart, examDate, scores, topicHistory = [
         if (wd === 1 || wd === 3) tasks.push(extraFor(FE));
       } else if (wd === 5) {
         title = 'Saturday: web form instances (embedded and remote) + branding';
-        tasks = [lab('features_webforms', [7, 5]), embed('render your embedded web form instance with Docusign JS (formUrl + instanceToken)', 15), drill(FE, 30), topic(FE, 5), extraFor(FE)];
+        tasks = [lab('features_webforms', [7, 5]), drill(FE, 30), topic(FE, 5), extraFor(FE)];
       } else {
         const retest = W(0) === FE ? W(1) : W(0);
         title = `Topic tests: Features & Web Forms + App Center + ${retest} retest`;
@@ -251,7 +261,7 @@ export function generateLongPlan({ planStart, examDate, scores, topicHistory = [
       focus = [a, b];
       if (wd === 0) {
         title = `Adaptive: ${a} + embedding a workflow`;
-        tasks = [drill(a, 40), misses(a, 20), topic(a, 5), embed('trigger a workflow and open its instance URL as redirect vs iframe (Lab 5)', 15)];
+        tasks = [drill(a, 40), misses(a, 20), topic(a, 5), lab('workflow', [5])];
       } else if (wd === 1) {
         title = `Strength checks: Agreement Manager + Auth + ${a} retest`;
         tasks = [topic('Agreement Manager API', 8), topic('API Authentication', 8), topic(a, 15)];

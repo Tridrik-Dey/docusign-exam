@@ -63,6 +63,7 @@ NUMBERS = [
     ("M", "API Dashboard", "failed requests, <b>90-day</b> timeline (Admin > Apps and Keys)", "Usage Center = efficiency score"),
     ("M", "Web form clientUserId", "required for embedded instance, max <b>100 characters</b>", ""),
     ("M", "Composite templates", "<b>one document</b> per composite object; every server/inline template needs a <b>sequence</b>", ""),
+    ("H", "Recipient access code", "set per recipient in the API (<b>accessCode</b> on the signer); max <b>50</b> chars; <b>you</b> share it; no fee", "phone, KBA, IDV cost per use"),
     ("M", "Geography limits", "KBA = <b>US only</b>; bank account OWNER verification = <b>US ABA only</b>", ""),
     ("M", "Exam weights", "App Center 16, eSignature API 16, Workflow 15, Auth 13, Connect 12, Go-Live 11, Features 11, Agreement Manager 6 (%)", ""),
 ]
@@ -139,6 +140,13 @@ PAIRS = [
         ("H", "Connected Fields  vs  Data Verification",
          "Connected Fields = signer fields bound to <b>your own data model</b> (Concerto types) and verified against your system. "
          "Data Verification = <b>standard checks</b> (bank account, SSN, email, phone, address, FEIN)."),
+        ("H", "Web form prefill: Docusign JS prefillValues  vs  createInstance formValues  vs  default",
+         "Priority: <b>Docusign JS prefillValues</b> (browser) &gt; <b>formValues in createInstance</b> &gt; the configuration default. "
+         "Exception: <b>read-only fields</b> keep the createInstance value. Users see stale data? Check the front end's prefillValues first."),
+        ("H", "Web form: sign in the same page  vs  signing email",
+         "In-session signing right after submit needs an <b>embedded</b> instance (createInstance with <b>clientUserId</b>, no sendOption/recipients) and the submitter must be the "
+         "<b>signer role</b> in the linked template. <b>useFocusedViewForSigning</b> only switches focused vs classic look; it never causes an email. "
+         "An email instead points to a remote instance or the configuration setting <b>Initiate signing session from email</b> (which also disables focused view)."),
         ("M", "Prefill  vs  read results", "Prefill with <b>formValues</b>; read with <b>Instances:getInstance</b> (status, formValues, envelopes[])."),
         ("M", "IDV setup  vs  ID Evidence API", "IDV config makes the signer verify; <b>ID Evidence API</b> retrieves the evidence (ID images, events) afterwards."),
         ("M", "EU AES / QES", "Use IDV configs labelled EU AES / EU QES or recipientSignatureProviders. SBS disables Markup, Notary, field add/delete after first signature."),

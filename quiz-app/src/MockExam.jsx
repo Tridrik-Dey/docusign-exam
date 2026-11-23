@@ -174,7 +174,7 @@ export default function MockExam({ onExit }) {
       ids: done.ids,
       answers: done.answers,
     };
-    recordAnswers(qs.map((q) => ({ q, answer: done.answers[q.id] })), examLabel(done));
+    recordAnswers(qs.map((q) => ({ q, answer: done.answers[q.id], flagged: Boolean(done.flagged?.[q.id]) })), examLabel(done));
     const nextHistory = [entry, ...history].slice(0, 30);
     setHistory(nextHistory);
     writeJson(HISTORY_KEY, nextHistory);
@@ -219,7 +219,16 @@ export default function MockExam({ onExit }) {
               <span>{h.correct} of {h.total} correct &middot; {new Date(h.date).toLocaleString()} &middot; {h.minutes} min</span>
             </div>
           </div>
-          {qs.length ? <ReviewList questions={qs} answers={h.answers || {}} /> : <p className="plan-note">This older attempt saved only its score, so its questions cannot be shown.</p>}
+          {qs.length ? (
+            <ReviewList
+              questions={qs}
+              answers={h.answers || {}}
+              actions={<>
+                <button className="nav-button" onClick={() => setViewing(null)}><ArrowLeft size={18} /> Back to papers</button>
+                <button className="nav-button" onClick={onExit}>Back to study plan</button>
+              </>}
+            />
+          ) :<p className="plan-note">This older attempt saved only its score, so its questions cannot be shown.</p>}
           <div className="mock-actions">
             <button className="nav-button" onClick={() => setViewing(null)}><ArrowLeft size={18} /> Back to papers</button>
             <button className="nav-button" onClick={onExit}>Back to study plan</button>
@@ -342,7 +351,25 @@ export default function MockExam({ onExit }) {
           </table>
 
           <h3 className="mock-subtitle">Review answers (every question, right answer and why)</h3>
-          <ReviewList questions={examQuestions} answers={exam.answers} />
+          <ReviewList questions={examQuestions} answers={exam.answers} actions={<>
+            <button className="nav-button" onClick={onExit}><ArrowLeft size={18} /> Back to study plan</button>
+            <button
+              className="nav-button"
+              onClick={() => {
+                savePrepScores(Object.fromEntries(perSection.filter((s) => s.total).map((s) => [s.name, s.pct])), `${examLabel(exam)}, ${new Date(exam.finishedAt).toLocaleDateString()}`);
+                window.alert('Saved. The one-week plan now targets your weakest sections from this exam.');
+              }}
+            >
+              Use these scores for my plan
+            </button>
+            {exam.paper && (
+              <a className="nav-button concept-link" href={`/pdf/paper_${exam.paper}_concepts.pdf`} target="_blank" rel="noreferrer">
+                Paper {exam.paper} concepts (PDF)
+              </a>
+            )}
+            <button className="nav-button" onClick={() => save({ ...exam, closed: true })}>All papers and attempts</button>
+            <button className="submit-button" onClick={() => start(exam.paper || null)}><RotateCcw size={16} /> {exam.paper ? `Retake Paper ${exam.paper}` : 'New mock exam'}</button>
+</>} />
 
           <div className="mock-actions">
             <button className="nav-button" onClick={onExit}><ArrowLeft size={18} /> Back to study plan</button>

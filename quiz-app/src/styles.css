@@ -703,3 +703,40 @@ select {
 .embed-code { background: #f2f4f7; border-radius: 6px; padding: 10px; font-size: 12px; white-space: pre-wrap; word-break: break-all; }
 .embed-log { font-family: Consolas, monospace; font-size: 11.5px; max-height: 220px; overflow-y: auto; background: #101828; color: #d0d5dd; padding: 8px; border-radius: 6px; display: grid; gap: 3px; }
 .embed-warn { background: #fffaeb; border-left: 4px solid #f79009; padding: 8px 10px; border-radius: 6px; font-size: 13px; }
+.review-top-actions { margin: 0 0 4px; flex-wrap: wrap; }
+.review-top-actions .nav-button, .review-top-actions .submit-button { padding-top: 6px; padding-bottom: 6px; }
+.topic-verdict.unsure { background: #f79009; }
+.plan-go-group { display: inline-flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+.plan-try { background: #f4ebff; border-color: #d6bbfb; color: #6941c6; }
+.plan-try:hover { background: #e9d7fe; }
+/* embedding tool layout fixes */
+.embed-shell .sidebar { overflow-y: auto; }
+.embed-shell .sidebar > * { flex-shrink: 0; }
+.embed-shell .sidebar select, .embed-shell .sidebar input, .embed-shell .sidebar textarea { width: 100%; min-width: 0; box-sizing: border-box; }
+.embed-shell .plan-date { min-width: 0; }
+.embed-shell .topbar { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
+.embed-top-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+/* a day with every task ticked: struck through and green */
+.plan-day.complete { background: #f6fef9; border-color: #a6f4c5; }
+.plan-day.complete .plan-day-title { text-decoration: line-through; color: #667085; }
+.plan-day.complete .plan-day-count { color: #039855; font-weight: 800; }
+/* dynamic Memorize today */
+.memo-dynamic li { margin-bottom: 6px; }
+.memo-section { display: inline-block; font-size: 11px; font-weight: 700; color: #475467; background: #fff; border: 1px solid #fecdca; border-radius: 10px; padding: 0 7px; margin-right: 6px; }
+.memo-fact { color: #344054; }
+.memo-link { border: 0; background: none; color: #155eef; font-weight: 600; cursor: pointer; padding: 0 0 0 6px; font-size: 13px; }
+.memo-link:hover { text-decoration: underline; }
+/* My mistakes: number boxes grouped by topic */
+.mistake-groups { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; margin: 12px 0 4px; }
+.mistake-group { border: 1px solid #eaecf0; border-radius: 8px; padding: 8px 10px; background: #fcfcfd; }
+.mistake-group-title { font-size: 12.5px; font-weight: 800; color: #344054; margin-bottom: 6px; }
+.mistake-group-title span { color: #98a2b3; font-weight: 600; }
+/* My mistakes layout: buttons sized to their text, topic boxes sized to their numbers */
+.topic-results > .mock-actions { justify-content: flex-start; }
+.topic-results > .mock-actions > * { flex: 0 0 auto; }
+.topic-results > .mock-actions .submit-button { margin-left: auto; }
+.mock-actions .concept-link { padding: 0 16px; min-height: 44px; }
+.mistake-groups { display: flex; flex-wrap: wrap; gap: 10px; }
+.mistake-group { flex: 0 1 auto; min-width: 220px; max-width: 100%; }
+.mistake-group .mock-grid { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 2px; }
+.mistake-group .mock-cell { width: 40px; }

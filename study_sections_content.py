@@ -222,7 +222,12 @@ SECTIONS = [
             "SBS breaks some features: no Markup/Notary/fax attachment, combined PDF is unsigned, no field add/delete after the first signature.",
             "<b>Template-based web form</b> = an envelope is generated after submission. <b>Standalone</b> = <b>no envelope</b>, data collection only.",
             "<b>Embedded web form instance</b>: createInstance with <b>clientUserId</b> (required, max 100 characters); render the instance URL with <b>Docusign JS</b>; the envelope is created when the first user submits.",
+            "<b>Sign right after submitting</b>: embedded instance (clientUserId) + the submitter is the template's signer role; "
+            "<font face='Courier'>useFocusedViewForSigning</font> only chooses focused vs classic view of that envelope. "
+            "Signing by email = remote instance or the <i>Initiate signing session from email</i> setting (focused view unavailable with it).",
             "<b>Remote instance</b>: sendOption + recipients[] with roleName; users get an email; the envelope is created when createInstance is processed.",
+            "<b>Prefill priority</b>: Docusign JS <font face='Courier'>prefillValues</font> (browser) override <font face='Courier'>formValues</font> sent in createInstance, "
+            "which override the configuration default; read-only fields keep the createInstance value.",
             "<b>Prefill</b> with formValues (field names from Configurations:getForm). <b>Read results</b> with Instances:getInstance: status (INITIATED / INPROGRESS / SUBMITTED / EXPIRED / FAILED), formValues, envelopes[].",
             "<b>Connected Fields send flow</b>: TabInfo:GetConnectedFieldsTabGroups -> put the data in each tab's extensionData -> Envelopes:create.",
             "<b>ID Evidence API</b> retrieves IDV evidence (ID images and events) for audit.",

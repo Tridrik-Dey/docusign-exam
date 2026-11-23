@@ -40,18 +40,24 @@ export function loadMistakes() {
   return readJson(MISTAKES_KEY, {});
 }
 
-// items: [{ q, answer }]  (answer = what the learner chose; empty = unanswered = wrong)
+// items: [{ q, answer, flagged }]  (answer = what the learner chose; empty = unanswered = wrong;
+// flagged = the learner marked it as unsure: a right but flagged answer still goes on the list as 'unsure')
 export function recordAnswers(items, source) {
   const store = loadMistakes();
   const now = new Date().toISOString();
-  items.forEach(({ q, answer }) => {
+  items.forEach(({ q, answer, flagged }) => {
     const ok = isRight(q, answer);
     const r = store[q.id] || { seen: 0, wrong: 0, rightStreak: 0, section: q.domain };
     r.seen += 1;
     r.section = q.domain;
     r.lastSeenAt = now;
     r.lastSource = source;
-    if (ok) {
+    if (ok && flagged) {
+      // right but unsure: keep it on the list until it is answered right once more without a flag
+      r.unsure = (r.unsure || 0) + 1;
+      r.rightStreak = 1;
+      r.lastWrongAt = now;
+    } else if (ok) {
       r.rightStreak = (r.rightStreak || 0) + 1;
     } else {
       r.wrong += 1;
@@ -66,7 +72,7 @@ export function recordAnswers(items, source) {
 }
 
 export function isActiveMistake(r) {
-  return Boolean(r && r.wrong > 0 && (r.rightStreak || 0) < 2);
+  return Boolean(r && (r.wrong > 0 || r.unsure > 0) && (r.rightStreak || 0) < 2);
 }
 
 // 0 = repeat mistake, 1 = one-off mistake, 2 = unseen, 3 = seen and fine
@@ -111,14 +117,15 @@ export function activeMistakesFor(section, papersPool, store = loadMistakes()) {
 // One-page review: every question with the learner's answer, the right answer, the trap, a reason per option,
 // why-not-others and the decode notes.
 // ---------------------------------------------------------------------------------------------------------------
-export function ReviewList({ questions, answers = {}, showAnswerLabel = true, mistakes = null, startFilteredToWrong = false }) {
+export function ReviewList({ questions, answers = {}, showAnswerLabel = true, mistakes = null, startFilteredToWrong = false, actions = null, hideBar = false, numberFrom = 0 }) {
   const [onlyWrong, setOnlyWrong] = useState(startFilteredToWrong);
   const rows = questions.map((q, i) => ({ q, i, ok: answers ? isRight(q, answers[q.id]) : false }));
   const wrongCount = rows.filter((r) => !r.ok).length;
   const shown = rows.filter((r) => !(onlyWrong && r.ok));
   return (
     <>
-      <div className="topic-review-bar">
+      {!hideBar && <div className="topic-review-bar">
+        {actions && <div className="mock-actions review-top-actions">{actions}</div>}
         <div className="mock-grid">
           {rows.map(({ q, i, ok }) => (
             <a key={q.id} href={`#rq-${i + 1}`} className={`mock-cell ${showAnswerLabel ? (ok ? 'ok' : 'bad') : ''}`}>{i + 1}</a>
@@ -129,7 +136,7 @@ export function ReviewList({ questions, answers = {}, showAnswerLabel = true, mi
             <input type="checkbox" checked={onlyWrong} onChange={(e) => setOnlyWrong(e.target.checked)} /> Show only the {wrongCount} I got wrong
           </label>
         )}
-      </div>
+      </div>}
       {shown.map(({ q: r, i, ok }) => {
         const chosen = [].concat((answers && answers[r.id]) || (mistakes?.[r.id]?.lastAnswer) || []);
         const m = mistakes?.[r.id];
@@ -137,8 +144,9 @@ export function ReviewList({ questions, answers = {}, showAnswerLabel = true, mi
           <div key={r.id} id={`rq-${i + 1}`} className={`mock-review topic-item ${showAnswerLabel ? (ok ? 'is-ok' : 'is-bad') : 'is-bad'}`}>
             <div className="section-label">
               {showAnswerLabel && <span className={`topic-verdict ${ok ? 'ok' : 'bad'}`}>{ok ? 'Correct' : 'Wrong'}</span>}
-              {m && <span className="topic-verdict bad">wrong {m.wrong}x</span>}
-              {' '}Question {i + 1} &middot; <ImportanceTag level={r.importance} /> {r.domain} &middot; {r.topic}
+              {m && m.wrong > 0 && <span className="topic-verdict bad" title={`answered wrong ${m.wrong} time(s)`}>{m.wrong}x</span>}
+              {m && !m.wrong && m.unsure > 0 && <span className="topic-verdict unsure">unsure</span>}
+              {' '}Question {numberFrom + i + 1} &middot; <ImportanceTag level={r.importance} /> {r.domain} &middot; {r.topic}
             </div>
             <p className="stem">{r.stem}</p>
             {r.options.map((o) => {

@@ -38,7 +38,11 @@
     "basedOn": [
       6
     ],
-    "id": 10001
+    "id": 10001,
+    "concept": {
+      "title": "Connect HMAC: hash the raw body",
+      "line": "Compute HMAC-SHA256 with the shared secret over the raw body as received; re-serializing parsed JSON changes whitespace and key order."
+    }
   },
   {
     "paper": "A",
@@ -82,6 +86,10 @@
       22
     ],
     "id": 10002,
+    "concept": {
+      "title": "Apps steps need installed extension apps",
+      "line": "Maestro apps steps (Read, Store Files, Writeback) appear only after an admin installs and authorizes the extension app from the App Center."
+    },
     "decode": {
       "prompt": "What is actually blocking Marisol?",
       "options": [
@@ -162,6 +170,10 @@
       46
     ],
     "id": 10003,
+    "concept": {
+      "title": "Embedded web form: clientUserId and prefill",
+      "line": "Embedded instances need clientUserId (up to 100 chars, from your system); prefill with formValues keyed by field names from Configurations:getForm."
+    },
     "decode": {
       "prompt": "Which requirements decide the design here?",
       "options": [
@@ -234,6 +246,10 @@
       44
     ],
     "id": 10004,
+    "concept": {
+      "title": "Authorization code lives 120 seconds",
+      "line": "An authorization code is valid only 120 seconds (2 minutes); exchange it at /oauth/token immediately, not after queueing."
+    },
     "decode": {
       "prompt": "What does the failure pattern point to?",
       "options": [
@@ -304,7 +320,11 @@
       27,
       32
     ],
-    "id": 10005
+    "id": 10005,
+    "concept": {
+      "title": "Locked after an app goes live",
+      "line": "Once an extension app is published live, its distribution type (public/private) cannot change and current regions cannot be removed."
+    }
   },
   {
     "paper": "A",
@@ -347,6 +367,10 @@
       13
     ],
     "id": 10006,
+    "concept": {
+      "title": "Maestro events need JSON SIM",
+      "line": "Maestro workflow events are delivered only in JSON SIM; keep an XML feed and add a separate JSON SIM configuration for workflow events."
+    },
     "decode": {
       "prompt": "What does Marco really need?",
       "options": [
@@ -417,6 +441,10 @@
       11
     ],
     "id": 10007,
+    "concept": {
+      "title": "Composite templates: sequence order",
+      "line": "Templates apply in sequence order, later overwriting earlier; give the server template a lower sequence so its role exists before the inline template maps it."
+    },
     "decode": {
       "prompt": "Which requirement decides the fix?",
       "options": [
@@ -488,6 +516,10 @@
       10
     ],
     "id": 10008,
+    "concept": {
+      "title": "Admin consent for internal apps",
+      "line": "Internal app admin consent is granted in Docusign Admin > Connected Apps; needs Access Management and a claimed domain (not the external-app consent URL)."
+    },
     "decode": {
       "prompt": "Which requirement decides the consent approach?",
       "options": [
@@ -560,6 +592,10 @@
       5
     ],
     "id": 10009,
+    "concept": {
+      "title": "Maestro events: JSON SIM only",
+      "line": "Maestro workflow events are only available with the JSON SIM message format, not XML Aggregated; HMAC is unrelated."
+    },
     "decode": {
       "prompt": "What actually differs between envelope and workflow events here?",
       "options": [
@@ -630,7 +666,11 @@
       10,
       44
     ],
-    "id": 10010
+    "id": 10010,
+    "concept": {
+      "title": "Revoking consent and existing tokens",
+      "line": "Revoking consent invalidates refresh tokens and blocks new ones, but an issued access token keeps working until it expires (Auth Code: 8 hours)."
+    }
   },
   {
     "paper": "A",
@@ -674,6 +714,10 @@
       16
     ],
     "id": 10011,
+    "concept": {
+      "title": "Sending connected fields by API",
+      "line": "Call TabInfo:GetConnectedFieldsTabGroups, put data in each tab's extensionData, then Envelopes:create (not envelope customFields)."
+    },
     "decode": {
       "prompt": "What does the dispatch system need?",
       "options": [
@@ -743,7 +787,11 @@
     "basedOn": [
       33
     ],
-    "id": 10012
+    "id": 10012,
+    "concept": {
+      "title": "Go-Live: Review Expired after 90 days",
+      "line": "A key that passed review but is not submitted to a production account within 90 days becomes Review Expired and must be reviewed again."
+    }
   },
   {
     "paper": "A",
@@ -795,6 +843,10 @@
       2
     ],
     "id": 10013,
+    "concept": {
+      "title": "Production auth host and base URI",
+      "line": "After Go-Live use account.docusign.com as OAuth host and JWT aud; take account_id and base_uri from /oauth/userinfo, never hard-code a server."
+    },
     "decode": {
       "prompt": "What must the code stop assuming after Go-Live?",
       "options": [
@@ -877,6 +929,10 @@
       46
     ],
     "id": 10014,
+    "concept": {
+      "title": "Embedded workflow step restrictions",
+      "line": "Embedded workflow instances support only Phone Authentication in Verify Someone's Identity and do not support focused view in Send Documents for Signature."
+    },
     "decode": {
       "prompt": "Which requirement decides the changes?",
       "options": [
@@ -947,7 +1003,11 @@
       14,
       2
     ],
-    "id": 10015
+    "id": 10015,
+    "concept": {
+      "title": "Maestro API scope: aow_manage",
+      "line": "Maestro API calls (trigger, pause, resume, cancel) need the aow_manage scope in addition to normal eSignature scopes, not extended."
+    }
   },
   {
     "paper": "A",
@@ -999,6 +1059,10 @@
       42
     ],
     "id": 10016,
+    "concept": {
+      "title": "Connect listener: ack fast, idempotent",
+      "line": "Non-2xx or timeout triggers retries; return 2xx once validated and queued, process asynchronously, and make processing idempotent (e.g. envelope ID plus event)."
+    },
     "decode": {
       "prompt": "What is the listener design really missing?",
       "options": [
@@ -1070,6 +1134,10 @@
       16
     ],
     "id": 10017,
+    "concept": {
+      "title": "Build trigger_inputs from trigger schema",
+      "line": "Workflows:getWorkflowTriggerRequirements returns trigger_input_schema (names, types, defaults); build trigger_inputs from it, not from a past instance's inputs."
+    },
     "decode": {
       "prompt": "What does Tomasz really need?",
       "options": [
@@ -1142,6 +1210,10 @@
       37
     ],
     "id": 10018,
+    "concept": {
+      "title": "createRecipient must match exactly",
+      "line": "EnvelopeViews:createRecipient matches email, userName and clientUserId exactly as set at envelope creation; recipientId is not the lookup key."
+    },
     "decode": {
       "prompt": "Why can Docusign not find the recipient?",
       "options": [
@@ -1213,6 +1285,10 @@
       5
     ],
     "id": 10019,
+    "concept": {
+      "title": "Organization-level Connect scope",
+      "line": "One org-level Connect configuration covers sent and received envelopes for all or selected accounts, always JSON SIM; no per-account configurations needed."
+    },
     "decode": {
       "prompt": "Which requirement decides the Connect level?",
       "options": [
@@ -1284,7 +1360,11 @@
       15,
       16
     ],
-    "id": 10020
+    "id": 10020,
+    "concept": {
+      "title": "Deleting a published workflow",
+      "line": "Pause it, unpublish once no instances run, then delete; only paused workflows with no running instances can be unpublished. Deletion is permanent."
+    }
   },
   {
     "paper": "A",
@@ -1338,6 +1418,10 @@
       25
     ],
     "id": 10021,
+    "concept": {
+      "title": "Extension app infrastructure needs",
+      "line": "Non-conforming APIs need an API proxy mapping to the Docusign action contract; firewalls and ad blockers must allow Docusign requests and App Center install."
+    },
     "decode": {
       "prompt": "What infrastructure gaps must be closed?",
       "options": [
@@ -1408,7 +1492,11 @@
     "basedOn": [
       2
     ],
-    "id": 10022
+    "id": 10022,
+    "concept": {
+      "title": "JWT token: 1 hour, no refresh",
+      "line": "JWT Grant access tokens last 1 hour with no refresh token; mint a new JWT (exp at most 1 hour after iat)."
+    }
   },
   {
     "paper": "A",
@@ -1460,7 +1548,11 @@
       37,
       20
     ],
-    "id": 10023
+    "id": 10023,
+    "concept": {
+      "title": "Embedded signing required parameters",
+      "line": "Embedded signing envelopes always need status sent and a non-null clientUserId on the recipient; returnUrl is not one of the two required parameters."
+    }
   },
   {
     "paper": "A",
@@ -1504,6 +1596,10 @@
       16
     ],
     "id": 10024,
+    "concept": {
+      "title": "Filtering agreements in one query",
+      "line": "GetAgreementsList filters on fields like parties.name_in_agreement and provisions.expiration_date (gte/lte) and pages with ctoken, avoiding per-agreement GetAgreement calls."
+    },
     "decode": {
       "prompt": "Which requirement decides the approach?",
       "options": [
@@ -1574,7 +1670,11 @@
     "basedOn": [
       11
     ],
-    "id": 10025
+    "id": 10025,
+    "concept": {
+      "title": "Template reference model roles",
+      "line": "The template reference model uses templateId plus templateRoles, each giving name and email and matched to the template by roleName."
+    }
   },
   {
     "paper": "A",
@@ -1617,7 +1717,11 @@
       30,
       34
     ],
-    "id": 10026
+    "id": 10026,
+    "concept": {
+      "title": "Manifest: connectionsReference",
+      "line": "Each action names its auth credentials via connectionsReference, which must match a defined connection name; hence connection names must be unique."
+    }
   },
   {
     "paper": "A",
@@ -1659,7 +1763,11 @@
       36,
       7
     ],
-    "id": 10027
+    "id": 10027,
+    "concept": {
+      "title": "account_id and base_uri from userinfo",
+      "line": "For every flow, call /oauth/userinfo and use account_id and base_uri from the account where is_default is true."
+    }
   },
   {
     "paper": "A",
@@ -1701,7 +1809,11 @@
       14,
       2
     ],
-    "id": 10028
+    "id": 10028,
+    "concept": {
+      "title": "Navigator scope for getAgreement",
+      "line": "Agreement Manager uses eSignature-style OAuth tokens but needs a Navigator scope; getAgreement requires adm_store_unified_repo_read (not aow_manage)."
+    }
   },
   {
     "paper": "A",
@@ -1745,6 +1857,10 @@
       27
     ],
     "id": 10029,
+    "concept": {
+      "title": "Publishing a private app",
+      "line": "Private apps are shared by adding each production account ID (GUID) after approval; each shows Pending until its admin accepts in the App Center."
+    },
     "decode": {
       "prompt": "Which requirement decides the next step?",
       "options": [
@@ -1817,6 +1933,10 @@
       9
     ],
     "id": 10030,
+    "concept": {
+      "title": "Go-Live error: integration type mismatch",
+      "line": "An error instead of the account list means the key's integration type does not match the type of account you logged into."
+    },
     "decode": {
       "prompt": "What does the error really indicate?",
       "options": [
@@ -1889,6 +2009,10 @@
       20
     ],
     "id": 10031,
+    "concept": {
+      "title": "Signing URL lifetime: 5 minutes",
+      "line": "The embedded signing URL is single-use and expires in about 5 minutes; call createRecipient only when the signer is ready."
+    },
     "decode": {
       "prompt": "What is the actual timing requirement?",
       "options": [
@@ -1961,6 +2085,10 @@
       1
     ],
     "id": 10032,
+    "concept": {
+      "title": "Remote web form redirect via brand",
+      "line": "Remote web form redirect after signing works only through a brand's Signing Completed destination URL (e.g. brandId), not returnUrl."
+    },
     "decode": {
       "prompt": "Which requirement decides the redirect mechanism?",
       "options": [
@@ -2031,7 +2159,11 @@
       7,
       46
     ],
-    "id": 10033
+    "id": 10033,
+    "concept": {
+      "title": "Standalone web form results",
+      "line": "Standalone configurations only collect data and never create envelopes; a submitted instance has status SUBMITTED, formValues, and an empty envelopes array."
+    }
   },
   {
     "paper": "A",
@@ -2084,6 +2216,10 @@
       6
     ],
     "id": 10034,
+    "concept": {
+      "title": "Connected fields by API sequence",
+      "line": "Sequence: TabInfo:GetConnectedFieldsTabGroups, place data in each tab's extensionData, then Envelopes:create; do not call the app's endpoints directly."
+    },
     "decode": {
       "prompt": "What does Tomas's portal need?",
       "options": [
@@ -2154,7 +2290,11 @@
       14,
       42
     ],
-    "id": 10035
+    "id": 10035,
+    "concept": {
+      "title": "Hourly API limit",
+      "line": "Default 3,000 calls per hour per account, shared by all integrations calling it, resetting at the top of the hour (not rolling per key)."
+    }
   },
   {
     "paper": "A",
@@ -2197,6 +2337,10 @@
       43
     ],
     "id": 10036,
+    "concept": {
+      "title": "Web form instance token: 5 minutes",
+      "line": "The createInstance instanceToken expires after five minutes (fixed); Instances:refreshToken with the instance id issues a new token for the same instance."
+    },
     "decode": {
       "prompt": "What has actually expired?",
       "options": [
@@ -2271,6 +2415,10 @@
       45
     ],
     "id": 10037,
+    "concept": {
+      "title": "Connected fields for proprietary data",
+      "line": "Proprietary data in your own system of record, checked while filling the envelope, uses connected fields at Add Fields and signing."
+    },
     "decode": {
       "prompt": "Which requirement decides the extension type?",
       "options": [
@@ -2344,6 +2492,10 @@
       16
     ],
     "id": 10038,
+    "concept": {
+      "title": "API-triggered workflow start method",
+      "line": "When a server triggers a workflow via triggerWorkflow with trigger_inputs, use From an API call; it can still be embedded via the returned URL."
+    },
     "decode": {
       "prompt": "Which requirement decides the start method?",
       "options": [
@@ -2425,6 +2577,10 @@
       39
     ],
     "id": 10039,
+    "concept": {
+      "title": "Agreement data as RAG source",
+      "line": "GetAgreementsList/GetAgreement return AI-extracted and user-corrected parties and provisions, a documented RAG source; key the index by agreementId for citations."
+    },
     "decode": {
       "prompt": "What do the copilot's constraints require?",
       "options": [
@@ -2498,6 +2654,10 @@
       14
     ],
     "id": 10040,
+    "concept": {
+      "title": "Polling limit vs Connect",
+      "line": "Poll each envelope at most once per 15 minutes; use Connect for changes (not counted against limits) and listStatusChanges for catch-up."
+    },
     "decode": {
       "prompt": "What does the business really need?",
       "options": [
@@ -2570,7 +2730,11 @@
       23,
       17
     ],
-    "id": 10041
+    "id": 10041,
+    "concept": {
+      "title": "ID verification on recipients",
+      "line": "Request ID verification with the recipient's identityVerification.workflowId; available workflow IDs come from IdentityVerifications:list."
+    }
   },
   {
     "paper": "A",
@@ -2613,6 +2777,10 @@
       43
     ],
     "id": 10042,
+    "concept": {
+      "title": "Envelope lock for in-process edits",
+      "line": "To change an in-process envelope safely: EnvelopeLocks:create, EnvelopeRecipientTabs:update, then release; the lock blocks recipient action meanwhile."
+    },
     "decode": {
       "prompt": "Which requirement decides the approach?",
       "options": [
@@ -2685,6 +2853,10 @@
       23
     ],
     "id": 10043,
+    "concept": {
+      "title": "Storing files from a workflow",
+      "line": "Storing completed files from a Maestro step uses the file output cloud storage (File IO) extension; file archive is legacy."
+    },
     "decode": {
       "prompt": "What kind of capability does VaultCo's app provide?",
       "options": [
@@ -2757,6 +2929,10 @@
       32
     ],
     "id": 10044,
+    "concept": {
+      "title": "Embedded integration classification",
+      "line": "Customers using Docusign through an account you own and control, without their own accounts, is an Embedded integration requiring an ISV Embed partner license."
+    },
     "decode": {
       "prompt": "Which fact decides the classification?",
       "options": [
@@ -2828,7 +3004,11 @@
       28,
       33
     ],
-    "id": 10045
+    "id": 10045,
+    "concept": {
+      "title": "Functional test prerequisites",
+      "line": "Functional tests require a successful connection test and successful extension tests for every extension; those are the integration tests."
+    }
   },
   {
     "paper": "A",
@@ -2870,6 +3050,10 @@
       12
     ],
     "id": 10046,
+    "concept": {
+      "title": "Anchor tabs: use unique strings",
+      "line": "Anchor tabs are placed at every occurrence of anchorString; use a unique (often hidden white) string like /sn1/ at the target only."
+    },
     "decode": {
       "prompt": "What does the placement really require?",
       "options": [
@@ -2942,6 +3126,10 @@
       10
     ],
     "id": 10047,
+    "concept": {
+      "title": "JWT Grant for unattended services",
+      "line": "Service integrations with no user use JWT Grant: after one-time consent, sign a new JWT with the RSA private key whenever a token is needed."
+    },
     "decode": {
       "prompt": "Which requirement decides the OAuth flow?",
       "options": [
@@ -3014,6 +3202,10 @@
       9
     ],
     "id": 10048,
+    "concept": {
+      "title": "Building the request URL",
+      "line": "Request URL is {base_uri}/restapi/v2.1/accounts/{accountId}/...; both come from /oauth/userinfo, not the user GUID (sub) or a hard-coded host."
+    },
     "decode": {
       "prompt": "What must the request URL be built from?",
       "options": [
@@ -3086,6 +3278,10 @@
       36
     ],
     "id": 10049,
+    "concept": {
+      "title": "JWT consent needs impersonation",
+      "line": "JWT consent must include impersonation (scope=signature impersonation); the JWT payload scope then lists only API scopes like signature."
+    },
     "decode": {
       "prompt": "What is the consent actually missing?",
       "options": [
@@ -3156,6 +3352,10 @@
       42
     ],
     "id": 10050,
+    "concept": {
+      "title": "recipient-completed for intermediate capture",
+      "line": "recipient-completed fires as each recipient finishes, so Connect can save documents after the first signer, before the next; envelope-completed comes only at the end."
+    },
     "decode": {
       "prompt": "Which requirement decides the trigger?",
       "options": [
@@ -3227,7 +3427,11 @@
       6,
       19
     ],
-    "id": 10051
+    "id": 10051,
+    "concept": {
+      "title": "Org-level Connect behaviour",
+      "line": "Organization-level Connect supports only JSON SIM, and logging and require acknowledgement (auto-retry) are enabled automatically."
+    }
   },
   {
     "paper": "A",
@@ -3268,7 +3472,11 @@
     "basedOn": [
       8
     ],
-    "id": 10052
+    "id": 10052,
+    "concept": {
+      "title": "Voiding an envelope",
+      "line": "Void with Envelopes:update setting status voided plus a voidedReason; voiding is permanent and ends the lifecycle for all recipients."
+    }
   },
   {
     "paper": "A",
@@ -3312,6 +3520,10 @@
       36
     ],
     "id": 10053,
+    "concept": {
+      "title": "Promoted key: config not copied",
+      "line": "Promotion duplicates the key with the same value, but secrets and redirect URIs are not copied; add them in production Apps and Keys."
+    },
     "decode": {
       "prompt": "Why do redirects and token requests fail in production?",
       "options": [
@@ -3383,7 +3595,11 @@
       4,
       18
     ],
-    "id": 10054
+    "id": 10054,
+    "concept": {
+      "title": "Prepare Document Template use",
+      "line": "Prepare Document Template generates varying document content from workflow variables with conditional show/hide; follow it with Send Documents for Signature."
+    }
   },
   {
     "paper": "A",
@@ -3436,6 +3652,10 @@
       44
     ],
     "id": 10055,
+    "concept": {
+      "title": "PKCE in Public Auth Code Grant",
+      "line": "Send code_challenge (S256 hash of a random string) on /oauth/auth, then the original string as code_verifier on /oauth/token instead of a secret."
+    },
     "decode": {
       "prompt": "Which requirement decides the authentication steps?",
       "options": [
@@ -3511,6 +3731,10 @@
       15
     ],
     "id": 10056,
+    "concept": {
+      "title": "Pause workflow vs cancel instance",
+      "line": "pauseNewWorkflowInstances blocks new instances while active ones run; cancelWorkflowInstance stops one instance's further steps, keeping collected data."
+    },
     "decode": {
       "prompt": "What two separate controls are needed?",
       "options": [
@@ -3590,6 +3814,10 @@
       42
     ],
     "id": 10057,
+    "concept": {
+      "title": "Connect advantages over polling",
+      "line": "Connect messages don't count against API limits, arrive only on change, and remove polling logic; polling stays limited to once per envelope per 15 minutes."
+    },
     "decode": {
       "prompt": "What does management care about?",
       "options": [
@@ -3661,6 +3889,10 @@
       14
     ],
     "id": 10058,
+    "concept": {
+      "title": "AI agreement summary operation",
+      "line": "AI summaries come only from CreateAgreementSummary, POST .../agreements/{agreementId}/ai/actions/summarize; there is no GET summary endpoint."
+    },
     "decode": {
       "prompt": "What output does the panel really need?",
       "options": [
@@ -3733,6 +3965,10 @@
       21
     ],
     "id": 10059,
+    "concept": {
+      "title": "Refreshing a connected fields model",
+      "line": "After the data model changes, refresh the app connection in the App Center so Docusign re-calls Get Type Names and Get Type Definitions."
+    },
     "decode": {
       "prompt": "Why do preparers still see the old fields?",
       "options": [
@@ -3814,6 +4050,10 @@
       20
     ],
     "id": 10060,
+    "concept": {
+      "title": "Focused view frameAncestors and messageOrigins",
+      "line": "frameAncestors lists your origin plus https://apps.docusign.com (apps-d in demo); messageOrigins is a single-element array with https://apps.docusign.com."
+    },
     "decode": {
       "prompt": "What must change for production?",
       "options": [
@@ -3886,6 +4126,10 @@
       25
     ],
     "id": 20001,
+    "concept": {
+      "title": "Confidential token Basic header",
+      "line": "Confidential token requests use Authorization: Basic base64(integrationKey:secretKey) with a colon and no spaces."
+    },
     "decode": {
       "prompt": "Which requirement decides the fix here?",
       "options": [
@@ -3960,7 +4204,11 @@
       8,
       16
     ],
-    "id": 20002
+    "id": 20002,
+    "concept": {
+      "title": "Effect of cancelling an instance",
+      "line": "Cancelling a workflow instance stores data collected so far and triggers no further steps for that instance; it does not pause the workflow."
+    }
   },
   {
     "paper": "B",
@@ -4004,6 +4252,10 @@
       29
     ],
     "id": 20003,
+    "concept": {
+      "title": "Data IO for system of record",
+      "line": "Reading and writing a system of record inside a Maestro workflow uses Data IO read/write steps; connected fields are not supported in Maestro."
+    },
     "decode": {
       "prompt": "What does this scenario really require?",
       "options": [
@@ -4073,7 +4325,11 @@
     "basedOn": [
       16
     ],
-    "id": 20004
+    "id": 20004,
+    "concept": {
+      "title": "Editing workflow with active instances",
+      "line": "Editing participants or steps does not change active instances; only new instances reflect the changes."
+    }
   },
   {
     "paper": "B",
@@ -4116,6 +4372,10 @@
       40
     ],
     "id": 20005,
+    "concept": {
+      "title": "Recovering events after long outage",
+      "line": "Connect retries back off then run daily for 15 days only; use the failure log and ConnectEvents:retryForEnvelopes to republish older failures."
+    },
     "decode": {
       "prompt": "What does this scenario really require?",
       "options": [
@@ -4187,6 +4447,10 @@
       7
     ],
     "id": 20006,
+    "concept": {
+      "title": "Branding a standalone web form",
+      "line": "Standalone instances cannot get a brand via API; select the brand under Branding on the configuration's Preview tab (works for both configuration types)."
+    },
     "decode": {
       "prompt": "What does this scenario really require?",
       "options": [
@@ -4259,6 +4523,10 @@
       44
     ],
     "id": 20007,
+    "concept": {
+      "title": "Flow for native mobile apps",
+      "line": "Native apps that cannot securely store a secret, with individual user sign-in, use Public Authorization Code Grant with PKCE."
+    },
     "decode": {
       "prompt": "What does this scenario really require?",
       "options": [
@@ -4329,7 +4597,11 @@
       14,
       42
     ],
-    "id": 20008
+    "id": 20008,
+    "concept": {
+      "title": "Raising the hourly limit",
+      "line": "Admins use Update Hourly Limit in the API Usage Center only if the plan allows it, no Support limit applies, and apps are efficient."
+    }
   },
   {
     "paper": "B",
@@ -4380,7 +4652,11 @@
       9,
       36
     ],
-    "id": 20009
+    "id": 20009,
+    "concept": {
+      "title": "Integration key after promotion",
+      "line": "Go-Live duplicates the key: same value works in developer and production; tied to one production account for management but can call any account."
+    }
   },
   {
     "paper": "B",
@@ -4422,6 +4698,10 @@
       11
     ],
     "id": 20010,
+    "concept": {
+      "title": "Composite templates: document precedence",
+      "line": "Each composite template object contributes at most one document, and a document property overrides its templates' documents; order follows the array."
+    },
     "decode": {
       "prompt": "Which rule decides the outcome here?",
       "options": [
@@ -4493,7 +4773,11 @@
       34,
       30
     ],
-    "id": 20011
+    "id": 20011,
+    "concept": {
+      "title": "Action template identifier",
+      "line": "An action's Docusign-predefined template identifier specifies its action contract: request/response contract and the extension points that trigger it."
+    }
   },
   {
     "paper": "B",
@@ -4546,6 +4830,10 @@
       39
     ],
     "id": 20012,
+    "concept": {
+      "title": "Agreement-driven renewal orchestration",
+      "line": "Find expiring agreements with GetAgreementsList (provisions.expiration_date filter), then trigger a published Maestro workflow per agreement via the Workflow Builder API."
+    },
     "decode": {
       "prompt": "What does this scenario really require?",
       "options": [
@@ -4616,6 +4904,10 @@
       40
     ],
     "id": 20013,
+    "concept": {
+      "title": "Idempotent create with transactionId",
+      "line": "A sender-generated transactionId makes Envelopes:create safe to retry; resending the same value does not create a second envelope."
+    },
     "decode": {
       "prompt": "What does this scenario really require?",
       "options": [
@@ -4688,6 +4980,10 @@
       1
     ],
     "id": 20014,
+    "concept": {
+      "title": "Embedded web form redirect: returnUrl",
+      "line": "Template-based embedded-signing web form instances redirect via returnUrl in Instances:createInstance; without it the thank you page shows."
+    },
     "decode": {
       "prompt": "What does this scenario really require?",
       "options": [
@@ -4759,6 +5055,10 @@
       42
     ],
     "id": 20015,
+    "concept": {
+      "title": "Connect for post-completion write-back",
+      "line": "Writing signer-updated data back to a business system after completion is a custom Connect use case (envelope-completed with tab data), using no API calls."
+    },
     "decode": {
       "prompt": "What does this scenario really require?",
       "options": [
@@ -4829,7 +5129,11 @@
       38,
       20
     ],
-    "id": 20016
+    "id": 20016,
+    "concept": {
+      "title": "Post-signing redirect: remote vs embedded",
+      "line": "Remote signers are redirected via brand Destination URLs; embedded signers via returnUrl set in EnvelopeViews:createRecipient."
+    }
   },
   {
     "paper": "B",
@@ -4871,7 +5175,11 @@
       3,
       22
     ],
-    "id": 20017
+    "id": 20017,
+    "concept": {
+      "title": "Implicit vs Public Auth Code Grant",
+      "line": "Implicit (legacy) returns the token straight to the browser with no code exchange; Public Auth Code adds a PKCE-protected exchange and is recommended."
+    }
   },
   {
     "paper": "B",
@@ -4914,6 +5222,10 @@
       3
     ],
     "id": 20018,
+    "concept": {
+      "title": "CORS for single-page apps",
+      "line": "eSignature CORS is configured on the integration key in Apps and Keys by listing allowed origins, not via headers the SPA sends."
+    },
     "decode": {
       "prompt": "What does this scenario really require?",
       "options": [
@@ -4987,6 +5299,10 @@
       6
     ],
     "id": 20019,
+    "concept": {
+      "title": "workflow-completed Connect event",
+      "line": "workflow-completed fires when all workflow steps are done by all participants, including steps after signing; envelope-completed does not cover those."
+    },
     "decode": {
       "prompt": "What does this scenario really require?",
       "options": [
@@ -5058,6 +5374,10 @@
       32
     ],
     "id": 20020,
+    "concept": {
+      "title": "Third-party integration key",
+      "line": "Using a partner integration that requires you to supply your own integration key is classified as a Third-party integration key."
+    },
     "decode": {
       "prompt": "What does this scenario really require?",
       "options": [
@@ -5129,6 +5449,10 @@
       10
     ],
     "id": 20021,
+    "concept": {
+      "title": "External admin consent: coid claim",
+      "line": "Requesting openid returns an ID token whose coid claim lists organizations that granted admin consent; this is the only way to get that list."
+    },
     "decode": {
       "prompt": "What does this scenario really require?",
       "options": [
@@ -5201,6 +5525,10 @@
       17
     ],
     "id": 20022,
+    "concept": {
+      "title": "Embedded sending with createSender",
+      "line": "Embedded sending: create the envelope as draft (status created), then EnvelopeViews:createSender so the user edits and sends in-app."
+    },
     "decode": {
       "prompt": "What does this scenario really require?",
       "options": [
@@ -5282,6 +5610,10 @@
       36
     ],
     "id": 20023,
+    "concept": {
+      "title": "Promoting a workflow to production",
+      "line": "Export from demo and import into production (keeps configuration and mappings, adds referenced web forms/templates); production Maestro base is https://api.docusign.com/v1."
+    },
     "decode": {
       "prompt": "What does this scenario really require?",
       "options": [
@@ -5363,6 +5695,10 @@
       25
     ],
     "id": 20024,
+    "concept": {
+      "title": "Least-privilege consent and JWT scopes",
+      "line": "Consent must cover all scopes used plus impersonation (signature aow_manage impersonation); the JWT payload requests only API scopes (signature aow_manage)."
+    },
     "decode": {
       "prompt": "What does this scenario really require?",
       "options": [
@@ -5443,6 +5779,10 @@
       36
     ],
     "id": 20025,
+    "concept": {
+      "title": "Data and plan after Go-Live",
+      "line": "Production is separate: migrate templates and use their production IDs, and confirm the production plan has every feature used in development."
+    },
     "decode": {
       "prompt": "What does this scenario really require?",
       "options": [
@@ -5515,6 +5855,10 @@
       17
     ],
     "id": 20026,
+    "concept": {
+      "title": "Rendering an embedded web form",
+      "line": "createInstance returns a shared formUrl and a per-session instanceToken; Docusign JS builds formUrl#instanceToken=... and mounts the form."
+    },
     "decode": {
       "prompt": "What does this scenario really require?",
       "options": [
@@ -5587,6 +5931,10 @@
       29
     ],
     "id": 20027,
+    "concept": {
+      "title": "Data verification for standard types",
+      "line": "Standard verifiable types (e.g. business FEIN) without your own registry use the data verification extension at the eSignature extension point."
+    },
     "decode": {
       "prompt": "What does this scenario really require?",
       "options": [
@@ -5659,6 +6007,10 @@
       19
     ],
     "id": 20028,
+    "concept": {
+      "title": "Envelope-level webhook limitation",
+      "line": "Envelope-level webhooks (eventNotification) are configured only when sending, so they cannot cover envelopes received from external parties."
+    },
     "decode": {
       "prompt": "Which constraint rules out one of the designs?",
       "options": [
@@ -5739,6 +6091,10 @@
       46
     ],
     "id": 20029,
+    "concept": {
+      "title": "Remote web form instance request",
+      "line": "Remote instances identify users by roleName in recipients (no clientUserId needed); tags add metadata returned by getInstance and listInstances."
+    },
     "decode": {
       "prompt": "What does this scenario really require?",
       "options": [
@@ -5809,7 +6165,11 @@
       10,
       44
     ],
-    "id": 20030
+    "id": 20030,
+    "concept": {
+      "title": "extended scope: rolling refresh",
+      "line": "With extended, the refresh token expires 30 days after the last successful refresh; without it, 30 days after original issue."
+    }
   },
   {
     "paper": "B",
@@ -5852,6 +6212,10 @@
       32
     ],
     "id": 20031,
+    "concept": {
+      "title": "Public app regional availability",
+      "line": "Public apps use publicationRegions (public only) to control which regions can install the app from the production App Center."
+    },
     "decode": {
       "prompt": "What does this scenario really require?",
       "options": [
@@ -5923,6 +6287,10 @@
       12
     ],
     "id": 20032,
+    "concept": {
+      "title": "Choosing composite templates",
+      "line": "Only composite templates apply multiple server templates plus extra documents in one envelope in a single API call."
+    },
     "decode": {
       "prompt": "What does this scenario really require?",
       "options": [
@@ -6003,6 +6371,10 @@
       33
     ],
     "id": 20033,
+    "concept": {
+      "title": "App review and publishing facts",
+      "line": "Review covers business, technical, security and functional aspects; public apps need production URLs in the registration before review."
+    },
     "decode": {
       "prompt": "What does this scenario really require?",
       "options": [
@@ -6075,6 +6447,10 @@
       23
     ],
     "id": 20034,
+    "concept": {
+      "title": "Connected fields results via Connect",
+      "line": "Connected fields verification results arrive via the extension-executed event, JSON SIM only; add a separate configuration rather than changing an XML feed."
+    },
     "decode": {
       "prompt": "What does this scenario really require?",
       "options": [
@@ -6146,6 +6522,10 @@
       5
     ],
     "id": 20035,
+    "concept": {
+      "title": "Catch-up with listStatusChanges",
+      "line": "After missed Connect messages, call Envelopes:listStatusChanges with a from_date overlapping the outage; a few list calls replace many individual GETs."
+    },
     "decode": {
       "prompt": "What does this scenario really require?",
       "options": [
@@ -6217,6 +6597,10 @@
       14
     ],
     "id": 20036,
+    "concept": {
+      "title": "Paging GetAgreementsList with ctoken",
+      "line": "GetAgreementsList pages with limit (page size) and ctoken, an opaque continuation token for the next page."
+    },
     "decode": {
       "prompt": "What does this scenario really require?",
       "options": [
@@ -6295,7 +6679,11 @@
     "basedOn": [
       6
     ],
-    "id": 20037
+    "id": 20037,
+    "concept": {
+      "title": "Multiple HMAC keys and headers",
+      "line": "Each HMAC key (up to 100) adds an X-DocuSign-Signature-N header with HMAC-SHA256 of the body; matching any one proves authenticity and integrity."
+    }
   },
   {
     "paper": "B",
@@ -6337,7 +6725,11 @@
       8,
       39
     ],
-    "id": 20038
+    "id": 20038,
+    "concept": {
+      "title": "Deleting an agreement",
+      "line": "DeleteAgreement is DELETE /v1/accounts/{accountId}/agreements/{agreementId}; one of four agreement operations (list, get, delete, create summary)."
+    }
   },
   {
     "paper": "B",
@@ -6380,6 +6772,10 @@
       33
     ],
     "id": 20039,
+    "concept": {
+      "title": "Extension app vs API integration",
+      "line": "No-code functionality inside customers' envelopes and Maestro workflows, installed by admins, is an extension app published to the App Center."
+    },
     "decode": {
       "prompt": "What does this scenario really require?",
       "options": [
@@ -6452,6 +6848,10 @@
       16
     ],
     "id": 20040,
+    "concept": {
+      "title": "Tracking a triggered instance",
+      "line": "Save the instance ID from the trigger response; getWorkflowInstance returns its status, start/end times and started_by."
+    },
     "decode": {
       "prompt": "What does this scenario really require?",
       "options": [
@@ -6524,6 +6924,10 @@
       9
     ],
     "id": 20041,
+    "concept": {
+      "title": "JWT RSA keys after promotion",
+      "line": "RSA key pairs are not copied on promotion; add one to the production key in Apps and Keys; sign with its private key."
+    },
     "decode": {
       "prompt": "What does this scenario really require?",
       "options": [
@@ -6595,6 +6999,10 @@
       44
     ],
     "id": 20042,
+    "concept": {
+      "title": "Refresh token behaviour",
+      "line": "A refresh returns a new access token and new refresh token, and the previous access token is no longer valid."
+    },
     "decode": {
       "prompt": "What does this scenario really require?",
       "options": [
@@ -6676,6 +7084,10 @@
       20
     ],
     "id": 20043,
+    "concept": {
+      "title": "returnUrl event parameter",
+      "line": "Docusign appends event=... (signing_complete, cancel, decline, ttl_expired) to returnUrl; read it, but confirm final status via Connect, not the redirect."
+    },
     "decode": {
       "prompt": "What does this scenario really require?",
       "options": [
@@ -6747,7 +7159,11 @@
       35,
       45
     ],
-    "id": 20044
+    "id": 20044,
+    "concept": {
+      "title": "Where connected fields verify",
+      "line": "Connected fields verify data in the eSignature Add Fields view and during signing, when the signer completes required fields."
+    }
   },
   {
     "paper": "B",
@@ -6789,7 +7205,11 @@
       7,
       46
     ],
-    "id": 20045
+    "id": 20045,
+    "concept": {
+      "title": "Web form envelope creation timing",
+      "line": "Template-based web forms: remote instance creates the envelope when createInstance is processed; embedded instance creates it when the first user submits."
+    }
   },
   {
     "paper": "B",
@@ -6833,7 +7253,11 @@
       29,
       5
     ],
-    "id": 20046
+    "id": 20046,
+    "concept": {
+      "title": "Verification results via extension-executed",
+      "line": "Verification results are retrieved programmatically via the Connect extension-executed event, JSON SIM only; also shown in envelope history and certificate."
+    }
   },
   {
     "paper": "B",
@@ -6887,6 +7311,10 @@
       34
     ],
     "id": 20047,
+    "concept": {
+      "title": "Switching extension app environment",
+      "line": "Update connection settings (clientId, clientSecret, auth settings in customConfig) and each action's and capability's params.uri to production URLs."
+    },
     "decode": {
       "prompt": "What does this scenario really require?",
       "options": [
@@ -6957,7 +7385,11 @@
       11,
       9
     ],
-    "id": 20048
+    "id": 20048,
+    "concept": {
+      "title": "Templates after go-live",
+      "line": "Go-live promotes the key, not templates; the template must exist in production, with a new template ID the app must use."
+    }
   },
   {
     "paper": "B",
@@ -7001,6 +7433,10 @@
       1
     ],
     "id": 20049,
+    "concept": {
+      "title": "From a Link start method",
+      "line": "From a Link suits participant-initiated workflows via a URL on a website or auto-email, needing no server or token."
+    },
     "decode": {
       "prompt": "What does this scenario really require?",
       "options": [
@@ -7073,6 +7509,10 @@
       40
     ],
     "id": 20050,
+    "concept": {
+      "title": "Envelope-level webhook via eventNotification",
+      "line": "eventNotification on Envelopes:create is API-only envelope-level Connect, needs no account configuration, and can point each envelope to its own URL."
+    },
     "decode": {
       "prompt": "What does this scenario really require?",
       "options": [
@@ -7145,6 +7585,10 @@
       35
     ],
     "id": 20051,
+    "concept": {
+      "title": "Data IO Read and Writeback steps",
+      "line": "Data IO extension apps read and write structured system-of-record data, appearing in Workflow Builder as Read and Writeback steps."
+    },
     "decode": {
       "prompt": "What does this scenario really require?",
       "options": [
@@ -7215,6 +7659,10 @@
       18
     ],
     "id": 20052,
+    "concept": {
+      "title": "Verify identity before revealing data",
+      "line": "Steps can be sequenced so Verify Someone's Identity (after Set Up Invite) precedes a web form showing sensitive pre-filled data."
+    },
     "decode": {
       "prompt": "What does this scenario really require?",
       "options": [
@@ -7286,6 +7734,10 @@
       14
     ],
     "id": 20053,
+    "concept": {
+      "title": "User-corrected extraction values",
+      "line": "After a user modifies an AI-extracted value in the UI, later GET requests return the user-updated value, not the original extraction."
+    },
     "decode": {
       "prompt": "What does this scenario really require?",
       "options": [
@@ -7357,6 +7809,10 @@
       35
     ],
     "id": 20054,
+    "concept": {
+      "title": "IsRequiredForVerifyingType decorator",
+      "line": "IsRequiredForVerifyingType marks properties required to verify an object (shown with an asterisk); add it per property on an already-verifiable concept."
+    },
     "decode": {
       "prompt": "What does this scenario really require?",
       "options": [
@@ -7428,6 +7884,10 @@
       40
     ],
     "id": 20055,
+    "concept": {
+      "title": "Burst limit",
+      "line": "Burst limit is 500 calls per 30 seconds in production (200 in demo), distinct from the hourly limit; throttle and back off using X-RateLimit headers."
+    },
     "decode": {
       "prompt": "What does this scenario really require?",
       "options": [
@@ -7499,7 +7959,11 @@
       13,
       42
     ],
-    "id": 20056
+    "id": 20056,
+    "concept": {
+      "title": "Aggregate Connect message mode",
+      "line": "The aggregate option, XML only at account or envelope level, combines similar events (e.g. recipient and envelope complete) into one message."
+    }
   },
   {
     "paper": "B",
@@ -7549,7 +8013,11 @@
     "basedOn": [
       8
     ],
-    "id": 20057
+    "id": 20057,
+    "concept": {
+      "title": "Terminal envelope statuses",
+      "line": "Completed, declined and voided are terminal: no further API modifications such as adding tabs; correct is not terminal."
+    }
   },
   {
     "paper": "B",
@@ -7592,6 +8060,10 @@
       16
     ],
     "id": 20058,
+    "concept": {
+      "title": "triggerWorkflow request body",
+      "line": "TriggerWorkflow body needs instance_name and trigger_inputs, with keys matching trigger_input_schema; wrong field names (name, inputs) cause the 400."
+    },
     "decode": {
       "prompt": "What does this scenario really require?",
       "options": [
@@ -7673,6 +8145,10 @@
       36
     ],
     "id": 20059,
+    "concept": {
+      "title": "Production JWT claims",
+      "line": "Production JWT: iss = integration key, sub = impersonated user's production GUID, aud = account.docusign.com, exp at most 3600 s after iat."
+    },
     "decode": {
       "prompt": "What does this scenario really require?",
       "options": [
@@ -7745,6 +8221,10 @@
       19
     ],
     "id": 20060,
+    "concept": {
+      "title": "Per-signer events via eventNotification",
+      "line": "Add recipient-completed to an Envelopes:create eventNotification to get a message as each signer finishes, for that envelope only."
+    },
     "decode": {
       "prompt": "What does this scenario really require?",
       "options": [

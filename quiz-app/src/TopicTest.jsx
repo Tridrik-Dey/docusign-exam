@@ -3,6 +3,7 @@ import { ArrowLeft, ArrowRight, CalendarDays, Clock, ClipboardCheck, Flag, Trash
 import papers from './papers.json';
 import { savePrepScores } from './StudyPlan.jsx';
 import { DEFAULT_SCORES, SECTIONS } from './studyPlan.js';
+const CHEAT = Object.fromEntries(SECTIONS.map((s) => [s.name, s.cheat]));
 import { ReviewList, correctIds, isActiveMistake, isRight, loadMistakes, orderByMistakes, recordAnswers, MISTAKES_KEY } from './review.jsx';
 
 // Timed section test (1.5 min per question). Pool: topic bank (T) + Papers A and B for that section, plus questions
@@ -106,9 +107,9 @@ export default function TopicTest({ initialDomain, initialSize, onPlan }) {
     const correct = qs.filter((q) => isRight(q, current.answers[q.id])).length;
     const pct = Math.round((correct / qs.length) * 100);
     const finishedAt = Date.now();
-    recordAnswers(qs.map((q) => ({ q, answer: current.answers[q.id] })), 'topic');
+    recordAnswers(qs.map((q) => ({ q, answer: current.answers[q.id], flagged: Boolean(current.flagged?.[q.id]) })), 'topic');
     saveStore({
-      results: [...store.results, { section: current.domain, date: new Date(finishedAt).toISOString(), correct, total: qs.length, pct, ids: current.ids, answers: current.answers }],
+      results: [...store.results, { section: current.domain, date: new Date(finishedAt).toISOString(), correct, total: qs.length, pct, ids: current.ids, answers: current.answers, flagged: current.flagged || {} }],
       used: { ...store.used, ...Object.fromEntries(current.ids.map((id) => [id, true])) },
     });
     savePrepScores({ [current.domain]: pct }, `Topic test ${current.domain}, ${new Date().toLocaleDateString()}`);
@@ -135,6 +136,7 @@ export default function TopicTest({ initialDomain, initialSize, onPlan }) {
         if (!q || !r) return;
         r.seen = Math.max(0, r.seen - 1);
         if (!isRight(q, result.answers?.[id])) r.wrong = Math.max(0, r.wrong - 1);
+        else if (result.flagged?.[id]) r.unsure = Math.max(0, (r.unsure || 0) - 1);
         if (!r.seen) delete m[id];
       });
       writeJson(MISTAKES_KEY, m);
@@ -164,7 +166,16 @@ export default function TopicTest({ initialDomain, initialSize, onPlan }) {
               <span>{res.correct} of {res.total} correct &middot; {new Date(res.date).toLocaleString()}</span>
             </div>
           </div>
-          {qs.length ? <ReviewList questions={qs} answers={res.answers || {}} /> : <p className="plan-note">This older attempt saved only its score, so its questions cannot be shown.</p>}
+          {qs.length ? (
+            <ReviewList
+              questions={qs}
+              answers={res.answers || {}}
+              actions={<>
+                <button className="nav-button" onClick={() => setView('start')}><ArrowLeft size={18} /> Back to topic tests</button>
+                <button className="nav-button" onClick={onPlan}><CalendarDays size={18} /> Back to plan</button>
+              </>}
+            />
+          ) :<p className="plan-note">This older attempt saved only its score, so its questions cannot be shown.</p>}
           <div className="mock-actions">
             <button className="nav-button" onClick={() => setView('start')}><ArrowLeft size={18} /> Back to topic tests</button>
             <button className="nav-button" onClick={onPlan}><CalendarDays size={18} /> Back to plan</button>
@@ -247,9 +258,14 @@ export default function TopicTest({ initialDomain, initialSize, onPlan }) {
               <span>{run.correct} of {qs.length} correct &middot; saved to your plan scores; wrong ones go to your mistake list {run.pct >= 85 ? '(85%+ twice in a row = mastered)' : run.pct < 70 ? '(under 70%: extra practice gets added)' : ''}</span>
             </div>
           </div>
-          <ReviewList questions={qs} answers={run.answers} />
+          <ReviewList questions={qs} answers={run.answers} actions={<>
+            <button className="nav-button" onClick={onPlan}><CalendarDays size={18} /> Back to plan</button>
+            <a className="nav-button concept-link" href={`/pdf/${CHEAT[run.domain]}`} target="_blank" rel="noreferrer">{run.domain} cheat sheet (PDF)</a>
+            <button className="submit-button" onClick={() => setView('start')}>New topic test</button>
+</>} />
           <div className="mock-actions">
             <button className="nav-button" onClick={onPlan}><CalendarDays size={18} /> Back to plan</button>
+            <a className="nav-button concept-link" href={`/pdf/${CHEAT[run.domain]}`} target="_blank" rel="noreferrer">{run.domain} cheat sheet (PDF)</a>
             <button className="submit-button" onClick={() => setView('start')}>New topic test</button>
           </div>
         </section>
@@ -298,7 +314,7 @@ export default function TopicTest({ initialDomain, initialSize, onPlan }) {
             <h2>Question {index + 1} of {qs.length}</h2>
           </div>
           <button className={`nav-button ${run.flagged[q.id] ? 'mock-flagged' : ''}`} onClick={() => saveRun({ ...run, flagged: { ...run.flagged, [q.id]: !run.flagged[q.id] } })}>
-            <Flag size={16} /> {run.flagged[q.id] ? 'Flagged' : 'Flag'}
+            <Flag size={16} /> {run.flagged[q.id] ? 'Flagged: unsure' : 'Flag if unsure'}
           </button>
         </div>
         <section className="question-card">

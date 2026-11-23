@@ -9,14 +9,14 @@
 //   { type: 'link', url }                       external page
 
 export const SECTIONS = [
-  { name: 'API Authentication', weight: 13, pdf: 'sections/01_api_authentication.pdf' },
-  { name: 'Go Live Process', weight: 11, pdf: 'sections/02_go_live_process.pdf' },
-  { name: 'Docusign Connect', weight: 12, pdf: 'sections/03_docusign_connect.pdf' },
-  { name: 'eSignature API', weight: 16, pdf: 'sections/04_esignature_api.pdf' },
-  { name: 'eSignature Features and Web Forms', weight: 11, pdf: 'sections/05_esignature_features_web_forms.pdf' },
-  { name: 'Agreement Manager API', weight: 6, pdf: 'sections/06_agreement_manager_api.pdf' },
-  { name: 'Workflow Builder and Workflow API', weight: 15, pdf: 'sections/07_workflow_builder_and_api.pdf' },
-  { name: 'App Center and Extension Apps', weight: 16, pdf: 'sections/08_app_center_extension_apps.pdf' },
+  { name: 'API Authentication', weight: 13, pdf: 'sections/01_api_authentication.pdf', cheat: 'cheatsheets/01_api_authentication_cheat_sheet.pdf' },
+  { name: 'Go Live Process', weight: 11, pdf: 'sections/02_go_live_process.pdf', cheat: 'cheatsheets/02_go_live_process_cheat_sheet.pdf' },
+  { name: 'Docusign Connect', weight: 12, pdf: 'sections/03_docusign_connect.pdf', cheat: 'cheatsheets/03_docusign_connect_cheat_sheet.pdf' },
+  { name: 'eSignature API', weight: 16, pdf: 'sections/04_esignature_api.pdf', cheat: 'cheatsheets/04_esignature_api_cheat_sheet.pdf' },
+  { name: 'eSignature Features and Web Forms', weight: 11, pdf: 'sections/05_esignature_features_web_forms.pdf', cheat: 'cheatsheets/05_esignature_features_web_forms_cheat_sheet.pdf' },
+  { name: 'Agreement Manager API', weight: 6, pdf: 'sections/06_agreement_manager_api.pdf', cheat: 'cheatsheets/06_agreement_manager_api_cheat_sheet.pdf' },
+  { name: 'Workflow Builder and Workflow API', weight: 15, pdf: 'sections/07_workflow_builder_and_api.pdf', cheat: 'cheatsheets/07_workflow_builder_and_api_cheat_sheet.pdf' },
+  { name: 'App Center and Extension Apps', weight: 16, pdf: 'sections/08_app_center_extension_apps.pdf', cheat: 'cheatsheets/08_app_center_extension_apps_cheat_sheet.pdf' },
 ];
 
 // First attempt, 22 Nov 2026 (official score report). Used until you enter newer scores.
@@ -106,7 +106,7 @@ function sectionDay(id, primary, secondary) {
     title: `${p} (${primary.weight}%, you: ${primary.score}%) + refresh ${s}`,
     domains: [p, s],
     tasks: [
-      { id: `${id}-guide`, minutes: 15, text: `Read the red and amber boxes: ${p} study guide`, action: { type: 'pdf', file: primary.pdf } },
+      { id: `${id}-guide`, minutes: 15, text: `Cheat sheet: ${p} (must-know facts, numbers, confusing pairs, business wording)`, action: { type: 'pdf', file: primary.cheat } },
       { id: `${id}-decoder`, minutes: 10, text: `Read the ${p} part of the Scenario Decoder (business words -> Docusign meaning)`, action: { type: 'pdf', file: '00_scenario_decoder.pdf' } },
       { id: `${id}-facts`, minutes: 33, text: `Topic test: ${p} (15 questions, 23 min), then review every miss`, action: { type: 'topic', domain: p, size: 15 } },
       { id: `${id}-drill`, minutes: 30, text: `Decode drill: ${p} (hard scenarios, decide what it needs before you see the options)`, action: { type: 'drill', domain: p } },

@@ -104,27 +104,31 @@
       },
       {
         "title": "5. Embed the instance URL: redirect vs iframe",
-        "minutes": 15,
+        "minutes": 20,
         "steps": [
           "Trigger a new instance (exercise 4) and copy the instance URL.",
           "Open the Embedding lab page at http://127.0.0.1:5173, paste the URL and choose (1) full-page redirect.",
           "Trigger another instance (do not reuse a completed one), paste its URL and choose (2) plain iframe.",
           "Work through the web form and the signing step in each mode and note where the browser ends up when the workflow finishes.",
-          "Optional: compare with docusign-node-quickstart/app/views/pages/maestro-examples/eg001EmbedWorkflow.ejs (a plain iframe with the instance URL)."
+          "Optional: compare with docusign-node-quickstart/app/views/pages/maestro-examples/eg001EmbedWorkflow.ejs (a plain iframe with the instance URL).",
+          "Try it (embedding tool: Try it button in the plan): If you have a published Maestro workflow started From an API call, call TriggerWorkflow and paste instance_url into redirect and iframe modes."
         ],
-        "api": "POST .../workflows/{workflowId}/actions/trigger (as in exercise 4), then use the returned instance URL:\nRedirect: window.location = instanceUrl\nIframe: <iframe src=\"{instanceUrl}\" width=\"800\" height=\"600\"></iframe>",
+        "api": "POST .../workflows/{workflowId}/actions/trigger (as in exercise 4), then use the returned instance URL:\nRedirect: window.location = instanceUrl\nIframe: <iframe src=\"{instanceUrl}\" width=\"800\" height=\"600\"></iframe>\n\nPOST {webformsBasePath}/accounts/{accountId}/forms/{formId}/instances\nEmbedded: {\"clientUserId\":\"1001\",\"formValues\":{\"{fieldName}\":\"value\"},\"expirationOffset\":24}\nRemote: {\"sendOption\":\"now\",\"recipients\":[{\"roleName\":\"signer1\",\"name\":\"{name}\",\"email\":\"{you}\"}]}\n(Take {webformsBasePath} from the Web Forms API reference / API Explorer for demo before your first call.)\nMaestro: Workflows:triggerWorkflow (POST under {maestroBasePath}/accounts/{accountId}/workflows/{workflowId}/...; copy the exact path from the API reference) with instance_name and trigger_inputs -> response instance_url",
         "observe": [
           "Redirect: the user leaves your app and stays on the Docusign page after the workflow finishes.",
           "Iframe: your page stays visible around the workflow and the user is still in your app at the end, so your app decides where to route next.",
           "Observe whether the signing step inside the iframe opens in classic view (the documented restriction: focused view is not supported for Send Documents for Signature in embedded workflow instances).",
-          "Observe whether the browser console shows any framing error for your origin http://127.0.0.1:5173 (the Maestro docs do not document a frameAncestors setting for workflow instances)."
+          "Observe whether the browser console shows any framing error for your origin http://127.0.0.1:5173 (the Maestro docs do not document a frameAncestors setting for workflow instances).",
+          "Workflow instance_url: redirect leaves the user on Docusign after completion; iframe keeps your app around it. Embedded workflows support From a Link / From an API call starts, do not support Collect Data from an ID, and do not support focused view for the signature step."
         ],
         "examTraps": [
           "Embedding is supported only for workflows that start From a link or From an API call; with starting values in trigger_inputs, prefer From an API call.",
           "All step types work embedded EXCEPT Collect Data from an ID; Verify Someone's Identity supports only Phone Authentication when embedded.",
           "Do not embed a workflow that has no UI steps (for example one that only sends an email).",
-          "Embedded workflow instance: no focused view for the signature step; Docusign JS is for focused view signing and web forms, not for the workflow instance URL."
-        ]
+          "Embedded workflow instance: no focused view for the signature step; Docusign JS is for focused view signing and web forms, not for the workflow instance URL.",
+          "Embedded Maestro instance: iframe the instance_url, choose From an API call when passing starting variables."
+        ],
+        "tryIt": true
       },
       {
         "title": "6. Cancel one instance vs pause and resume the workflow",

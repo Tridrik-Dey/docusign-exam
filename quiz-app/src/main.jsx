@@ -97,6 +97,11 @@ function Root() {
       return;
     }
     if (action.type === 'embed') {
+      try {
+        localStorage.setItem('docusign-iam-embed-from', JSON.stringify({ lab: action.lab || '', exercise: action.exercise || '' }));
+      } catch {
+        /* ignore */
+      }
       switchMode('embed');
       return;
     }
@@ -144,7 +149,15 @@ function Root() {
     switchMode('practice');
   }
   if (mode === 'mock') return <MockExam onExit={() => switchMode('plan')} />;
-  if (mode === 'embed') return <EmbedLab onPlan={() => switchMode('plan')} />;
+  if (mode === 'embed') {
+    let from = {};
+    try {
+      from = JSON.parse(localStorage.getItem('docusign-iam-embed-from') || '{}');
+    } catch {
+      /* ignore */
+    }
+    return <EmbedLab from={from} onPlan={() => switchMode('plan')} />;
+  }
   if (mode === 'mistakes') {
     let d = 'All';
     try {

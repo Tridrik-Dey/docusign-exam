@@ -1,16 +1,16 @@
 import React, { useRef, useState } from 'react';
 import { ArrowLeft, ExternalLink, FileText, Frame, Play } from 'lucide-react';
 
-// Embedding lab: paste a URL you got from an API call and see it as a redirect, in a plain iframe, or through
+// Embedding tool (opened from the Try it step of Lab 1 ex 5-7, Lab 3 ex 7, Lab 5 ex 5): paste a URL you got from an API call and see it as a redirect, in a plain iframe, or through
 // Docusign JS (focused view signing / embedded web form). Use a developer (demo) account only.
 const ORIGIN = typeof window !== 'undefined' ? window.location.origin : 'http://127.0.0.1:5173';
 const BUNDLE = { demo: 'https://js-d.docusign.com/bundle.js', prod: 'https://js.docusign.com/bundle.js' };
 const APPS = { demo: 'https://apps-d.docusign.com', prod: 'https://apps.docusign.com' };
 const KINDS = {
-  signing: 'Recipient view (EnvelopeViews:createRecipient)',
-  sending: 'Sender view (EnvelopeViews:createSender)',
-  webform: 'Web form instance (formUrl + instanceToken)',
-  workflow: 'Workflow instance URL (TriggerWorkflow response)',
+  signing: 'Signing (createRecipient)',
+  sending: 'Sending (createSender)',
+  webform: 'Web form (formUrl + token)',
+  workflow: 'Workflow instance URL',
 };
 const EVENTS = ['ready', 'sessionEnd', 'submitted', 'signingReady', 'sessionTimeout', 'error'];
 
@@ -25,7 +25,7 @@ function loadBundle(env) {
   });
 }
 
-export default function EmbedLab({ onPlan }) {
+export default function EmbedLab({ from = {}, onPlan }) {
   const [kind, setKind] = useState('signing');
   const [env, setEnv] = useState('demo');
   const [url, setUrl] = useState('');
@@ -83,8 +83,8 @@ export default function EmbedLab({ onPlan }) {
         <div className="brand">
           <div className="mark"><Frame size={18} /></div>
           <div>
-            <h1>Embedding lab</h1>
-            <p>Redirect vs iframe vs Docusign JS</p>
+            <h1>Try it: embedding</h1>
+            <p>{from.exercise ? `For: ${from.exercise}` : 'Redirect vs iframe vs Docusign JS'}</p>
           </div>
         </div>
         <label className="plan-date">What is the URL?
@@ -115,7 +115,7 @@ export default function EmbedLab({ onPlan }) {
           <button className="submit-button" onClick={docusignJs} disabled={!url || kind === 'sending' || kind === 'workflow'}><Play size={16} /> 3. Docusign JS</button>
         </div>
         <p className="plan-note">URLs from createRecipient / createSender expire after 5 minutes and work once: create a fresh one for each try. Nothing you paste here is stored.</p>
-        <button className="side-action" onClick={() => window.open('/pdf/labs/lab_8_embedding.pdf', '_blank', 'noopener')}><FileText size={17} /> Lab 8 guide (PDF)</button>
+        <button className="side-action" onClick={() => window.open(`/pdf/${from.lab || 'labs/lab_1_esignature_api.pdf'}`, '_blank', 'noopener')}><FileText size={17} /> Back to the lab guide (PDF)</button>
         <button className="side-action" onClick={onPlan}><ArrowLeft size={17} /> Back to plan</button>
       </aside>
 
@@ -125,11 +125,15 @@ export default function EmbedLab({ onPlan }) {
             <span className="section-label">{KINDS[kind]}</span>
             <h2>{mode === 'iframe' ? 'Plain iframe' : mode === 'js' ? 'Docusign JS' : mode === 'redirect' ? 'Opened as a redirect (new tab)' : 'Paste a URL and choose a method'}</h2>
           </div>
+          <div className="embed-top-actions">
+            <button className="nav-button" onClick={onPlan}><ArrowLeft size={18} /> Back to plan</button>
+            <button className="nav-button" onClick={() => window.open(`/pdf/${from.lab || 'labs/lab_1_esignature_api.pdf'}`, '_blank', 'noopener')}><FileText size={16} /> Lab guide (PDF)</button>
+          </div>
         </div>
         <section className="question-card embed-stage">
           {mode === 'iframe' && <iframe title="embedded" src={url} className="embed-frame" />}
           <div id="ds-embed-target" ref={mountRef} className={`embed-frame ${mode === 'js' ? '' : 'hidden'}`} />
-          {!mode && <p className="plan-note">Use a developer account. Create the URL with your own API call (see Lab 8), paste it on the left, then try the three methods one after another with fresh URLs.</p>}
+          {!mode && <p className="plan-note">Use a developer account. Create the URL with your own API call (see the Try it step in your lab guide), paste it on the left, then try the three methods one after another with fresh URLs.</p>}
           {mode === 'redirect' && <p className="plan-note">The signing session opened in a new tab. After signing, Docusign redirects to your returnUrl with ?event=... (for example signing_complete, cancel, decline, ttl_expired). Treat it as a hint and confirm the status with Connect or a GET.</p>}
         </section>
       </main>

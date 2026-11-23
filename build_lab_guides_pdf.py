@@ -22,7 +22,7 @@ OUT_DIR = ROOT / "output" / "pdf" / "labs"
 APP_JSON = ROOT / "quiz-app" / "src" / "labs.json"
 FILES = {"esignature": "lab_1_esignature_api.pdf", "connect_golive": "lab_2_connect_golive.pdf", "features_webforms": "lab_3_features_webforms.pdf",
          "auth": "lab_4_api_authentication.pdf", "workflow": "lab_5_workflow.pdf", "extension_apps": "lab_6_extension_apps.pdf",
-         "agreement_manager": "lab_7_agreement_manager.pdf", "embedding": "lab_8_embedding.pdf"}
+         "agreement_manager": "lab_7_agreement_manager.pdf"}  # embedding is part of labs 1, 3 and 5
 EXTRA = sorted((ROOT / "question_sources").glob("labs2_*.json"))  # labs 4-8 (strong sections + embedding)
 
 S = {
@@ -94,7 +94,7 @@ def main():
             build(key, labs[key], n)
         else:
             print("missing lab:", key)
-    summary = {k: {"title": v["title"], "exercises": [{"title": e["title"], "minutes": e.get("minutes", 15)} for e in v.get("exercises", [])]}
+    summary = {k: {"title": v["title"], "exercises": [{"title": e["title"], "minutes": e.get("minutes", 15), "tryIt": bool(e.get("tryIt"))} for e in v.get("exercises", [])]}
                for k, v in labs.items() if k in FILES}
     APP_JSON.write_text(json.dumps(summary, ensure_ascii=False, indent=1), encoding="utf-8")
     print("wrote", APP_JSON)

@@ -181,6 +181,12 @@ def main():
             for i, q in enumerate(ordered):
                 q["id"] = st["base"][pid] + i
                 q["answerText"] = "; ".join(next(o["text"] for o in q["options"] if o["id"] == c) for c in corr(q))
+            concepts_file = SRC / "concepts.json"  # one-line concepts for Papers A/B (C-F/T carry their own)
+            if concepts_file.exists():
+                cmap = json.loads(concepts_file.read_text(encoding="utf-8"))
+                for q in ordered:
+                    if not q.get("concept") and str(q["id"]) in cmap:
+                        q["concept"] = cmap[str(q["id"])]
             dec_file = SRC / f"decode_{pid}.json"
             if dec_file.exists():  # decode-drill steps for Papers A/B, keyed by question id
                 dec = {d["id"]: d["decode"] for d in json.loads(dec_file.read_text(encoding="utf-8"))}
