@@ -1,0 +1,865 @@
+[
+  {
+    "paper": "A",
+    "length": "long",
+    "domain": "eSignature Features and Web Forms",
+    "topic": "Web form instance token expiration",
+    "stem": "Harbor Lane Insurance embeds a claims intake web form in its customer portal. When a customer clicks Start Claim, the Node.js backend calls Instances:createInstance with a clientUserId and an expirationOffset of 72, caches the whole response, and the page renders the instance with Docusign JS. QA reports that customers who open the claim page, take a phone call, and click Start Claim again about ten minutes later get an error instead of the form, even though the instance itself still has days left before it expires. The team does not want duplicate instances per claim. What should the backend do before rendering the cached instance again?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Call Instances:createInstance again with a longer expirationOffset so the new instance outlives the session."
+      },
+      {
+        "id": "B",
+        "text": "Call EnvelopeViews:createRecipient with the same clientUserId to obtain a fresh URL for the web form."
+      },
+      {
+        "id": "C",
+        "text": "Call Instances:refreshToken with the cached instance id and render with the new instanceToken it returns."
+      },
+      {
+        "id": "D",
+        "text": "Raise expirationOffset on the existing instance so that its instance token stays valid for the full 72 hours."
+      }
+    ],
+    "correct": "C",
+    "answerText": "Call Instances:refreshToken with the cached instance id and render with the new instanceToken it returns.",
+    "explanation": "The instance token returned by createInstance expires five minutes after it is generated and that period cannot be changed. The clue is 'about ten minutes later' while 'the instance itself still has days left': Instances:refreshToken with the instance id issues a new five-minute token for the same instance.",
+    "whyNotOthers": "C is right because only the token expired, and refreshToken renews it for the existing instance. The trap is D: expirationOffset sets the lifetime of the instance, not of its token, which is fixed at five minutes. A creates the duplicate instance the team wants to avoid, and B is an eSignature signing view, not the way to render a web form instance.",
+    "optionExplanations": {
+      "A": "Creates a second instance for the same claim, which the team explicitly wants to avoid; the original instance was still valid.",
+      "B": "EnvelopeViews:createRecipient produces an eSignature signing URL for an envelope, not a web form instance URL.",
+      "C": "Correct. refreshToken takes the instance id and returns a new instanceToken (again valid five minutes) until the instance expires.",
+      "D": "expirationOffset controls when the instance expires; the instance token always expires after five minutes and cannot be extended."
+    },
+    "trapOption": "D",
+    "importance": "HIGH",
+    "basedOn": [
+      1,
+      43
+    ]
+  },
+  {
+    "paper": "A",
+    "length": "long",
+    "domain": "eSignature Features and Web Forms",
+    "topic": "Redirect after remote web form signing",
+    "stem": "Pinecrest Credit Union sends membership applications as remote web form instances (sendOption set to now) created from a template-based configuration. Members open the form from an email link, submit it, and then sign the generated envelope remotely from Docusign's email. Compliance wants every member who finishes signing to land on the credit union's 'What happens next' contact page. One developer proposes adding a returnUrl to the Instances:createInstance body; another suggests editing the signing resource file. Neither the configuration nor its web form template is associated with any brand yet. What will reliably redirect these members after signing?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Associate a brand whose Destination URLs Signing Completed field holds the contact page, for example via brandId in createInstance."
+      },
+      {
+        "id": "B",
+        "text": "Add a returnUrl to the Instances:createInstance request so Docusign redirects the member once the envelope is completed."
+      },
+      {
+        "id": "C",
+        "text": "Upload a customized signing branding resource file that contains the contact page link to the account's default brand."
+      },
+      {
+        "id": "D",
+        "text": "Turn on In-Session landing pages in the web form configuration so the contact page is shown right after submission."
+      }
+    ],
+    "correct": "A",
+    "answerText": "Associate a brand whose Destination URLs Signing Completed field holds the contact page, for example via brandId in createInstance.",
+    "explanation": "For remote web form instances a redirect after signing works only through branding: the web form template or instance must be associated with a brand whose Destination URLs include a Signing Completed URL. The clue is 'remote web form instances' plus 'not associated with any brand yet'.",
+    "whyNotOthers": "A is right because remote instances redirect only via a brand's Signing Completed destination URL, and a brandId in createInstance applies that brand. The trap is B: returnUrl in createInstance is used for template-based instances with embedded signing, not remote delivery. C changes text elements of the signing experience, not the post-signing destination, and D is not a web form redirect feature.",
+    "optionExplanations": {
+      "A": "Correct. A brand with a Signing Completed destination URL is the documented redirect mechanism for remote web form instances.",
+      "B": "returnUrl in createInstance redirects users of template-based instances that use embedded signing, not remotely signed ones.",
+      "C": "Branding resource files customize labels and text of the experience; the redirect target lives in Destination URLs.",
+      "D": "Not the mechanism; without a brand post-signing URL a remote instance ends on a static Docusign-branded page."
+    },
+    "trapOption": "B",
+    "importance": "MEDIUM",
+    "basedOn": [
+      38,
+      1
+    ]
+  },
+  {
+    "paper": "A",
+    "length": "short",
+    "domain": "eSignature Features and Web Forms",
+    "topic": "Standalone web form results",
+    "stem": "A developer calls Instances:getInstance for a submitted instance that was created from a standalone web form configuration. Which response is expected?",
+    "options": [
+      {
+        "id": "A",
+        "text": "status SUBMITTED and an envelopes array holding the envelope generated when the user submitted the form."
+      },
+      {
+        "id": "B",
+        "text": "status INPROGRESS, which stays until the generated envelope is completed by every recipient."
+      },
+      {
+        "id": "C",
+        "text": "status SUBMITTED with the recipient authentication record properties echoed back for the certificate."
+      },
+      {
+        "id": "D",
+        "text": "status SUBMITTED, the submitted formValues, and an envelopes array that is empty."
+      }
+    ],
+    "correct": "D",
+    "answerText": "status SUBMITTED, the submitted formValues, and an envelopes array that is empty.",
+    "explanation": "A standalone configuration collects data only and never generates an envelope, so a submitted instance shows status SUBMITTED, its formValues, and an empty envelopes array.",
+    "whyNotOthers": "D is right because standalone means 'no envelope, data collection only'. The trap is A, which describes a template-based configuration where an envelope is generated. B ties status to an envelope that does not exist, and C fails because the authentication record properties are not supported for standalone configurations.",
+    "optionExplanations": {
+      "A": "Describes a template-based configuration; standalone instances never generate an envelope.",
+      "B": "INPROGRESS means the user is still filling the form; a standalone instance has no envelope to wait for.",
+      "C": "authenticationMethod, authenticationInstant, assertionId and securityDomain are not supported for standalone configurations.",
+      "D": "Correct. Submitted standalone instances return SUBMITTED, the formValues, and an empty envelopes array."
+    },
+    "trapOption": "A",
+    "importance": "HIGH",
+    "basedOn": [
+      7,
+      46
+    ]
+  },
+  {
+    "paper": "A",
+    "length": "long",
+    "domain": "eSignature Features and Web Forms",
+    "topic": "Embedded web form instances: identify and prefill",
+    "stem": "Meridian Health's HR portal will create 100 embedded web form instances, one for each new hire, from a single template-based web form configuration. The portal must map every instance one-to-one to the employee record in the HR database so it can later pull the submitted values back, and fields such as legal name and department must already be filled in when the employee opens the form. During design review the HR lead also asks whether the form could simply be shared as a public link to save effort. Which two choices meet the requirements? (Select two)",
+    "options": [
+      {
+        "id": "A",
+        "text": "Create a separate web form configuration per employee so each configuration ID maps to one HR record."
+      },
+      {
+        "id": "B",
+        "text": "Set clientUserId on each Instances:createInstance call to the employee's ID from the HR database."
+      },
+      {
+        "id": "C",
+        "text": "Send a recipients array with a roleName in each createInstance call so each employee is identified by role."
+      },
+      {
+        "id": "D",
+        "text": "Pass formValues keyed by the field names that Configurations:getForm returns for the configuration."
+      },
+      {
+        "id": "E",
+        "text": "Share the public web form URL with query parameters appended for each employee's known values."
+      }
+    ],
+    "correct": "B,D",
+    "correctAnswers": [
+      "B",
+      "D"
+    ],
+    "answerText": "Set clientUserId on each Instances:createInstance call to the employee's ID from the HR database.; Pass formValues keyed by the field names that Configurations:getForm returns for the configuration.",
+    "explanation": "Embedded instances require a clientUserId (up to 100 characters) that comes from your own system and ties the instance to one user, and prefill uses formValues whose keys are the field names from Configurations:getForm.",
+    "whyNotOthers": "B and D are right because clientUserId is the per-user correlation key for embedded instances and formValues is the prefill mechanism. The trap is C: roleName in recipients differentiates users of remote instances, not embedded ones. A fails because one configuration serves all instances and configurations cannot be created through the API, and E drops the per-employee instance tracking the portal needs.",
+    "optionExplanations": {
+      "A": "The configuration ID is shared by all 100 instances, and web form configurations cannot be created through the API.",
+      "B": "Correct. clientUserId is required for embedded instances and should be an identifier from your own system.",
+      "C": "recipients with roleName identify users of remote (email) instances; embedded instances are identified by clientUserId.",
+      "D": "Correct. formValues prefills fields; its keys are the field (API reference) names returned by Configurations:getForm.",
+      "E": "A public link creates no tracked instance per employee, so values cannot be mapped back one-to-one."
+    },
+    "trapOption": "C",
+    "importance": "HIGH",
+    "basedOn": [
+      7,
+      46
+    ]
+  },
+  {
+    "paper": "A",
+    "length": "long",
+    "domain": "eSignature Features and Web Forms",
+    "topic": "Send an envelope with Connected Fields",
+    "stem": "Ridgeway Logistics has installed a connected fields extension app that verifies carrier tax IDs against its vendor master. Today senders drag the verified fields onto documents by hand in the Add Fields view. The team now wants its dispatch system to create and send these envelopes through the eSignature REST API, with each carrier's data already placed in the verified tabs. In the kickoff meeting a developer suggests moving the whole process into a Maestro workflow with a Data IO step instead. What is the correct API sequence?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Call Envelopes:create with plain text tabs and let the extension app verify them when the sender opens Add Fields."
+      },
+      {
+        "id": "B",
+        "text": "Call TabInfo:GetConnectedFieldsTabGroups, put the data in each tab's extensionData, then call Envelopes:create."
+      },
+      {
+        "id": "C",
+        "text": "Build a Maestro workflow with a connected fields step, then start it with a Workflow Builder API trigger call."
+      },
+      {
+        "id": "D",
+        "text": "Call TabInfo:GetConnectedFieldsTabGroups, then send the carrier values in the envelope customFields on Envelopes:create."
+      }
+    ],
+    "correct": "B",
+    "answerText": "Call TabInfo:GetConnectedFieldsTabGroups, put the data in each tab's extensionData, then call Envelopes:create.",
+    "explanation": "The documented flow to send connected fields by API is: TabInfo:GetConnectedFieldsTabGroups, then place the data in each tab's extensionData, then Envelopes:create. The clue is 'through the eSignature REST API, with each carrier's data already placed in the verified tabs'.",
+    "whyNotOthers": "B is right because connected field tabs carry their extension metadata in extensionData. The trap is D: it starts correctly but puts the values in envelope custom fields, which are not connected field tabs. A sends ordinary tabs with no link to the extension, and C fails because connected fields are not supported in Maestro.",
+    "optionExplanations": {
+      "A": "Plain text tabs have no extension data, and Add Fields is the manual UI path the team wants to replace.",
+      "B": "Correct. Get the connected field tab groups, fill each tab's extensionData, then create the envelope.",
+      "C": "Connected fields are not supported in Maestro workflows; Data IO in Maestro is a different extension.",
+      "D": "Envelope customFields hold envelope metadata; connected field data belongs in each tab's extensionData."
+    },
+    "trapOption": "D",
+    "importance": "MEDIUM",
+    "basedOn": [
+      29,
+      35,
+      16
+    ]
+  },
+  {
+    "paper": "A",
+    "length": "short",
+    "domain": "eSignature Features and Web Forms",
+    "topic": "Identity verification in the eSignature API",
+    "stem": "A developer must require government photo ID verification for one signer in an envelope created with eSignature REST API v2.1. What should be added to that signer?",
+    "options": [
+      {
+        "id": "A",
+        "text": "An authenticationMethod value describing ID verification, passed when calling EnvelopeViews:createRecipient."
+      },
+      {
+        "id": "B",
+        "text": "An idCheckConfigurationName value set to the account's ID Check configuration name."
+      },
+      {
+        "id": "C",
+        "text": "An identityVerification object whose workflowId comes from IdentityVerifications:list."
+      },
+      {
+        "id": "D",
+        "text": "The step ID of a Verify Someone's Identity step copied from a Workflow Builder workflow."
+      }
+    ],
+    "correct": "C",
+    "answerText": "An identityVerification object whose workflowId comes from IdentityVerifications:list.",
+    "explanation": "ID verification is requested on the recipient with identityVerification.workflowId, and the workflow IDs available to the account come from IdentityVerifications:list.",
+    "whyNotOthers": "C is right because identityVerification.workflowId is how v2.1 enforces IDV for a recipient. The trap is A: authenticationMethod on createRecipient only records how your app authenticated the user; it enforces nothing. B configures KBA (ID Check), not photo ID, and D belongs to Workflow Builder, not to an eSignature envelope.",
+    "optionExplanations": {
+      "A": "authenticationMethod only records your app's own authentication on the certificate; it does not enforce IDV.",
+      "B": "idCheckConfigurationName (for example 'ID Check $') is knowledge-based authentication, US public-record questions.",
+      "C": "Correct. Add identityVerification with a workflowId retrieved from IdentityVerifications:list.",
+      "D": "Workflow Builder steps are not referenced from an eSignature recipient definition."
+    },
+    "trapOption": "A",
+    "importance": "HIGH",
+    "basedOn": [
+      18,
+      23,
+      17
+    ]
+  },
+  {
+    "paper": "A",
+    "length": "long",
+    "domain": "Agreement Manager API",
+    "topic": "Filtered agreement list for renewals",
+    "stem": "Fenwick Supply's renewal desk needs a nightly job that finds every agreement with the party Orion Freight whose expiration date falls within the next 90 days, together with its provisions, and pushes the results into the CRM. The Agreement Manager repository holds about 40,000 agreements, the account shares its hourly API limit with three other integrations, and the architect asks for the fewest calls possible. The CRM already stores some agreement IDs from an earlier pilot, but not all of them. Which approach fits?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Call GetAgreement for each agreement ID stored in the CRM and keep only those expiring within 90 days."
+      },
+      {
+        "id": "B",
+        "text": "Call GetAgreementsList filtered on parties.name_in_agreement and a provisions.expiration_date range, paging with ctoken."
+      },
+      {
+        "id": "C",
+        "text": "Call CreateAgreementSummary for Orion Freight's agreements and parse the expiration dates out of each summary."
+      },
+      {
+        "id": "D",
+        "text": "Call Envelopes:listStatusChanges for Orion Freight envelopes and read expiration dates from envelope custom fields."
+      }
+    ],
+    "correct": "B",
+    "answerText": "Call GetAgreementsList filtered on parties.name_in_agreement and a provisions.expiration_date range, paging with ctoken.",
+    "explanation": "GetAgreementsList accepts filters such as parties.name_in_agreement and provisions.expiration_date (with operators like gte and lte) and returns each agreement's provisions, so one paged query answers the need. The clue is 'fewest calls' over 40,000 agreements.",
+    "whyNotOthers": "B is right because the list operation filters server-side and already includes provisions. The trap is A: GetAgreement is one call per agreement and the CRM does not hold all IDs. C creates AI summaries (a POST per agreement) rather than querying dates, and D uses the eSignature API, which does not expose AI-extracted expiration dates.",
+    "optionExplanations": {
+      "A": "One call per agreement wastes the shared limit, and the CRM is missing some agreement IDs.",
+      "B": "Correct. Server-side filters on party and expiration date, results include provisions, ctoken pages through them.",
+      "C": "CreateAgreementSummary generates a summary of one agreement; it is not a search and costs a call per agreement.",
+      "D": "eSignature envelope data does not contain Agreement Manager's AI-extracted provisions such as expiration_date."
+    },
+    "trapOption": "A",
+    "importance": "HIGH",
+    "basedOn": [
+      39,
+      14,
+      16
+    ]
+  },
+  {
+    "paper": "A",
+    "length": "short",
+    "domain": "Agreement Manager API",
+    "topic": "Agreement Manager OAuth scope",
+    "stem": "An existing JWT integration requests the signature and impersonation scopes and must now call GetAgreement. What must change?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Nothing, because the signature scope covers every Docusign API that accepts the same access token."
+      },
+      {
+        "id": "B",
+        "text": "Add the aow_manage scope, which governs access to AI-extracted agreement data."
+      },
+      {
+        "id": "C",
+        "text": "Move to Authorization Code Grant, because the Agreement Manager API does not accept JWT tokens."
+      },
+      {
+        "id": "D",
+        "text": "Add the adm_store_unified_repo_read scope to the token request and obtain consent for it."
+      }
+    ],
+    "correct": "D",
+    "answerText": "Add the adm_store_unified_repo_read scope to the token request and obtain consent for it.",
+    "explanation": "Agreement Manager (Navigator) uses the same OAuth access tokens as eSignature, but the token must include a Navigator scope; getAgreement requires adm_store_unified_repo_read.",
+    "whyNotOthers": "D is right because the token type is unchanged and only the Navigator read scope (with consent) is missing. The trap is B: aow_manage is the Maestro workflow scope. A fails because signature does not cover Navigator, and C fails because JWT, Authorization Code and Implicit tokens all work.",
+    "optionExplanations": {
+      "A": "The signature scope does not authorize Navigator endpoints; a Navigator scope is required.",
+      "B": "aow_manage is the Workflow Builder (Maestro) scope, not the agreement data scope.",
+      "C": "JWT Grant is supported; Navigator accepts the same token types as the eSignature REST API.",
+      "D": "Correct. Request adm_store_unified_repo_read (and obtain consent for the new scope) in the same JWT flow."
+    },
+    "trapOption": "B",
+    "importance": "MEDIUM",
+    "basedOn": [
+      14,
+      2
+    ]
+  },
+  {
+    "paper": "A",
+    "length": "long",
+    "domain": "Agreement Manager API",
+    "topic": "AI summary of an agreement",
+    "stem": "Lakeshore Legal is adding a Quick Read panel to its matter-management system. When counsel opens a vendor MSA, the panel must show a short plain-language overview of the document written by Docusign AI. The agreement's structured provisions, such as governing law and renewal terms, are already synced every night through another job. A teammate insists on calling a GET endpoint named getAgreementSummary so that the panel stays strictly read-only. Which Agreement Manager API call produces the overview?",
+    "options": [
+      {
+        "id": "A",
+        "text": "CreateAgreementSummary, a POST to /v1/accounts/{accountId}/agreements/{agreementId}/ai/actions/summarize."
+      },
+      {
+        "id": "B",
+        "text": "getAgreementSummary, a GET to /v1/accounts/{accountId}/agreements/{agreementId}/summary."
+      },
+      {
+        "id": "C",
+        "text": "GetAgreement, whose provisions object includes the AI-written overview text for the agreement."
+      },
+      {
+        "id": "D",
+        "text": "GetAgreementsList with an id filter, which returns a summary field for each matching agreement."
+      }
+    ],
+    "correct": "A",
+    "answerText": "CreateAgreementSummary, a POST to /v1/accounts/{accountId}/agreements/{agreementId}/ai/actions/summarize.",
+    "explanation": "The Agreement Manager API has exactly four agreement operations: GetAgreementsList, GetAgreement, DeleteAgreement and CreateAgreementSummary. An AI-generated summary comes only from CreateAgreementSummary, a POST to .../agreements/{agreementId}/ai/actions/summarize.",
+    "whyNotOthers": "A is right because summarizing is an AI action exposed as a POST. The trap is B: there is no getAgreementSummary operation. C and D return structured fields (parties, provisions, metadata), not an AI-written narrative.",
+    "optionExplanations": {
+      "A": "Correct. CreateAgreementSummary is the only operation that produces an AI-generated summary of an agreement.",
+      "B": "No such operation exists; the API has only list, get, delete and create-summary operations for agreements.",
+      "C": "GetAgreement returns structured extracted data such as provisions and parties, not a narrative summary.",
+      "D": "GetAgreementsList returns agreement records with metadata and provisions, not AI-written summaries."
+    },
+    "trapOption": "B",
+    "importance": "HIGH",
+    "basedOn": [
+      39,
+      14
+    ]
+  },
+  {
+    "paper": "A",
+    "length": "long",
+    "domain": "Agreement Manager API",
+    "topic": "RAG over agreement data",
+    "stem": "Quarry Point Capital is building an internal copilot that answers questions such as 'Which of our NDAs are governed by California law?' through retrieval-augmented generation over Agreement Manager data. Every answer must cite the agreement it came from. Contract admins sometimes correct AI-extracted values in the Agreement Manager UI, and the security team has asked that the copilot never modify the agreement repository itself. Which two design choices are appropriate? (Select two)",
+    "options": [
+      {
+        "id": "A",
+        "text": "Use GetAgreementsList and GetAgreement to pull agreements with their parties and provisions as the data source."
+      },
+      {
+        "id": "B",
+        "text": "Call CreateAgreementSummary for every agreement and index the summaries as the structured provisions."
+      },
+      {
+        "id": "C",
+        "text": "Index each record in the retrieval store keyed by agreementId so answers can cite the source agreement."
+      },
+      {
+        "id": "D",
+        "text": "Read each envelope's form data with the eSignature REST API, which exposes the same AI-extracted provisions."
+      },
+      {
+        "id": "E",
+        "text": "Call DeleteAgreement after indexing so the copilot never retrieves stale or duplicate agreement records."
+      }
+    ],
+    "correct": "A,C",
+    "correctAnswers": [
+      "A",
+      "C"
+    ],
+    "answerText": "Use GetAgreementsList and GetAgreement to pull agreements with their parties and provisions as the data source.; Index each record in the retrieval store keyed by agreementId so answers can cite the source agreement.",
+    "explanation": "The list and get operations return AI-extracted (and user-corrected) parties and provisions and are documented as a data source for RAG and copilots; keying the index by agreementId lets each answer cite its source.",
+    "whyNotOthers": "A and C are right because they supply structured data and traceable citations. The trap is B: summaries are narrative text, not structured provisions, so filtering by governing law would be unreliable. D fails because the eSignature API does not surface AI-extracted provisions, and E deletes agreements from the repository, which the security team forbade.",
+    "optionExplanations": {
+      "A": "Correct. GetAgreementsList and GetAgreement return structured AI-extracted data and are intended for RAG and copilots.",
+      "B": "A summary is free text; the structured provisions needed for precise filtering come from list and get.",
+      "C": "Correct. Keying by agreementId keeps every retrieved chunk traceable to its source agreement.",
+      "D": "The eSignature API returns envelope data, not Agreement Manager's AI-extracted provisions.",
+      "E": "DeleteAgreement removes the agreement from the repository, which modifies it and destroys the source."
+    },
+    "trapOption": "B",
+    "importance": "MEDIUM",
+    "basedOn": [
+      14,
+      39
+    ]
+  },
+  {
+    "paper": "B",
+    "length": "long",
+    "domain": "eSignature Features and Web Forms",
+    "topic": "Rendering an embedded web form instance",
+    "stem": "Solano Realty creates embedded web form instances from its Next.js backend for home buyers. A junior developer saves only the formUrl from each Instances:createInstance response in the database and later loads that URL in an iframe for the buyer. Buyers do not get their own prefilled instance, although formValues and clientUserId were sent correctly and every instance shows status INITIATED. During review the team lead points out that formUrl is identical for all instances created from the same configuration. What is the recommended way to render each buyer's instance?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Call EnvelopeViews:createRecipient with the buyer's clientUserId and frame the URL it returns."
+      },
+      {
+        "id": "B",
+        "text": "Append the buyer's clientUserId to formUrl as a query parameter so the form loads that buyer's instance."
+      },
+      {
+        "id": "C",
+        "text": "Call Configurations:getForm for the configuration and frame the instance URL that it returns."
+      },
+      {
+        "id": "D",
+        "text": "Pass formUrl and the instanceToken to Docusign JS, which builds the instance URL and mounts the form."
+      }
+    ],
+    "correct": "D",
+    "answerText": "Pass formUrl and the instanceToken to Docusign JS, which builds the instance URL and mounts the form.",
+    "explanation": "createInstance returns formUrl (the same for every instance of a configuration) and an instanceToken unique to the user's session; the instance URL is formUrl#instanceToken=..., and Docusign JS builds it automatically. The clue is 'formUrl is identical for all instances'.",
+    "whyNotOthers": "D is right because the token is what makes the URL unique and secure, and Docusign JS is the recommended renderer. The trap is A: createRecipient creates an eSignature signing view, not a web form instance view. B uses the wrong identifier (clientUserId is not part of the URL), and C returns the configuration's field definitions, not an instance URL.",
+    "optionExplanations": {
+      "A": "EnvelopeViews:createRecipient returns a signing URL for an envelope recipient, not a web form instance.",
+      "B": "The instance is identified in the URL by its instanceToken, not by clientUserId.",
+      "C": "Configurations:getForm describes the configuration's fields (used for prefill names); it returns no instance URL.",
+      "D": "Correct. Docusign JS combines formUrl and instanceToken into the secure instance URL and embeds the form."
+    },
+    "trapOption": "A",
+    "importance": "HIGH",
+    "basedOn": [
+      1,
+      20,
+      17
+    ]
+  },
+  {
+    "paper": "B",
+    "length": "long",
+    "domain": "eSignature Features and Web Forms",
+    "topic": "Redirect after embedded web form signing",
+    "stem": "Copperline Bank embeds a template-based web form for loan pre-approval. The configuration's 'Initiate signing session from email' setting is off, so after submission the generated envelope opens for signing inside the bank's page. Product wants applicants sent to /preapproval/next when they finish signing; today they see the configuration's thank you page. The account has no custom brands, and the admin team will not create or edit brands this quarter. The app never calls EnvelopeViews because Docusign creates and displays the envelope automatically. What should the developer change?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Add a returnUrl to an EnvelopeViews:createRecipient call made right after the applicant submits the form."
+      },
+      {
+        "id": "B",
+        "text": "Supply a returnUrl in the Instances:createInstance request that creates each applicant's instance."
+      },
+      {
+        "id": "C",
+        "text": "Set a Signing Completed destination URL under the account brand's Destination URLs settings."
+      },
+      {
+        "id": "D",
+        "text": "Switch the configuration to standalone so its thank you page can point to /preapproval/next."
+      }
+    ],
+    "correct": "B",
+    "answerText": "Supply a returnUrl in the Instances:createInstance request that creates each applicant's instance.",
+    "explanation": "For template-based instances with embedded signing (the 'Initiate signing session from email' setting off), the redirect after envelope completion is the returnUrl supplied in Instances:createInstance; without it the thank you page is shown.",
+    "whyNotOthers": "B is right because the envelope is created and displayed automatically, so the redirect must be set when the instance is created. The trap is C: a brand Signing Completed URL is the remote-delivery mechanism and the admins will not touch brands. A adds a call the flow does not use, and D removes the envelope entirely and standalone configurations offer no redirect.",
+    "optionExplanations": {
+      "A": "The app does not create the signing view; Docusign displays the generated envelope automatically after submission.",
+      "B": "Correct. returnUrl in createInstance controls where embedded-signing users go after completing the envelope.",
+      "C": "Brand destination URLs are how remote instances redirect, and the stem rules out creating or editing brands.",
+      "D": "Standalone configurations generate no envelope and offer no redirect; Docusign shows the configured thank you page."
+    },
+    "trapOption": "C",
+    "importance": "HIGH",
+    "basedOn": [
+      38,
+      20,
+      1
+    ]
+  },
+  {
+    "paper": "B",
+    "length": "short",
+    "domain": "eSignature Features and Web Forms",
+    "topic": "When the envelope is created (remote instance)",
+    "stem": "For a remote web form instance created from a template-based configuration, when is the envelope created?",
+    "options": [
+      {
+        "id": "A",
+        "text": "When the Instances:createInstance request is processed."
+      },
+      {
+        "id": "B",
+        "text": "When the first recipient submits the web form instance."
+      },
+      {
+        "id": "C",
+        "text": "When the app calls Envelopes:create with the submitted formValues."
+      },
+      {
+        "id": "D",
+        "text": "Never, because remote instances only collect form data."
+      }
+    ],
+    "correct": "A",
+    "answerText": "When the Instances:createInstance request is processed.",
+    "explanation": "For template-based configurations the envelope timing depends on delivery: remote instance, the envelope is created when createInstance is processed; embedded instance, when the first user submits.",
+    "whyNotOthers": "A is right for remote delivery. The trap is B, which is the timing for embedded instances. C is wrong because Docusign generates the envelope itself, and D describes standalone configurations, not template-based ones.",
+    "optionExplanations": {
+      "A": "Correct. A remote instance's envelope is created when the createInstance request is processed.",
+      "B": "This is the timing for embedded instances, where the envelope is created when the first user submits.",
+      "C": "The app makes no Envelopes:create call; Docusign generates the envelope from the web form template.",
+      "D": "Only standalone configurations produce no envelope; this configuration is template-based."
+    },
+    "trapOption": "B",
+    "importance": "HIGH",
+    "basedOn": [
+      7,
+      46
+    ]
+  },
+  {
+    "paper": "B",
+    "length": "long",
+    "domain": "eSignature Features and Web Forms",
+    "topic": "Remote web form instance request",
+    "stem": "Bayview Homes wants the two buyers of a duplex to receive a purchase web form by email, fill it in, and then sign the generated envelope. The developer calls Instances:createInstance on a template-based configuration with sendOption set to now and a recipients array listing signer1 and signer2 with names and emails. The security team asks whether the portal's own login can be recorded on the certificate of completion, and the product owner asks how the integration will tell instances apart later. Which two statements about this request are correct? (Select two)",
+    "options": [
+      {
+        "id": "A",
+        "text": "clientUserId is required on this request and is limited to 100 characters."
+      },
+      {
+        "id": "B",
+        "text": "authenticationMethod and authenticationInstant can be added so the portal login appears on the certificate."
+      },
+      {
+        "id": "C",
+        "text": "The two buyers are differentiated by the roleName values in the recipients array."
+      },
+      {
+        "id": "D",
+        "text": "The envelope is created only after the first buyer submits the web form instance."
+      },
+      {
+        "id": "E",
+        "text": "tags can be added so instances can be identified in getInstance and listInstances responses."
+      }
+    ],
+    "correct": "C,E",
+    "correctAnswers": [
+      "C",
+      "E"
+    ],
+    "answerText": "The two buyers are differentiated by the roleName values in the recipients array.; tags can be added so instances can be identified in getInstance and listInstances responses.",
+    "explanation": "Remote instances identify users by roleName in recipients (clientUserId is not required), and the tags array adds metadata that is returned by getInstance and listInstances.",
+    "whyNotOthers": "C and E are right. The trap is B: the recipient authentication record properties work only for embedded signing of template-based forms and are not supported for remote instances. A is true only for embedded instances, and D is the embedded timing; a remote instance's envelope is created when createInstance is processed.",
+    "optionExplanations": {
+      "A": "clientUserId is required for embedded instances; remote instances identify users by roleName.",
+      "B": "Recording authentication properties is not supported for remote web form instances.",
+      "C": "Correct. roleName in the recipients array distinguishes the users of a remote instance.",
+      "D": "For remote delivery the envelope is created when createInstance is processed, not on first submission.",
+      "E": "Correct. tags values are stored with the instance and returned by getInstance and listInstances."
+    },
+    "trapOption": "B",
+    "importance": "MEDIUM",
+    "basedOn": [
+      7,
+      46
+    ]
+  },
+  {
+    "paper": "B",
+    "length": "long",
+    "domain": "eSignature Features and Web Forms",
+    "topic": "Branding a standalone web form",
+    "stem": "Northgate University collects alumni address updates with a standalone web form configuration embedded through the Web Forms API; no envelope is involved. Marketing wants the alumni association's logo and colors on these forms. The developer looked up the brand with AccountBrands:list and added its brandId to the Instances:createInstance body, but the forms still show the default look. Another team, whose configuration is template-based, passes brandId the same way and sees its brand applied. How should the developer apply the brand to the alumni forms?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Add the brandId to the envelope with Envelopes:update after each form instance is submitted."
+      },
+      {
+        "id": "B",
+        "text": "Keep the brandId but move it inside the formValues object of the createInstance request."
+      },
+      {
+        "id": "C",
+        "text": "Select the brand under Branding on the Preview tab when editing the web form configuration."
+      },
+      {
+        "id": "D",
+        "text": "Upload the logo in a signing branding resource file so it applies to every standalone instance."
+      }
+    ],
+    "correct": "C",
+    "answerText": "Select the brand under Branding on the Preview tab when editing the web form configuration.",
+    "explanation": "Applying a brand through an API request is not supported for instances created from standalone configurations; a brand selected under Branding on the configuration's Preview tab applies to web form instances and works for both standalone and template-based configurations.",
+    "whyNotOthers": "C is right because the configuration-level Preview tab is the branding path that supports standalone forms. The trap is A: there is no envelope in a standalone flow. B misuses formValues, which only prefills form fields, and D changes resource text, not the brand applied to the form.",
+    "optionExplanations": {
+      "A": "Standalone configurations generate no envelope, so there is nothing to update.",
+      "B": "formValues prefills fields by name; it is not a place for configuration settings such as a brand.",
+      "C": "Correct. Branding on the configuration's Preview tab applies the brand to instances, including standalone ones.",
+      "D": "Resource files customize text in the signing, sending and email experiences; they do not brand a web form."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "basedOn": [
+      38,
+      7
+    ]
+  },
+  {
+    "paper": "B",
+    "length": "short",
+    "domain": "eSignature Features and Web Forms",
+    "topic": "Where Connected Fields verify data",
+    "stem": "Where in Docusign can a connected fields extension check a field value against an external system of record?",
+    "options": [
+      {
+        "id": "A",
+        "text": "In Maestro workflow steps, alongside Data IO read and write actions."
+      },
+      {
+        "id": "B",
+        "text": "In the eSignature Add Fields view and during signing."
+      },
+      {
+        "id": "C",
+        "text": "Only after completion, through the Connect extension-executed event."
+      },
+      {
+        "id": "D",
+        "text": "Only in the eSignature API, through Envelopes:create without a sender view."
+      }
+    ],
+    "correct": "B",
+    "answerText": "In the eSignature Add Fields view and during signing.",
+    "explanation": "The connected fields extension point is the eSignature Add Fields view and signing; verification runs when the signer completes the required fields.",
+    "whyNotOthers": "B is right. The trap is C: the extension-executed Connect event reports verification results, it is not where verification happens. A fails because connected fields are not supported in Maestro, and D fails because connected fields also work in the sender's Add Fields view, not only through the API.",
+    "optionExplanations": {
+      "A": "Connected fields are not supported in Maestro; Data IO is the extension used in workflows.",
+      "B": "Correct. Connected fields use the eSignature Add Fields view and signing as their extension point.",
+      "C": "The extension-executed event delivers results (JSON SIM only); it is not the verification point.",
+      "D": "API sending is possible, but senders also place connected fields in the Add Fields view, so 'only' is wrong."
+    },
+    "trapOption": "C",
+    "importance": "MEDIUM",
+    "basedOn": [
+      29,
+      35,
+      45
+    ]
+  },
+  {
+    "paper": "B",
+    "length": "long",
+    "domain": "Agreement Manager API",
+    "topic": "User-corrected extraction values",
+    "stem": "Tidewater Energy syncs Agreement Manager data into its ERP. Last week the AI extracted a renewal_notice_period of P60D for a supplier agreement. A contract manager reviewed the value against the document in the Agreement Manager UI and changed it to P90D. The integration calls GetAgreement every night with the same JWT token flow and has not changed its code or scopes. The ERP owner wants to know which value will flow downstream tonight. What will tonight's GetAgreement response contain for renewal_notice_period?",
+    "options": [
+      {
+        "id": "A",
+        "text": "P60D, because the API always returns the original AI-extracted value and UI edits stay in the UI."
+      },
+      {
+        "id": "B",
+        "text": "Both values, with the original AI value flagged as superseded by the reviewer's edit."
+      },
+      {
+        "id": "C",
+        "text": "P90D, because user-updated values replace the AI-extracted values in later GET responses."
+      },
+      {
+        "id": "D",
+        "text": "No value until CreateAgreementSummary is called to re-run the extraction for the agreement."
+      }
+    ],
+    "correct": "C",
+    "answerText": "P90D, because user-updated values replace the AI-extracted values in later GET responses.",
+    "explanation": "Schema values come from AI extraction and from user input; after a user reviews and modifies a value in the UI, subsequent GET requests return the user-updated value instead of the original AI-extracted one.",
+    "whyNotOthers": "C is right because the reviewed value overwrites the AI value in the data the API returns. The trap is A, which assumes UI edits are cosmetic. B invents a dual-value response, and D misreads CreateAgreementSummary, which writes an AI summary and does not re-run or gate extraction.",
+    "optionExplanations": {
+      "A": "UI corrections update the stored agreement data, so the API no longer returns the original AI value.",
+      "B": "The response holds one value per field; there is no superseded-value flag.",
+      "C": "Correct. Later GET responses return the user-updated value, so the review loop feeds the ERP automatically.",
+      "D": "CreateAgreementSummary produces an AI summary; it does not control whether provision values are returned."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "basedOn": [
+      39,
+      14
+    ]
+  },
+  {
+    "paper": "B",
+    "length": "long",
+    "domain": "Agreement Manager API",
+    "topic": "Agreement-driven renewal orchestration",
+    "stem": "Granite Telecom wants a daily job that finds customer agreements expiring in the next 60 days and, for each one, starts an existing multi-step renewal process that prefills a new order form, routes it for internal approval, and collects signatures. The renewal workflow is already published in Workflow Builder with the API call start method. The integration already holds a token with the required scopes for every API involved. Which two building blocks should the job use? (Select two)",
+    "options": [
+      {
+        "id": "A",
+        "text": "CreateAgreementSummary to identify which agreements fall within 60 days of their expiration."
+      },
+      {
+        "id": "B",
+        "text": "GetAgreementsList with a provisions.expiration_date range filter to find the expiring agreements."
+      },
+      {
+        "id": "C",
+        "text": "The Web Forms API createInstance call to start the multi-step renewal orchestration for each agreement."
+      },
+      {
+        "id": "D",
+        "text": "The Workflow Builder API to trigger the published workflow for each agreement, passing its data as inputs."
+      },
+      {
+        "id": "E",
+        "text": "A Connected Fields verification on the expiration date tab to launch the renewal process."
+      }
+    ],
+    "correct": "B,D",
+    "correctAnswers": [
+      "B",
+      "D"
+    ],
+    "answerText": "GetAgreementsList with a provisions.expiration_date range filter to find the expiring agreements.; The Workflow Builder API to trigger the published workflow for each agreement, passing its data as inputs.",
+    "explanation": "The Agreement Manager API finds agreements by AI-extracted expiration date, and the Workflow Builder (Maestro) API triggers a published workflow that does the prefill, approval and signature steps.",
+    "whyNotOthers": "B and D are right: one finds the agreements, the other starts the orchestration. The trap is C: the Web Forms API creates a single form instance, not a multi-step workflow. A generates summaries instead of filtering by date, and E validates a field during preparation or signing and cannot start a workflow.",
+    "optionExplanations": {
+      "A": "CreateAgreementSummary writes a narrative summary of one agreement; it is not a date query.",
+      "B": "Correct. GetAgreementsList supports a provisions.expiration_date range filter (gte, lte).",
+      "C": "A web form instance is one data-collection step, not the orchestration engine for approval and signing.",
+      "D": "Correct. The Workflow Builder API triggers the published workflow and passes trigger inputs.",
+      "E": "Connected fields verify field values in Add Fields and signing; they do not trigger workflows."
+    },
+    "trapOption": "C",
+    "importance": "HIGH",
+    "basedOn": [
+      16,
+      15,
+      39
+    ]
+  },
+  {
+    "paper": "B",
+    "length": "short",
+    "domain": "Agreement Manager API",
+    "topic": "Removing an agreement",
+    "stem": "An agreement was imported into Agreement Manager by mistake and must be removed through the API. Which request is correct?",
+    "options": [
+      {
+        "id": "A",
+        "text": "DELETE /v1/accounts/{accountId}/agreements/{agreementId} (DeleteAgreement)."
+      },
+      {
+        "id": "B",
+        "text": "PUT /restapi/v2.1/accounts/{accountId}/envelopes/{envelopeId} with status set to voided."
+      },
+      {
+        "id": "C",
+        "text": "PUT /v1/accounts/{accountId}/agreements/{agreementId} with status set to deleted."
+      },
+      {
+        "id": "D",
+        "text": "POST /v1/accounts/{accountId}/agreements/{agreementId}/actions/purge."
+      }
+    ],
+    "correct": "A",
+    "answerText": "DELETE /v1/accounts/{accountId}/agreements/{agreementId} (DeleteAgreement).",
+    "explanation": "DeleteAgreement is a DELETE on /v1/accounts/{accountId}/agreements/{agreementId}; it is one of the four agreement operations (list, get, delete, create summary).",
+    "whyNotOthers": "A is right. The trap is B: voiding cancels an in-flight eSignature envelope and does not remove an imported agreement from the repository. C and D are not operations of the Agreement Manager API, which has no update or purge action.",
+    "optionExplanations": {
+      "A": "Correct. DeleteAgreement removes a specific agreement.",
+      "B": "Voiding is an eSignature envelope action; an imported agreement is not an in-flight envelope.",
+      "C": "There is no update operation on agreements; deletion is a DELETE request.",
+      "D": "No purge action exists; the only agreement action endpoint is ai/actions/summarize."
+    },
+    "trapOption": "B",
+    "importance": "MEDIUM",
+    "basedOn": [
+      8,
+      39
+    ]
+  },
+  {
+    "paper": "B",
+    "length": "long",
+    "domain": "Agreement Manager API",
+    "topic": "Paging GetAgreementsList",
+    "stem": "Ashford Retail's analytics service calls GetAgreementsList with limit=100 to copy all agreement records into a data warehouse. The account holds about 2,300 agreements, but the warehouse only ever receives the first 100. One colleague suggests switching to the start_position and count parameters used by eSignature list calls; another wants to fetch every agreement individually with GetAgreement. The account's hourly API limit is shared with several other integrations. Which change retrieves the full set efficiently?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Replace limit with start_position and count, raising start_position by 100 on each call."
+      },
+      {
+        "id": "B",
+        "text": "Call GetAgreement for every agreement ID listed in the first page, then repeat the list call."
+      },
+      {
+        "id": "C",
+        "text": "Remove limit entirely, because GetAgreementsList then returns every agreement in one response."
+      },
+      {
+        "id": "D",
+        "text": "Keep limit=100 and pass the continuation token (ctoken) from each response into the next request."
+      }
+    ],
+    "correct": "D",
+    "answerText": "Keep limit=100 and pass the continuation token (ctoken) from each response into the next request.",
+    "explanation": "GetAgreementsList pages its results: limit sets the page size and ctoken, an opaque continuation token, retrieves the next page.",
+    "whyNotOthers": "D is right because ctoken paging walks the whole result set in about 23 calls. The trap is A: start_position and count belong to eSignature list endpoints, not to this API. B multiplies calls and still never reaches records past the first page, and C fails because the list is paginated whether or not limit is sent.",
+    "optionExplanations": {
+      "A": "start_position and count are eSignature paging parameters; GetAgreementsList uses limit and ctoken.",
+      "B": "Per-agreement GET calls waste the shared limit and never discover agreements beyond the first page.",
+      "C": "The list endpoint is paginated; removing limit does not return all 2,300 agreements at once.",
+      "D": "Correct. limit sets page size and ctoken continues to the next page."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "basedOn": [
+      39,
+      14
+    ]
+  }
+]

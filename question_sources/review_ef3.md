@@ -1,0 +1,8 @@
+ef_esig.json#23 T Finding a template ID: trap A (oauth/userinfo) was eliminable without knowledge -> A now "Call Templates:get with the template's name" (near-miss: real template call, but needs the ID in the path); updated whyNotOthers and optionExplanations.A.
+ef_esig.json#29 T Request URL: what changes at go-live: select-two had only the two keys looking right (A referred to an envelope ID not in the URL) -> A now "The host, which becomes the production authentication server https://account.docusign.com" (fails on auth server vs base URI); updated whyNotOthers and optionExplanations.A.
+ef_features.json#9 F Updated connected fields data model: wrong option D used the absolute "never" (give-away) -> reworded to "lists only properties that existed at installation"; whyNotOthers wording adjusted.
+ef_features.json#10 F Tracking a co-signer after embedded submission: wrong option D used "the only documented way" (give-away) -> reworded so it is a plausible polling option that fails only on the push requirement; updated optionExplanations.D and whyNotOthers.
+
+Verified against sources (no change needed): esig#5 identityVerification only with classic view (study_material); esig#9 a new integration key is required to move from Implicit to Public Auth Code Grant (Developer Center CORS page); esig#15/#31 account-level CORS enablement and no CORS for endpoints without an account ID (same page); esig#34 classic view for payment tabs and new browser tab on mobile (study_material); features#2 SBS incompatible features (gap notes).
+
+Reviewed: 82 (ef_esig 45, ef_features 37) / Changed: 4 (esig 2, features 2) / Unsure: 0

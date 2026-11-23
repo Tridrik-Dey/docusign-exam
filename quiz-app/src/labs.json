@@ -1,0 +1,290 @@
+{
+ "esignature": {
+  "title": "Lab 1-2: eSignature API",
+  "exercises": [
+   {
+    "title": "1. Request URL anatomy: userinfo -> base_uri -> accountId",
+    "minutes": 15
+   },
+   {
+    "title": "2. One envelope, way A: inline documents and recipients",
+    "minutes": 20
+   },
+   {
+    "title": "3. One envelope, way B: templateId + templateRoles",
+    "minutes": 20
+   },
+   {
+    "title": "4. One envelope, way C: compositeTemplates and sequence",
+    "minutes": 20
+   },
+   {
+    "title": "5. Embedded signing: clientUserId, createRecipient, returnUrl events",
+    "minutes": 20
+   },
+   {
+    "title": "6. Focused view vs classic view",
+    "minutes": 15
+   },
+   {
+    "title": "7. Embedded sending: draft + createSender",
+    "minutes": 15
+   },
+   {
+    "title": "8. Changing in-flight envelopes: void, lock, correct, resend",
+    "minutes": 20
+   },
+   {
+    "title": "9. Saturday lab: bulk send end to end",
+    "minutes": 60
+   },
+   {
+    "title": "10. Review: pick the envelope model",
+    "minutes": 15
+   }
+  ]
+ },
+ "connect_golive": {
+  "title": "Lab 3: Docusign Connect + Go Live",
+  "exercises": [
+   {
+    "title": "1. Envelope-level webhook with eventNotification",
+    "minutes": 20
+   },
+   {
+    "title": "2. Account-level custom configuration (UI and API)",
+    "minutes": 20
+   },
+   {
+    "title": "3. JSON SIM vs legacy XML",
+    "minutes": 15
+   },
+   {
+    "title": "4. HMAC set-up and seeing the signature header",
+    "minutes": 15
+   },
+   {
+    "title": "5. Saturday lab: Node listener, raw-body HMAC check, failures and republish",
+    "minutes": 60
+   },
+   {
+    "title": "6. Go Live walkthrough: Apps and Keys, classification, Start Go live",
+    "minutes": 20
+   },
+   {
+    "title": "7. Monitoring tools: request logging (50 logs), API Dashboard, API Usage Center",
+    "minutes": 20
+   },
+   {
+    "title": "8. Rate limits and polling rules",
+    "minutes": 15
+   },
+   {
+    "title": "9. What changes in production: the cut-over checklist",
+    "minutes": 15
+   }
+  ]
+ },
+ "features_webforms": {
+  "title": "Lab 4: eSignature Features & Web Forms",
+  "exercises": [
+   {
+    "title": "1. Access code: the lightest enforced authentication",
+    "minutes": 15
+   },
+   {
+    "title": "2. Phone (SMS) authentication via identityVerification.workflowId",
+    "minutes": 20
+   },
+   {
+    "title": "3. KBA and IDV: when heavy authentication fits",
+    "minutes": 20
+   },
+   {
+    "title": "4. authenticationMethod only records, and ID Evidence",
+    "minutes": 15
+   },
+   {
+    "title": "5. Branding: create a brand and apply brandId",
+    "minutes": 15
+   },
+   {
+    "title": "6. Web form configuration: standalone vs template-based, getForm field names",
+    "minutes": 20
+   },
+   {
+    "title": "7. Saturday lab: web form instances, embedded and remote",
+    "minutes": 45
+   },
+   {
+    "title": "8. Connected Fields send flow",
+    "minutes": 20
+   }
+  ]
+ },
+ "auth": {
+  "title": "Lab 4: API Authentication",
+  "exercises": [
+   {
+    "title": "JWT consent URL: signature impersonation",
+    "minutes": 10
+   },
+   {
+    "title": "Build and sign the JWT assertion, request a token",
+    "minutes": 15
+   },
+   {
+    "title": "/oauth/userinfo and the base_uri",
+    "minutes": 10
+   },
+   {
+    "title": "Confidential Authorization Code Grant with state",
+    "minutes": 15
+   },
+   {
+    "title": "Public Authorization Code Grant with PKCE (S256)",
+    "minutes": 15
+   },
+   {
+    "title": "Refresh tokens and the extended scope",
+    "minutes": 10
+   },
+   {
+    "title": "Optional (30-45 min): individual vs admin consent decision drill",
+    "minutes": 35
+   }
+  ]
+ },
+ "agreement_manager": {
+  "title": "Lab 7: Agreement Manager API",
+  "exercises": [
+   {
+    "title": "First call: GetAgreementsList and the scope trap",
+    "minutes": 10
+   },
+   {
+    "title": "Filters and paging",
+    "minutes": 15
+   },
+   {
+    "title": "GetAgreement for one ID",
+    "minutes": 10
+   },
+   {
+    "title": "CreateAgreementSummary (AI summarize action)",
+    "minutes": 10
+   },
+   {
+    "title": "Map extracted provisions to an external system",
+    "minutes": 15
+   },
+   {
+    "title": "Review AI-extracted values in the UI",
+    "minutes": 10
+   },
+   {
+    "title": "Optional (30-45 min): small sync script plus DeleteAgreement decision",
+    "minutes": 40
+   }
+  ]
+ },
+ "embedding": {
+  "title": "Lab 8: Embedding - redirect vs iframe vs Docusign JS",
+  "exercises": [
+   {
+    "title": "Embedded signer envelope + classic view by redirect",
+    "minutes": 15
+   },
+   {
+    "title": "5-minute single-use URL",
+    "minutes": 10
+   },
+   {
+    "title": "Plain iframe vs focused view with Docusign JS",
+    "minutes": 15
+   },
+   {
+    "title": "Which features force classic view",
+    "minutes": 10
+   },
+   {
+    "title": "Embedded sending with createSender",
+    "minutes": 10
+   },
+   {
+    "title": "Web form instance: embedded vs remote, and a workflow instance URL",
+    "minutes": 15
+   },
+   {
+    "title": "Optional (30-45 min): never trust the browser - confirm with Connect",
+    "minutes": 35
+   }
+  ]
+ },
+ "workflow": {
+  "title": "Lab 5: Workflow Builder & Workflow API",
+  "exercises": [
+   {
+    "title": "1. Build and publish: web form -> template -> signature",
+    "minutes": 15
+   },
+   {
+    "title": "2. Start methods: manually vs from a link vs from an API call",
+    "minutes": 10
+   },
+   {
+    "title": "3. Token with aow_manage, list workflows, read trigger requirements",
+    "minutes": 15
+   },
+   {
+    "title": "4. TriggerWorkflow and track the instance",
+    "minutes": 15
+   },
+   {
+    "title": "5. Embed the instance URL: redirect vs iframe",
+    "minutes": 15
+   },
+   {
+    "title": "6. Cancel one instance vs pause and resume the workflow",
+    "minutes": 15
+   },
+   {
+    "title": "7. Optional (30-45 min): publish by API, consentUrl and runtime errors",
+    "minutes": 40
+   }
+  ]
+ },
+ "extension_apps": {
+  "title": "Lab 6: App Center & Extension Apps",
+  "exercises": [
+   {
+    "title": "1. Read a manifest: connections, extensions, actions",
+    "minutes": 10
+   },
+   {
+    "title": "2. Register twice: by editing the manifest vs the form-based experience",
+    "minutes": 15
+   },
+   {
+    "title": "3. Optional (30-45 min): run the connected fields reference implementation behind ngrok",
+    "minutes": 40
+   },
+   {
+    "title": "4. Console tests: install, connection test, extension tests",
+    "minutes": 15
+   },
+   {
+    "title": "5. Functional test from eSignature: connected fields in an envelope",
+    "minutes": 15
+   },
+   {
+    "title": "6. Functional test from Maestro: Data IO read and write",
+    "minutes": 15
+   },
+   {
+    "title": "7. Distribution and review: private vs public, what is checked",
+    "minutes": 10
+   }
+  ]
+ }
+}

@@ -1,0 +1,50 @@
+/**
+ * @file
+ * Example 006: List an envelope's documents
+ * @author DocuSign
+ */
+
+const docusign = require('docusign-esign');
+
+/**
+ * This function does the work of listing the envelope's documents
+ * @param {object} args object
+ */
+const getDocuments = async (args) => {
+  // Data for this method
+  // args.basePath
+  // args.accessToken
+  // args.accountId
+  // args.envelopeId
+
+  //ds-snippet-start:eSign6Step2
+  let dsApiClient = new docusign.ApiClient();
+  dsApiClient.setBasePath(args.basePath);
+  dsApiClient.addDefaultHeader('Authorization', 'Bearer ' + args.accessToken);
+  //ds-snippet-end:eSign6Step2
+
+  //ds-snippet-start:eSign6Step3
+  let envelopesApi = new docusign.EnvelopesApi(dsApiClient);
+
+  let results = await envelopesApi.listDocuments(
+    args.accountId,
+    args.envelopeId,
+    null,
+    (error, data, response) => {
+      const headers = response?.headers;
+
+      const remaining = headers?.['x-ratelimit-remaining'];
+      const reset = headers?.['x-ratelimit-reset'];
+
+      if (remaining && reset) {
+        const resetInstant = new Date(Number(reset) * 1000);
+
+        console.log(`API calls remaining: ${remaining}`);
+        console.log(`Next Reset: ${resetInstant.toISOString()}`);
+      }
+  });
+  //ds-snippet-end:eSign6Step3
+  return results.data;
+};
+
+module.exports = { getDocuments };

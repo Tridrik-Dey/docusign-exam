@@ -1,0 +1,874 @@
+[
+  {
+    "paper": "C",
+    "length": "long",
+    "style": "design",
+    "domain": "Workflow Builder and Workflow API",
+    "topic": "Manual start method and Prepare permission",
+    "stem": "Lakeshore Property Group wants to automate its lease packet. Applicants are screened in a separate tenant-screening tool, and only after a leasing agent has met the applicant and approved them should the lease packet go out. The agent decides when to start, types in the approved tenant's name and email, and the tenant then completes a form and signs. Prospective tenants must never be able to start the process on their own, and the company has no developers, so nothing can be built or coded. The leasing agents should not be able to change the workflow design. Which start method and permission setup fits?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Set the start method to From a Link and have agents email the copied workflow URL to each approved tenant, so the tenant starts the process when ready"
+      },
+      {
+        "id": "B",
+        "text": "Set the start method to From an API call so the screening tool starts an instance automatically with the tenant's details as soon as the applicant is approved"
+      },
+      {
+        "id": "C",
+        "text": "Set the start method to Manually in Docusign and give agents Workflows: Prepare, so they use Run Workflow and enter the tenant as participant before the invite goes out"
+      },
+      {
+        "id": "D",
+        "text": "Set the start method to Manually in Docusign and give agents Workflows: Create, because only users who can create workflows are able to start them with Run Workflow"
+      }
+    ],
+    "correct": "C",
+    "answerText": "Set the start method to Manually in Docusign and give agents Workflows: Prepare, so they use Run Workflow and enter the tenant as participant before the invite goes out",
+    "explanation": "Run Workflow (Manually in Docusign) is for workflows started by someone in your organization who supplies participant details, and anyone with Workflows: Prepare can run published workflows. The clues are 'the agent decides when to start, types in the tenant's details' and 'agents should not change the workflow design'.",
+    "whyNotOthers": "C is right because Prepare lets agents start any published workflow without editing rights. The trap is D: the start method is correct, but Create is the permission for building and editing workflows, not a requirement to run them, and it would let agents change designs. A fails because a link is a self-service start the tenant controls, and B needs an integration the company cannot build.",
+    "optionExplanations": {
+      "A": "A link is meant for self-service starts by the participant; anyone holding the URL could start an instance, which the stem forbids.",
+      "B": "From an API call needs code in the screening tool, and the company has no developers.",
+      "C": "Correct. Manually in Docusign with Run Workflow lets the agent start the instance and enter participant details; Workflows: Prepare is enough to run published workflows.",
+      "D": "Create is for building and editing workflows; users with Prepare can already run published workflows, and Create would let agents change the design."
+    },
+    "trapOption": "D",
+    "importance": "HIGH",
+    "decode": {
+      "needs": "Staff-initiated start (Manually in Docusign, Run Workflow) with the Workflows: Prepare permission.",
+      "clues": [
+        "agent decides when to start and types tenant details -> Run Workflow, starter supplies participants",
+        "tenants must never start it themselves -> not From a Link",
+        "no developers -> not From an API call",
+        "agents must not change the design -> Prepare, not Create"
+      ]
+    },
+    "concept": {
+      "title": "Manual start needs Prepare permission",
+      "line": "Manually in Docusign suits staff-initiated workflows; users with Workflows: Prepare can run published workflows, while Create is for building and editing."
+    }
+  },
+  {
+    "paper": "C",
+    "length": "long",
+    "style": "design",
+    "domain": "Workflow Builder and Workflow API",
+    "topic": "Embedding a triggered workflow instance",
+    "stem": "Harborview Credit Union is adding a 'Change my beneficiaries' journey to the web view inside its mobile banking app. The app's backend already holds an access token with the aow_manage scope and knows the member's name, email and account number, which must reach the workflow as starting values so the member never retypes them. The workflow has a web form, a phone authentication check and a signing step. The product owner insists that when the member finishes, they are still inside the banking app so it can show its own 'What happens next' page. Which two design decisions fit? (Select two)",
+    "options": [
+      {
+        "id": "A",
+        "text": "Set the start method to From a Link and append the member's details to the link, because links are the recommended start method whenever values are prefilled"
+      },
+      {
+        "id": "B",
+        "text": "Set the start method to From an API call, because the backend passes the member's details as starting variables in trigger_inputs on Workflows:triggerWorkflow"
+      },
+      {
+        "id": "C",
+        "text": "Redirect the member's browser to the instance_url from the trigger response, so they complete the steps on Docusign and come back to the app when finished"
+      },
+      {
+        "id": "D",
+        "text": "Create a recipient view with EnvelopeViews:createRecipient for the workflow and display it in focused view, so the member stays inside the banking app"
+      },
+      {
+        "id": "E",
+        "text": "Load the instance_url from the trigger response in an iframe inside the app's page, so the app stays visible and can route the member onward when finished"
+      }
+    ],
+    "correct": "B,E",
+    "correctAnswers": [
+      "B",
+      "E"
+    ],
+    "answerText": "Set the start method to From an API call, because the backend passes the member's details as starting variables in trigger_inputs on Workflows:triggerWorkflow; Load the instance_url from the trigger response in an iframe inside the app's page, so the app stays visible and can route the member onward when finished",
+    "explanation": "Docusign recommends From an API call when the trigger request passes starting variables in trigger_inputs, and embedding the instance_url in an iframe keeps the app around the workflow so it can route the member afterwards ('still inside the banking app').",
+    "whyNotOthers": "B and E are right. The trap is C: redirecting to instance_url does run the workflow, but the member remains on the Docusign platform after completing it and is not returned to the app. A fails because From an API call, not From a Link, is recommended when trigger_inputs carry starting values, and D fails because workflows are embedded through instance_url, and focused view is not supported for signing steps in embedded workflows.",
+    "optionExplanations": {
+      "A": "Docusign recommends From an API call, not From a Link, when the integration passes starting variable values in trigger_inputs.",
+      "B": "Correct. The backend triggers the workflow and supplies starting variables in trigger_inputs, which is the recommended start method for this case.",
+      "C": "With a redirect, the member stays on the Docusign platform after finishing instead of returning to the app.",
+      "D": "A workflow instance is displayed through its instance_url, not an eSignature recipient view, and focused view is not supported for signing in embedded workflows.",
+      "E": "Correct. An iframe keeps the app's UI visible, and when the workflow ends the app can send the member to its own next page."
+    },
+    "trapOption": "C",
+    "importance": "HIGH",
+    "decode": {
+      "needs": "Trigger via API with trigger_inputs, then embed the returned instance_url in an iframe.",
+      "clues": [
+        "backend holds aow_manage token and passes member details -> From an API call with trigger_inputs",
+        "still inside the banking app when finished -> iframe, not redirect",
+        "phone authentication check -> red herring, the one IDV method supported when embedded"
+      ]
+    },
+    "concept": {
+      "title": "Embed instance_url in an iframe",
+      "line": "Pass starting values through trigger_inputs (From an API call) and show instance_url in an iframe; a redirect leaves the user on Docusign."
+    }
+  },
+  {
+    "paper": "C",
+    "length": "short",
+    "style": "fact",
+    "domain": "Workflow Builder and Workflow API",
+    "topic": "Maestro Connect events",
+    "stem": "An operations team wants its Connect listener to raise an alert whenever a step in a running workflow instance fails. Which event should the configuration subscribe to?",
+    "options": [
+      {
+        "id": "A",
+        "text": "workflow-started"
+      },
+      {
+        "id": "B",
+        "text": "workflow-completed"
+      },
+      {
+        "id": "C",
+        "text": "extension-executed"
+      },
+      {
+        "id": "D",
+        "text": "workflow-failed"
+      }
+    ],
+    "correct": "D",
+    "answerText": "workflow-failed",
+    "explanation": "workflow-failed is published when a workflow step fails, which matches 'whenever a step ... fails'.",
+    "whyNotOthers": "D is right because it is the Maestro event for a failed step. The trap is B: workflow-completed only fires when every step is completed by all participants, so a failure never produces it. A fires when an instance starts, and C is the eSignature event for verification extension results (also JSON SIM), not a workflow step event.",
+    "optionExplanations": {
+      "A": "Published when an instance is triggered and its steps begin, not when a step fails.",
+      "B": "Published only when all steps are completed by all participants.",
+      "C": "An eSignature Connect event that reports the result of a verification extension on an envelope; it does not report a failed workflow step.",
+      "D": "Correct. Published when a workflow step fails (delivered in JSON SIM format)."
+    },
+    "trapOption": "B",
+    "importance": "MEDIUM",
+    "concept": {
+      "title": "Maestro Connect event names",
+      "line": "Maestro Connect events are workflow-started, workflow-failed and workflow-completed, delivered only in JSON SIM format."
+    }
+  },
+  {
+    "paper": "C",
+    "length": "long",
+    "style": "design",
+    "domain": "Workflow Builder and Workflow API",
+    "topic": "Freeing workflow quota: pause vs unpublish",
+    "stem": "Summit Tax Advisors runs a 'Year-end client organizer' workflow every January to April. In May the account has reached its workflow quota, and the operations lead needs a free slot to publish a new engagement-letter workflow. She wants the organizer back next January exactly as it is, without rebuilding it. A handful of late clients still have organizer instances in progress, and their partners want those clients to finish rather than start over. The firm's billing system is unaffected by this change. Which approach meets all of this?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Pause the organizer now; a paused workflow accepts no new instances and is released from the quota until it is resumed next January"
+      },
+      {
+        "id": "B",
+        "text": "Pause the organizer now, let the remaining instances finish, then unpublish it; unpublished workflows do not count toward the quota and can be published again"
+      },
+      {
+        "id": "C",
+        "text": "Unpublish the organizer right away; the late clients' instances keep running to completion while the workflow no longer counts toward the quota"
+      },
+      {
+        "id": "D",
+        "text": "Cancel the late clients' instances and delete the organizer; deletion frees the slot, and the workflow can be restored from the activity log next January"
+      }
+    ],
+    "correct": "B",
+    "answerText": "Pause the organizer now, let the remaining instances finish, then unpublish it; unpublished workflows do not count toward the quota and can be published again",
+    "explanation": "A paused workflow still counts toward the quota; only an unpublished workflow does not, and you can unpublish only a paused workflow with no running instances. The clues are 'needs a free slot', 'late clients ... finish' and 'back next January'.",
+    "whyNotOthers": "B is right because pause, then unpublish once instances finish, frees the slot and keeps the workflow for republishing. The trap is A: pausing does stop new instances, but a paused workflow still counts toward the quota. C fails because you cannot unpublish while instances run or before pausing, and D fails because canceling breaks the partners' requirement and a deleted workflow cannot be recovered.",
+    "optionExplanations": {
+      "A": "A paused workflow still counts toward the workflow quota, so no slot is freed.",
+      "B": "Correct. Unpublishing requires a paused workflow with no running instances; unpublished workflows do not count toward the quota and can be published at any time.",
+      "C": "Only a paused workflow with no running instances can be unpublished.",
+      "D": "Canceling contradicts the partners' wish, and a deleted workflow cannot be recovered."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "Pause, wait for running instances to finish, then unpublish to release quota while keeping the workflow.",
+      "clues": [
+        "needs a free slot -> only unpublished workflows leave the quota",
+        "late clients should finish -> cannot unpublish while instances run",
+        "back next January unchanged -> unpublish (republishable), not delete"
+      ]
+    },
+    "concept": {
+      "title": "Paused still counts; unpublished does not",
+      "line": "Pause stops new instances but still counts toward quota; unpublish (after pausing and no running instances) frees quota and can be republished."
+    }
+  },
+  {
+    "paper": "C",
+    "length": "short",
+    "style": "fact",
+    "domain": "Workflow Builder and Workflow API",
+    "topic": "Store Files apps steps",
+    "stem": "Besides completed agreements, what else can Workflow Builder Store Files steps automatically store in a cloud repository?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Web form drafts"
+      },
+      {
+        "id": "B",
+        "text": "Connect event logs"
+      },
+      {
+        "id": "C",
+        "text": "Workflow activity logs"
+      },
+      {
+        "id": "D",
+        "text": "ID Evidence data"
+      }
+    ],
+    "correct": "D",
+    "answerText": "ID Evidence data",
+    "explanation": "Store Files steps automate the storage of completed agreements and ID Evidence data.",
+    "whyNotOthers": "D is right because the course lists completed agreements and ID Evidence data as what Store Files steps save. The trap is C: the activity log gives visibility of actions across workflows, but it is viewed in Docusign and is not what a Store Files step archives. A and B are not outputs that a Store Files step handles.",
+    "optionExplanations": {
+      "A": "Web form drafts are not something a Store Files step archives.",
+      "B": "Connect messages go to your listener; they are not stored by a workflow step.",
+      "C": "Activity logs are viewed in Workflow Builder; Store Files steps do not archive them.",
+      "D": "Correct. Store Files steps store completed agreements and ID Evidence data."
+    },
+    "trapOption": "C",
+    "importance": "LOW",
+    "concept": {
+      "title": "Store Files saves agreements and evidence",
+      "line": "Store Files apps steps (Google Drive, Box, Dropbox, OneDrive, SharePoint, Salesforce) store completed agreements and ID Evidence data."
+    }
+  },
+  {
+    "paper": "C",
+    "length": "long",
+    "style": "design",
+    "domain": "Workflow Builder and Workflow API",
+    "topic": "Multi Branch Rule vs Branching Rule",
+    "stem": "Meridian Freight onboards new carriers through a workflow that starts with a web form. One form answer, operating region, has four possible values: North America, EU, APAC and LATAM. Each region must sign a different carrier agreement countersigned by a different legal entity, and the EU route also needs an extra identity check before signing. The process builder wants a single decision point right after the form that sends each carrier down the route for its region, and the carriers' fleet size question on the same form does not affect routing. Which design fits?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Add a Multi Branch Rule step on the region variable after the form, with one path per region holding that region's template, signing and, for EU, verification steps"
+      },
+      {
+        "id": "B",
+        "text": "Add a Branching Rule step on the region variable after the form and define four conditions, because a Branching Rule creates one path for each condition defined"
+      },
+      {
+        "id": "C",
+        "text": "Use one Prepare Document Template step with show/hide logic on the region variable, so each region's agreement content is generated from a single shared document"
+      },
+      {
+        "id": "D",
+        "text": "Build four workflows and add a Send an Email step after the form that sends the carrier the start link of the workflow that matches their region"
+      }
+    ],
+    "correct": "A",
+    "answerText": "Add a Multi Branch Rule step on the region variable after the form, with one path per region holding that region's template, signing and, for EU, verification steps",
+    "explanation": "A Multi Branch Rule step creates several paths from one decision point, which fits 'single decision point ... four possible values', and each path can contain different steps (the EU identity check).",
+    "whyNotOthers": "A is right because one Multi Branch Rule splits into a path per region. The trap is B: a Branching Rule is an if/else split into exactly two paths, so it cannot route four values in a single step. C varies document content but cannot add an extra verification step or change countersigners per region, and D splits the process into separate instances instead of routing within one workflow.",
+    "optionExplanations": {
+      "A": "Correct. A Multi Branch Rule creates multiple paths from one step, and each path can hold its own steps.",
+      "B": "A Branching Rule is an if/else step with only two paths.",
+      "C": "Show/hide logic changes document content only; it cannot add the EU-only verification step or change the route.",
+      "D": "This makes carriers restart in another workflow instead of routing within one instance at a single decision point."
+    },
+    "trapOption": "B",
+    "importance": "HIGH",
+    "decode": {
+      "needs": "Use a Multi Branch Rule step to split into more than two paths with different steps per path.",
+      "clues": [
+        "four possible values, single decision point -> Multi Branch Rule (not two-way Branching Rule)",
+        "EU route needs an extra identity check -> paths differ in steps, not just document content",
+        "fleet size question -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "More than two paths: Multi Branch",
+      "line": "A Branching Rule splits into two paths (if/else); a Multi Branch Rule creates several paths, each with its own steps."
+    }
+  },
+  {
+    "paper": "C",
+    "length": "long",
+    "style": "design",
+    "domain": "Workflow Builder and Workflow API",
+    "topic": "Private extension app missing from Apps steps",
+    "stem": "Ironbridge Insurance's developers built an in-house extension app that writes claim decisions back to the company's legacy claims platform. It is registered in the Developer Console and has passed its connection and extension tests. The app must only ever be used by Ironbridge's own account, and the security team will not let it be listed for other Docusign customers. When a process builder opens the Apps tab of the Add New Step panel in Workflow Builder, the extension does not appear. What should the team do so that it appears as a step?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Submit the app for App Center review with public distribution, because only publicly listed extension apps can be offered as steps in workflows"
+      },
+      {
+        "id": "B",
+        "text": "Publish the app with private distribution, then have an Ironbridge admin install it from the App Center and connect it to the account"
+      },
+      {
+        "id": "C",
+        "text": "Add the aow_manage scope to the app's connection settings in the manifest, because Workflow Builder lists only extensions whose connection holds that scope"
+      },
+      {
+        "id": "D",
+        "text": "Publish the workflow first, because extension steps appear in the Add New Step panel only for workflows that have already passed review and publishing"
+      }
+    ],
+    "correct": "B",
+    "answerText": "Publish the app with private distribution, then have an Ironbridge admin install it from the App Center and connect it to the account",
+    "explanation": "An extension step does not appear unless the extension app is installed and connected to the account, and private distribution is the choice for an app used only by your own organization ('only ever be used by Ironbridge's own account').",
+    "whyNotOthers": "B is right because a privately distributed app, once installed and connected, shows up as an Apps step. The trap is A: publishing the app does make it installable, but public distribution lists it for every customer, which security forbids, and private apps work in workflows too. C and D fail because aow_manage is a Maestro API token scope, not an app connection setting, and steps are added while the workflow is a draft, before it is published.",
+    "optionExplanations": {
+      "A": "Public distribution would list the app for all customers, and private apps can also be used as workflow steps.",
+      "B": "Correct. Private distribution keeps the app org-only, and installing and connecting it makes its extensions available as workflow steps.",
+      "C": "aow_manage is a scope for calling the Maestro API; it does not control which extensions Workflow Builder lists.",
+      "D": "Steps are added while building the workflow; publishing does not affect which extensions are listed."
+    },
+    "trapOption": "A",
+    "importance": "HIGH",
+    "decode": {
+      "needs": "Distribute the extension app privately, install it from the App Center and connect it so its steps appear.",
+      "clues": [
+        "only Ironbridge's own account -> private distribution",
+        "does not appear in the Apps tab -> app not installed and connected in the account",
+        "passed connection and extension tests -> red herring, the build is fine"
+      ]
+    },
+    "concept": {
+      "title": "Install and connect before using",
+      "line": "An extension appears as a workflow step only once the app is installed and connected to the account; org-only apps use private distribution."
+    }
+  },
+  {
+    "paper": "C",
+    "length": "short",
+    "style": "fact",
+    "domain": "Workflow Builder and Workflow API",
+    "topic": "Trigger URL query parameters",
+    "stem": "The trigger URL returned by Workflows:getWorkflowTriggerRequirements contains two query parameters that Maestro generates when the workflow is published, used to authenticate the request and identify a valid workflow. Which are they?",
+    "options": [
+      {
+        "id": "A",
+        "text": "mtid and mtsec"
+      },
+      {
+        "id": "B",
+        "text": "code and state"
+      },
+      {
+        "id": "C",
+        "text": "client_id and client_secret"
+      },
+      {
+        "id": "D",
+        "text": "workflowId and accountId"
+      }
+    ],
+    "correct": "A",
+    "answerText": "mtid and mtsec",
+    "explanation": "The trigger URL includes the mtid and mtsec query parameters, generated by Maestro at publication to authenticate the request and identify the workflow.",
+    "whyNotOthers": "A is right because mtid and mtsec are the Maestro-generated trigger parameters. The trap is C: client ID and secret sound like authentication values, but they belong to the integration key and OAuth, not to the trigger URL. B are OAuth authorization code grant parameters, and D are path values in API endpoints, not query parameters generated at publication.",
+    "optionExplanations": {
+      "A": "Correct. Maestro generates mtid and mtsec when the workflow is published.",
+      "B": "code and state belong to the OAuth Authorization Code Grant redirect.",
+      "C": "Integration key credentials used for OAuth, not trigger URL parameters.",
+      "D": "These appear in API paths; they are not generated at publication."
+    },
+    "trapOption": "C",
+    "importance": "LOW",
+    "concept": {
+      "title": "Trigger URL carries mtid and mtsec",
+      "line": "Maestro generates mtid and mtsec at publish time; they appear on the trigger URL to authenticate the call and identify the workflow."
+    }
+  },
+  {
+    "paper": "C",
+    "length": "long",
+    "style": "design",
+    "domain": "Workflow Builder and Workflow API",
+    "topic": "Pre-publication consent error",
+    "stem": "Novalis Pharma's release pipeline publishes approved workflow changes without a person clicking through Workflow Builder. The pipeline first calls the publish endpoint with isPreRunCheck=true. Today the automated pre-publication check failed with a consent error, and the response contains a consentUrl. The token already includes the signature and aow_manage scopes, and the workflow's web form and template were imported from the demo account last week. The release manager wants the fix that unblocks this and future releases. What should the team do to get the workflow published?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Call the publish endpoint again without isPreRunCheck right away, because the actual publish call grants any consent that the check found missing"
+      },
+      {
+        "id": "B",
+        "text": "Add the impersonation scope to the pipeline's JWT request and repeat the check, because a consent error in the check means the token is missing a scope"
+      },
+      {
+        "id": "C",
+        "text": "Have the user open the consentUrl and provide consent, repeat the check, then publish by calling again with the isPreRunCheck=true parameter removed"
+      },
+      {
+        "id": "D",
+        "text": "Have the user open the consentUrl and provide consent, then call again with isPreRunCheck=true still set, because that parameter is what publishes it"
+      }
+    ],
+    "correct": "C",
+    "answerText": "Have the user open the consentUrl and provide consent, repeat the check, then publish by calling again with the isPreRunCheck=true parameter removed",
+    "explanation": "If the pre-publication check fails with consent errors, open the consentUrl, have the user consent and call again; once the check passes, publish by calling again without isPreRunCheck=true.",
+    "whyNotOthers": "C is right because consent is granted through the consentUrl and the real publish omits isPreRunCheck. The trap is D: granting consent is right, but isPreRunCheck=true only runs the check and never publishes. A fails because publishing does not grant consent, and B misreads the error: the response points to consentUrl, not to a missing token scope.",
+    "optionExplanations": {
+      "A": "The publish call does not grant consent; the check fails until the user consents through consentUrl.",
+      "B": "The error is about user consent and comes with a consentUrl; adding a scope to the token does not resolve it.",
+      "C": "Correct. Consent through consentUrl, then publish by calling again without isPreRunCheck=true.",
+      "D": "isPreRunCheck=true runs only the automated review; the publish call must omit it."
+    },
+    "trapOption": "D",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "Resolve consent via consentUrl, then publish by calling without isPreRunCheck=true.",
+      "clues": [
+        "automated pre-publication check -> isPreRunCheck=true",
+        "consent error with consentUrl -> user must open it and consent",
+        "web form and template imported from demo -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "Consent first, then real publish",
+      "line": "A consent failure in the pre-publication check returns consentUrl; consent, then publish by calling again without isPreRunCheck=true."
+    }
+  },
+  {
+    "paper": "D",
+    "length": "long",
+    "style": "fact",
+    "domain": "Workflow Builder and Workflow API",
+    "topic": "Changing the start method",
+    "stem": "Crestline Dental Group's new-patient intake workflow was published with the From a Link start method, and the link was placed on the clinic website and in an automatic email reply. The IT team has since switched the start method to From an API call and republished, so the practice-management system now starts instances with the patient's details. Nobody has removed the old button from the website yet, and the clinic's branding was refreshed in the same release. What is true about the old link?",
+    "options": [
+      {
+        "id": "A",
+        "text": "It stopped working when the start method changed, because a workflow can only be started through the start method currently configured for it"
+      },
+      {
+        "id": "B",
+        "text": "It now asks the visitor to sign in to Docusign first, because a workflow set to From an API call requires an OAuth access token for every start"
+      },
+      {
+        "id": "C",
+        "text": "It can still open instances that were already in progress, but it can no longer create new instances once the start method has been changed"
+      },
+      {
+        "id": "D",
+        "text": "It still starts new instances, because the configured start method does not stop the workflow from being started in any of the other ways"
+      }
+    ],
+    "correct": "D",
+    "answerText": "It still starts new instances, because the configured start method does not stop the workflow from being started in any of the other ways",
+    "explanation": "The start method only surfaces shortcuts; it does not prevent starting the workflow in other ways, so a previously copied link can still trigger the workflow after the method changes to API.",
+    "whyNotOthers": "D is right because a copied trigger link keeps working regardless of the configured start method. The trap is A: it sounds logical that the start method controls access, but the documentation explicitly says an existing link can still be used after switching to API. B fails because the trigger link is an unauthenticated endpoint, and C invents a rule about existing instances.",
+    "optionExplanations": {
+      "A": "The start method does not block other ways of starting the workflow; the existing link still works.",
+      "B": "The trigger link is an unauthenticated endpoint; it does not ask for a sign-in.",
+      "C": "There is no such rule; opening the link starts a new instance.",
+      "D": "Correct. Changing the start method does not prevent the workflow from being started in other ways, including the old link."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "A start method is a configuration shortcut; an existing trigger link still starts instances after switching.",
+      "clues": [
+        "switched start method to From an API call -> does not disable other start ways",
+        "old button still on the website -> link still creates new instances",
+        "branding refresh -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "Start method does not lock others",
+      "line": "The selected start method does not prevent starting a workflow in other ways; a previously copied trigger link still starts instances."
+    }
+  },
+  {
+    "paper": "D",
+    "length": "short",
+    "style": "fact",
+    "domain": "Workflow Builder and Workflow API",
+    "topic": "Embedded instance step restriction",
+    "stem": "Which workflow step type is not supported when an integration embeds workflow instances in its own web application?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Collect Data with Web Forms"
+      },
+      {
+        "id": "B",
+        "text": "Collect Data from an ID"
+      },
+      {
+        "id": "C",
+        "text": "Send an Email"
+      },
+      {
+        "id": "D",
+        "text": "Show a Confirmation Screen"
+      }
+    ],
+    "correct": "B",
+    "answerText": "Collect Data from an ID",
+    "explanation": "All step types are supported in embedded workflow instances except Collect Data from an ID.",
+    "whyNotOthers": "B is right because Collect Data from an ID is the single step type excluded from embedded instances. The trap is A: a web form step also collects data, but it is supported when embedded. C and D are supported too, although a workflow made only of non-UI steps is not worth embedding.",
+    "optionExplanations": {
+      "A": "Supported in embedded instances.",
+      "B": "Correct. The only step type not supported with embedded workflow instances.",
+      "C": "Supported; it runs without a UI, so it does not affect embedding.",
+      "D": "Supported; often the last step a participant sees."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "concept": {
+      "title": "Embedded: no Collect Data from ID",
+      "line": "Embedded workflow instances support all step types except Collect Data from an ID; identity checks are limited to Phone Authentication."
+    }
+  },
+  {
+    "paper": "D",
+    "length": "long",
+    "style": "design",
+    "domain": "Workflow Builder and Workflow API",
+    "topic": "Headless trigger and tracking",
+    "stem": "Every night an unattended job in Orbis Wholesale's ERP finds contracts due for renewal within 60 days. For each one, a published workflow must run that reads the contract record, emails the account manager a reminder and writes a renewal flag back to the ERP; no step asks anyone to fill in or sign anything. The ERP must store, against each contract, an identifier for that night's run and later its final status, without anyone checking screens. The job runs in the company's data center and already uses JWT Grant for other Docusign calls. Which design fits?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Use From an API call: the job gets a token with aow_manage, calls triggerWorkflow with trigger_inputs, saves the returned instance ID, and later checks getWorkflowInstance"
+      },
+      {
+        "id": "B",
+        "text": "Use From an API call: the job calls triggerWorkflow, then loads each returned instance_url in an iframe on an operations dashboard so that each run can progress"
+      },
+      {
+        "id": "C",
+        "text": "Use From a Link: the job opens the workflow link for each contract with its values, and staff read each run's status from the workflow activity log each morning"
+      },
+      {
+        "id": "D",
+        "text": "Use Manually in Docusign: a back-office user with Workflows: Prepare runs Run Workflow for each due contract that the nightly job lists in a report"
+      }
+    ],
+    "correct": "A",
+    "answerText": "Use From an API call: the job gets a token with aow_manage, calls triggerWorkflow with trigger_inputs, saves the returned instance ID, and later checks getWorkflowInstance",
+    "explanation": "An unattended system should start the workflow with triggerWorkflow, which returns an instance ID that can be stored and checked with getWorkflowInstance ('identifier for that night's run and later its final status'). With no UI steps, embedding is not recommended.",
+    "whyNotOthers": "A is right because the API trigger returns the instance ID needed for automated tracking. The trap is B: the trigger call is right, but embedding is not recommended when no step has a UI, and the instance runs without anyone viewing it. C fails the 'without anyone checking screens' requirement, and D needs a person, but the job is unattended.",
+    "optionExplanations": {
+      "A": "Correct. aow_manage token, triggerWorkflow with trigger_inputs, store the instance ID, then track status with getWorkflowInstance.",
+      "B": "Docusign does not recommend embedding instances that have no UI steps; displaying them adds nothing.",
+      "C": "Relies on people reading logs, which breaks the requirement for automatic status in the ERP.",
+      "D": "Requires a human to start each run, but the process is an unattended nightly job."
+    },
+    "trapOption": "B",
+    "importance": "HIGH",
+    "decode": {
+      "needs": "Trigger via Maestro API from the unattended job and track each instance by ID; do not embed when there are no UI steps.",
+      "clues": [
+        "unattended nightly job -> From an API call with an aow_manage token",
+        "identifier and final status stored in the ERP -> instance ID from trigger response, getWorkflowInstance",
+        "no step asks anyone to fill in or sign -> no reason to embed instance_url",
+        "already uses JWT Grant -> red herring, just add aow_manage"
+      ]
+    },
+    "concept": {
+      "title": "No UI steps: do not embed",
+      "line": "Start unattended workflows with triggerWorkflow, store the returned instance ID and poll getWorkflowInstance; embedding is pointless without UI steps."
+    }
+  },
+  {
+    "paper": "D",
+    "length": "long",
+    "style": "design",
+    "domain": "Workflow Builder and Workflow API",
+    "topic": "File output cloud storage restrictions",
+    "stem": "Alder & Finch Consulting's engagement workflow has two Send Documents for Signature steps: one for the mutual NDA and, later, one for the master services agreement. The firm's records team wants both signed envelopes archived automatically to its cloud storage, using a storage extension app that an admin has installed and connected. Each envelope is a few megabytes today, but the MSA template is about to have large exhibits added. Separately, account managers sometimes send a side letter directly from eSignature outside the workflow. Which two statements describe a valid configuration? (Select two)",
+    "options": [
+      {
+        "id": "A",
+        "text": "Add a separate file output step for each envelope, one for the NDA envelope and one for the MSA envelope, so each signed envelope is written to the storage"
+      },
+      {
+        "id": "B",
+        "text": "Add one file output step that selects both Send Documents for Signature steps, so both signed envelopes are written to storage in a single Write File action"
+      },
+      {
+        "id": "C",
+        "text": "Add the account managers' side letters to the same file output step by entering their envelope IDs, so all client paperwork lands in one folder"
+      },
+      {
+        "id": "D",
+        "text": "Keep each template's signed envelope at no more than 10 MB, because that is the maximum file size the cloud storage file output step supports"
+      },
+      {
+        "id": "E",
+        "text": "Skip a dedicated step and let the installed app archive every completed envelope in the account automatically, since it is connected at the account level"
+      }
+    ],
+    "correct": "A,D",
+    "correctAnswers": [
+      "A",
+      "D"
+    ],
+    "answerText": "Add a separate file output step for each envelope, one for the NDA envelope and one for the MSA envelope, so each signed envelope is written to the storage; Keep each template's signed envelope at no more than 10 MB, because that is the maximum file size the cloud storage file output step supports",
+    "explanation": "If several envelopes must be stored, the process builder defines a separate file output step for each one, and the maximum supported file size is 10 MB ('large exhibits added').",
+    "whyNotOthers": "A and D are right. The trap is B: it sounds efficient, but a file output step writes one envelope, so two envelopes need two steps. C fails because only envelopes generated by a workflow Send Documents for Signature step can be written, and E fails because the extension runs only when a workflow step invokes it.",
+    "optionExplanations": {
+      "A": "Correct. Each envelope to be stored needs its own file output step.",
+      "B": "A single step does not write several envelopes; define one step per envelope.",
+      "C": "Only envelopes generated by the workflow's Send Documents for Signature steps can be written to cloud storage.",
+      "D": "Correct. The file output step supports files up to 10 MB, so the template must stay within that limit.",
+      "E": "The extension acts only when a running instance reaches a file output step; it is not an account-wide archive."
+    },
+    "trapOption": "B",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "One file output step per workflow envelope, each file within 10 MB.",
+      "clues": [
+        "two signing steps, both archived -> two file output steps",
+        "large exhibits about to be added -> 10 MB file limit",
+        "side letter sent directly from eSignature -> not a workflow envelope, cannot be written"
+      ]
+    },
+    "concept": {
+      "title": "One storage step per envelope",
+      "line": "File output steps store only workflow-generated envelopes, one step per envelope, with a 10 MB maximum file size."
+    }
+  },
+  {
+    "paper": "D",
+    "length": "short",
+    "style": "fact",
+    "domain": "Workflow Builder and Workflow API",
+    "topic": "Set Up Invite step",
+    "stem": "What does the Set Up Invite step do in a workflow?",
+    "options": [
+      {
+        "id": "A",
+        "text": "It defines the participant roles available to later workflow steps"
+      },
+      {
+        "id": "B",
+        "text": "It sends an automated status email to someone about the agreement"
+      },
+      {
+        "id": "C",
+        "text": "It sends email workflow invitations so participants can do their steps"
+      },
+      {
+        "id": "D",
+        "text": "It displays a message telling a participant their tasks are complete"
+      }
+    ],
+    "correct": "C",
+    "answerText": "It sends email workflow invitations so participants can do their steps",
+    "explanation": "Set Up Invite sends email workflow invitations to participants so they can complete their part of the workflow.",
+    "whyNotOthers": "C is right because inviting participants by email is the purpose of Set Up Invite. The trap is B: it also sends email, but that describes the Send an Email step, which notifies people about status. A describes defining participants in the workflow settings, and D is the Show a Confirmation Screen step.",
+    "optionExplanations": {
+      "A": "Participants are defined in the workflow setup, not by Set Up Invite.",
+      "B": "That is the Send an Email step, used for status notifications.",
+      "C": "Correct. Set Up Invite emails workflow invitations to participants.",
+      "D": "That is the Show a Confirmation Screen step."
+    },
+    "trapOption": "B",
+    "importance": "MEDIUM",
+    "concept": {
+      "title": "Set Up Invite emails participants",
+      "line": "Set Up Invite emails workflow invitations to participants; Send an Email sends notifications; Show a Confirmation Screen displays messages."
+    }
+  },
+  {
+    "paper": "D",
+    "length": "long",
+    "style": "design",
+    "domain": "Workflow Builder and Workflow API",
+    "topic": "Starting variables",
+    "stem": "Pinnacle Bank's online banking site will start an account-update workflow for customers who are already logged in. The site already knows each customer's name, email and account number, and the first step is a web form that should open with those three fields already filled in so the customer only reviews them. The bank's marketing team also wants a campaign code recorded, but that is optional and can wait for a later release. How should the process builder set up the workflow so the site's values reach the form?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Define step variables on the Collect Data with Web Forms step, and have the banking site write the customer's values into those step variables at the moment it starts the workflow"
+      },
+      {
+        "id": "B",
+        "text": "Skip the web form and map the customer's values directly to the agreement's fields in a Prepare eSignature Template step, so the customer reviews them during signing"
+      },
+      {
+        "id": "C",
+        "text": "Define starting variables in the workflow settings with the start method, pass the customer's values when the workflow is triggered, and map them to the web form's fields"
+      },
+      {
+        "id": "D",
+        "text": "Create a separate web form instance with the Web Forms API and prefill it there, then have the workflow pick up that instance in its first step afterwards"
+      }
+    ],
+    "correct": "C",
+    "answerText": "Define starting variables in the workflow settings with the start method, pass the customer's values when the workflow is triggered, and map them to the web form's fields",
+    "explanation": "Starting variables are defined with the start method in workflow settings and receive values before the instance is created, for example from an external system such as a bank website; they are then mapped to fields used in a step such as a web form.",
+    "whyNotOthers": "C is right because starting variables carry external values into the instance. The trap is A: step variables also hold data, but they are defined and populated by the steps themselves, not by the system that starts the workflow. B removes the required form review step, and D creates a form outside the workflow that the workflow cannot adopt.",
+    "optionExplanations": {
+      "A": "Step variables are populated by workflow steps, not passed in by the starting system.",
+      "B": "Removes the web form the stem requires the customer to review first.",
+      "C": "Correct. Starting variables receive values at trigger time and are mapped to web form fields.",
+      "D": "A standalone web form instance is not part of the workflow instance; prefill belongs in starting variables."
+    },
+    "trapOption": "A",
+    "importance": "HIGH",
+    "decode": {
+      "needs": "Use starting variables defined with the start method and map them to web form fields.",
+      "clues": [
+        "site already knows customer values at start -> starting variables",
+        "web form opens already filled in -> map starting variables to form fields",
+        "campaign code optional later -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "External values use starting variables",
+      "line": "Starting variables are defined with the start method and filled when the workflow is triggered; step variables are filled by steps."
+    }
+  },
+  {
+    "paper": "D",
+    "length": "short",
+    "style": "fact",
+    "domain": "Workflow Builder and Workflow API",
+    "topic": "Trigger response contents",
+    "stem": "A successful Workflows:triggerWorkflow call returns which two values that an integration typically keeps?",
+    "options": [
+      {
+        "id": "A",
+        "text": "The new instance's ID and the workflow instance URL"
+      },
+      {
+        "id": "B",
+        "text": "The envelope ID and the recipient signing URL"
+      },
+      {
+        "id": "C",
+        "text": "The workflow ID and the trigger input schema"
+      },
+      {
+        "id": "D",
+        "text": "The instance's ID and a consentUrl to approve it"
+      }
+    ],
+    "correct": "A",
+    "answerText": "The new instance's ID and the workflow instance URL",
+    "explanation": "The trigger response returns the new instance's identifier and a workflow instance URL that can be used to interact with or embed the instance.",
+    "whyNotOthers": "A is right because the instance ID and instance URL come back from the trigger. The trap is C: the workflow ID and trigger input schema relate to triggering, but they come from getWorkflowTriggerRequirements before the trigger call. B belongs to eSignature embedded signing, and D mixes in consentUrl, which comes from a failed pre-publication check.",
+    "optionExplanations": {
+      "A": "Correct. The instance ID for tracking and the instance URL for display or embedding.",
+      "B": "These come from eSignature envelope creation and recipient views.",
+      "C": "The input schema comes from getWorkflowTriggerRequirements, called before triggering.",
+      "D": "consentUrl is returned by a failed pre-publication consent check, not by the trigger."
+    },
+    "trapOption": "C",
+    "importance": "HIGH",
+    "concept": {
+      "title": "Trigger returns instance ID and URL",
+      "line": "triggerWorkflow returns the new instance ID and instance URL; getWorkflowTriggerRequirements supplies the trigger URL and input schema beforehand."
+    }
+  },
+  {
+    "paper": "D",
+    "length": "long",
+    "style": "design",
+    "domain": "Workflow Builder and Workflow API",
+    "topic": "Direct vs remote signing in a workflow",
+    "stem": "Westfield Auto Finance runs its loan workflow on a tablet at the dealership desk. The buyer, who is at the desk, must sign the retail installment contract on the tablet right away without leaving to check email. The co-buyer, the buyer's spouse, is at work across town and signs next, and the dealership's finance manager countersigns last from the back office. The contract template has three signer roles, and the dealership uses its own branded tablet stand. How should the Send Documents for Signature step be configured?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Use a direct signing session for all three signers in turn on the dealership tablet, so every signature is captured during the same visit"
+      },
+      {
+        "id": "B",
+        "text": "Use remote signing for the buyer so the invitation arrives on the tablet's mail app, and direct signing for the co-buyer and the finance manager"
+      },
+      {
+        "id": "C",
+        "text": "Make the finance manager the first signer in a direct session at the desk, then send the buyer and the co-buyer remote email invitations to sign"
+      },
+      {
+        "id": "D",
+        "text": "Make the buyer the first signer in a direct signing session on the tablet, then have the co-buyer and finance manager sign through email notifications"
+      }
+    ],
+    "correct": "D",
+    "answerText": "Make the buyer the first signer in a direct signing session on the tablet, then have the co-buyer and finance manager sign through email notifications",
+    "explanation": "In a Send Documents for Signature step, only the first signer can use direct (embedded) or remote signing; all later signers must access their sessions through email notifications. The buyer 'must sign on the tablet right away', so the buyer is first and direct.",
+    "whyNotOthers": "D is right because the buyer signs directly as first signer and the others follow by email. The trap is A: a direct session sounds ideal at a kiosk, but signers after the first must use email notifications. B fails because the buyer would have to open email, and C puts the wrong person first and sends the buyer away to email.",
+    "optionExplanations": {
+      "A": "Only the first signer can use a direct session; later signers must use email notifications.",
+      "B": "The buyer must not depend on email, and later signers cannot use direct signing.",
+      "C": "The buyer, not the finance manager, must sign immediately on the tablet.",
+      "D": "Correct. First signer direct on the tablet, subsequent signers by email notification."
+    },
+    "trapOption": "A",
+    "importance": "HIGH",
+    "decode": {
+      "needs": "First signer uses a direct signing session; subsequent signers receive email notifications.",
+      "clues": [
+        "buyer signs on the tablet right away -> first signer, direct (embedded) session",
+        "spouse across town and back-office countersigner -> later signers via email",
+        "branded tablet stand -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "Only first signer can be direct",
+      "line": "In Send Documents for Signature, the first signer can sign direct or remote; every subsequent signer accesses signing through email."
+    }
+  },
+  {
+    "paper": "D",
+    "length": "long",
+    "style": "design",
+    "domain": "Workflow Builder and Workflow API",
+    "topic": "Diagnosing a failing extension step",
+    "stem": "Tidewater Utilities has a workflow with a writeback step from its own extension app that updates the customer's service order in the billing platform. In test instances, the web form and signing steps complete, but the Connect listener (configured for JSON SIM) receives workflow-failed when the instance reaches the writeback step. The workflow published without errors last week, and the billing team recently rotated its firewall rules. The developer needs detailed error messages about why the call to the billing platform fails. What is the best next step?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Run the pre-publication check again with isPreRunCheck=true, because it lists the error each step returned during the failed test instances"
+      },
+      {
+        "id": "B",
+        "text": "Run the extension app's connection and extension tests in the Developer Console, which return detailed error messages for the calls to the external system"
+      },
+      {
+        "id": "C",
+        "text": "Change the Connect configuration's message format to JSON SIM with extension data included, so the workflow-failed event carries the billing error"
+      },
+      {
+        "id": "D",
+        "text": "Cancel the failed test instance with cancelWorkflowInstance and trigger a new one using a token that includes the aow_manage scope to retry the step"
+      }
+    ],
+    "correct": "B",
+    "answerText": "Run the extension app's connection and extension tests in the Developer Console, which return detailed error messages for the calls to the external system",
+    "explanation": "When an extension is not invoked successfully, run the Developer Console connection and extension tests for the extension app to get detailed error messages; the failure is at the call to the billing platform ('rotated its firewall rules').",
+    "whyNotOthers": "B is right because the Developer Console tests exercise the app's connection and actions against the external system and report detailed errors. The trap is A: the pre-publication check validates configuration and consent before publishing, not runtime calls made by past instances. C fails because the listener is already on JSON SIM and the event does not report the external API's error, and D retries without diagnosing anything.",
+    "optionExplanations": {
+      "A": "The pre-publication check reviews configuration and consent; it does not report runtime errors from earlier instances.",
+      "B": "Correct. Developer Console connection and extension tests give detailed error messages for the extension's external calls.",
+      "C": "The listener already uses JSON SIM; changing format settings does not diagnose the external call.",
+      "D": "Canceling and retriggering repeats the failure without revealing its cause; the trigger already worked."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "Diagnose a failing extension step with the Developer Console connection and extension tests.",
+      "clues": [
+        "workflow-failed at the writeback step -> extension call to the external system fails",
+        "rotated firewall rules -> external connectivity, test the app's connection",
+        "published without errors last week -> pre-publication check is not the tool"
+      ]
+    },
+    "concept": {
+      "title": "Test the extension, not the workflow",
+      "line": "When an extension step fails at runtime, run the app's Developer Console connection and extension tests for detailed error messages."
+    }
+  }
+]

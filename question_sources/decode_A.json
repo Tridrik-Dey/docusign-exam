@@ -1,0 +1,1335 @@
+[
+  {
+    "id": 10002,
+    "decode": {
+      "prompt": "What is actually blocking Marisol?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Receive envelope status events in an external listener after signing"
+        },
+        {
+          "id": "B",
+          "text": "Notify the adjuster by email once the claim packet is complete"
+        },
+        {
+          "id": "C",
+          "text": "Make a third-party storage destination available as a workflow step, which depends on an account-level app install"
+        },
+        {
+          "id": "D",
+          "text": "Push documents to an external system while the signer is still in the signing ceremony"
+        }
+      ],
+      "correct": "C",
+      "explanation": "The question is why no Box step exists in the step library; the Connect listener and the adjuster email are side details. Steps that store files only appear once an extension app is installed and authorized.",
+      "clues": [
+        "'cannot find any Box step' -> the step library lacks an apps step, so an extension app is missing",
+        "'stored automatically in the company's Box folder' -> a Store Files apps step in Maestro",
+        "'IT team has already set up a Connect listener' -> red herring, Connect only notifies"
+      ],
+      "needs": "An admin-installed Box extension app so a Store Files apps step appears in Workflow Builder."
+    }
+  },
+  {
+    "id": 10003,
+    "decode": {
+      "prompt": "Which requirements decide the design here?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Make the form reachable by anyone with a link to minimize setup"
+        },
+        {
+          "id": "B",
+          "text": "Tie each embedded instance to one person using an identifier from the HR system, and pre-populate known fields when it opens"
+        },
+        {
+          "id": "C",
+          "text": "Create one reusable form definition per employee so each has its own configuration"
+        },
+        {
+          "id": "D",
+          "text": "Identify each employee by a signing role, as with envelope recipients"
+        }
+      ],
+      "correct": "B",
+      "explanation": "'map every instance one-to-one to the employee record' means a per-instance user identifier from your own system, and 'already be filled in' means prefill values keyed by the form's field names.",
+      "clues": [
+        "'embedded web form instances' -> each instance needs a clientUserId",
+        "'map one-to-one to the employee record' -> clientUserId set to the HR employee ID",
+        "'already be filled in' -> formValues keyed by field names from getForm",
+        "'public link' -> red herring, public forms cannot identify or prefill per employee"
+      ],
+      "needs": "Embedded createInstance calls with clientUserId = employee ID and formValues for prefill."
+    }
+  },
+  {
+    "id": 10004,
+    "decode": {
+      "prompt": "What does the failure pattern point to?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Register the callback address before any code can be issued"
+        },
+        {
+          "id": "B",
+          "text": "Format the client credentials differently in the token request header"
+        },
+        {
+          "id": "C",
+          "text": "Exchange the authorization code within its short validity window, because the delay before exchange is the variable that changes"
+        },
+        {
+          "id": "D",
+          "text": "Carry the anti-forgery state value through to the token exchange"
+        }
+      ],
+      "correct": "C",
+      "explanation": "The same worker succeeds when the queue is empty and fails only when the code waits about four minutes, so the time between issue and exchange is the cause.",
+      "clues": [
+        "'about four minutes later' -> code is exchanged after its 120-second lifetime",
+        "'succeeds in a test where the queue is empty' -> header and grant type are correct",
+        "'state value that matches' -> CSRF check already fine, irrelevant to the token call"
+      ],
+      "needs": "Exchange the authorization code within 120 seconds of receiving it."
+    }
+  },
+  {
+    "id": 10006,
+    "decode": {
+      "prompt": "What does Marco really need?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Receive workflow events in the only message format that carries them, while leaving the legacy XML feed untouched"
+        },
+        {
+          "id": "B",
+          "text": "Attach workflow notifications to each envelope the workflow sends"
+        },
+        {
+          "id": "C",
+          "text": "Bundle workflow events together with envelope events in the existing feed"
+        },
+        {
+          "id": "D",
+          "text": "Secure the workflow feed with message signatures so it is delivered"
+        }
+      ],
+      "correct": "A",
+      "explanation": "HMAC, retries and envelope delivery all work, so only the message format matters; Maestro events require JSON SIM and the billing parser still needs XML, so two configurations are needed.",
+      "clues": [
+        "'XML SIM format because a SOAP-based billing system parses it' -> existing config must stay XML",
+        "'no workflow-completed events ever arrive' -> workflow events are JSON SIM only",
+        "'HMAC validation passes, retries enabled' -> security and reliability are not the issue"
+      ],
+      "needs": "A separate JSON SIM Connect configuration subscribed to Maestro workflow events."
+    }
+  },
+  {
+    "id": 10007,
+    "decode": {
+      "prompt": "Which requirement decides the fix?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Change how the generated offer letter document is attached"
+        },
+        {
+          "id": "B",
+          "text": "Abandon composite templates in favor of simple template references"
+        },
+        {
+          "id": "C",
+          "text": "Separate recipients and server templates into different composite objects"
+        },
+        {
+          "id": "D",
+          "text": "Ensure the role defined by the server template exists before the inline template maps a person to it within the same composite object"
+        }
+      ],
+      "correct": "D",
+      "explanation": "Templates in one composite object apply in sequence order, and the inline sequence 1 runs before server sequence 2, so the recipient is mapped to a role that does not exist yet and becomes an extra recipient.",
+      "clues": [
+        "'every inline template has sequence 1 and every server template has sequence 2' -> wrong application order",
+        "'none of the template tabs' -> roleName match failed",
+        "'inline recipient appears as an extra recipient' -> role not yet defined when mapped"
+      ],
+      "needs": "Server template with a lower sequence than the inline template in each composite template object."
+    }
+  },
+  {
+    "id": 10008,
+    "decode": {
+      "prompt": "Which requirement decides the consent approach?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Grant impersonation consent once for every user in the organization's own claimed domain, for an app the organization owns"
+        },
+        {
+          "id": "B",
+          "text": "Have the token request itself confer consent for domain users"
+        },
+        {
+          "id": "C",
+          "text": "Collect consent individually from each impersonated user"
+        },
+        {
+          "id": "D",
+          "text": "Use the consent flow designed for apps owned by another company"
+        }
+      ],
+      "correct": "A",
+      "explanation": "Owning the integration key makes it an internal app, and 'a single administrator action that covers every manager' with a claimed domain and Access Management means admin consent in Docusign Admin.",
+      "clues": [
+        "'owns the integration key' -> internal app, not the ISV/external path",
+        "'domain is claimed' and 'Access Management' -> prerequisites for admin consent",
+        "'single administrator action' -> not per-user consent links"
+      ],
+      "needs": "Admin consent for an internal app via Docusign Admin > Connected Apps with signature and impersonation."
+    }
+  },
+  {
+    "id": 10009,
+    "decode": {
+      "prompt": "What actually differs between envelope and workflow events here?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Override account-level notifications on each envelope"
+        },
+        {
+          "id": "B",
+          "text": "Make delivery reliable by forcing retries of failed messages"
+        },
+        {
+          "id": "C",
+          "text": "Deliver workflow events in the specific message format they require, since every other setting already works"
+        },
+        {
+          "id": "D",
+          "text": "Authenticate the listener so workflow events are permitted"
+        }
+      ],
+      "correct": "C",
+      "explanation": "Envelope events still arrive with the copied settings, so delivery, HMAC and retries are fine; the copy kept XML Aggregated, which cannot carry Maestro events.",
+      "clues": [
+        "'XML Aggregated message format' -> the setting that blocks Maestro events",
+        "'keeps every other setting' -> copied format is still XML",
+        "'envelope events still do' arrive -> listener and security are fine"
+      ],
+      "needs": "Set the configuration's message format to JSON SIM for Maestro workflow events."
+    }
+  },
+  {
+    "id": 10011,
+    "decode": {
+      "prompt": "What does the dispatch system need?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Let senders keep placing verified fields by hand before sending"
+        },
+        {
+          "id": "B",
+          "text": "Move the process into an orchestrated workflow instead of direct envelope creation"
+        },
+        {
+          "id": "C",
+          "text": "Carry the carrier values as envelope-level metadata rather than in fields"
+        },
+        {
+          "id": "D",
+          "text": "Create and send envelopes programmatically with verified app fields already populated, without any manual preparation step"
+        }
+      ],
+      "correct": "D",
+      "explanation": "'through the eSignature REST API, with each carrier's data already placed in the verified tabs' means fetching the connected fields tab definitions and filling their extension data before creating the envelope.",
+      "clues": [
+        "'through the eSignature REST API' -> Envelopes:create, not a Maestro workflow",
+        "'already placed in the verified tabs' -> data goes in each tab's extensionData",
+        "'suggests moving the whole process into a Maestro workflow' -> red herring"
+      ],
+      "needs": "GetConnectedFieldsTabGroups, fill extensionData per tab, then Envelopes:create."
+    }
+  },
+  {
+    "id": 10013,
+    "decode": {
+      "prompt": "What must the code stop assuming after Go-Live?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Keep the developer account identifier because it carries over to production"
+        },
+        {
+          "id": "B",
+          "text": "Replace the integration key because production uses a different GUID"
+        },
+        {
+          "id": "C",
+          "text": "Hard-code a single production API server shared by all accounts"
+        },
+        {
+          "id": "D",
+          "text": "Point authentication at the production auth server and discover the production account and its server at runtime"
+        }
+      ],
+      "correct": "D",
+      "explanation": "Production uses account.docusign.com for OAuth and the JWT aud, and 'a data center she has not checked' means the base URI and account ID must come from userinfo rather than being hard-coded.",
+      "clues": [
+        "'account-d.docusign.com as the OAuth host and JWT aud' -> must become account.docusign.com",
+        "'data center she has not checked' -> get base_uri from /oauth/userinfo",
+        "'developer API Account ID' -> production account has a different account_id",
+        "'integration key GUID' -> promotion keeps the same GUID"
+      ],
+      "needs": "Production auth host and aud plus account_id and base_uri from /oauth/userinfo."
+    }
+  },
+  {
+    "id": 10014,
+    "decode": {
+      "prompt": "Which requirement decides the changes?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Allow the host page to frame the signing experience"
+        },
+        {
+          "id": "B",
+          "text": "Change how the workflow is started so it can be embedded"
+        },
+        {
+          "id": "C",
+          "text": "Render the instance through a dedicated client SDK instead of an iframe"
+        },
+        {
+          "id": "D",
+          "text": "Use only the step features that are supported when a workflow instance runs inside a host page's iframe"
+        }
+      ],
+      "correct": "D",
+      "explanation": "API-triggered instances can be embedded via instance_url; the problems are in two steps, and embedded instances support only Phone Authentication for ID verification and do not support focused view in signing steps.",
+      "clues": [
+        "'embeds Maestro workflow instances ... in an iframe' -> embedded-instance restrictions apply",
+        "'government photo ID verification' -> only Phone Authentication is supported embedded",
+        "'focused view display enabled' -> not supported in embedded workflow signing steps"
+      ],
+      "needs": "Phone Authentication in the ID step and focused view turned off in the signing step."
+    }
+  },
+  {
+    "id": 10016,
+    "decode": {
+      "prompt": "What is the listener design really missing?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Acknowledge each message quickly and tolerate repeated delivery of the same event without repeating side effects"
+        },
+        {
+          "id": "B",
+          "text": "Stop Docusign from retrying slow or failed deliveries"
+        },
+        {
+          "id": "C",
+          "text": "Confirm receipt only after all downstream work has completed"
+        },
+        {
+          "id": "D",
+          "text": "Signal Docusign to stop sending messages already seen"
+        }
+      ],
+      "correct": "A",
+      "explanation": "Calls 'take over a minute' cause timeouts that Connect treats as failures and retries, which produces the 'double provisioning'; the fix is fast 2xx with queued processing plus idempotent handling.",
+      "clues": [
+        "'take over a minute' before returning 200 -> timeouts trigger retries",
+        "'double provisioning' -> redelivered messages must be idempotent",
+        "'HMAC enabled' and 'happy with the JSON SIM payload' -> not the problem"
+      ],
+      "needs": "Return 2xx fast, process asynchronously from a queue, and make provisioning idempotent."
+    }
+  },
+  {
+    "id": 10017,
+    "decode": {
+      "prompt": "What does Tomasz really need?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Discover the workflow's current required input fields at runtime so trigger requests always match the published definition"
+        },
+        {
+          "id": "B",
+          "text": "Start the workflow by link instead of through the API"
+        },
+        {
+          "id": "C",
+          "text": "Force the published workflow to reload its variables"
+        },
+        {
+          "id": "D",
+          "text": "Reuse input values from an earlier successful run"
+        }
+      ],
+      "correct": "A",
+      "explanation": "The 400 started when starting variables were renamed, and 'adapt automatically' means reading the trigger input schema before each trigger instead of hard-coding names.",
+      "clues": [
+        "'renamed two starting variables' -> trigger_inputs field names no longer match",
+        "'adapt automatically the next time variables change' -> read the schema at runtime",
+        "'token, account ID and workflow ID are unchanged' -> not an auth or ID problem"
+      ],
+      "needs": "Call getWorkflowTriggerRequirements and build trigger_inputs from trigger_input_schema."
+    }
+  },
+  {
+    "id": 10018,
+    "decode": {
+      "prompt": "Why can Docusign not find the recipient?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Identify the embedded signer with exactly the same identifying values used when the envelope was created"
+        },
+        {
+          "id": "B",
+          "text": "Require an authentication method other than none for embedded signers"
+        },
+        {
+          "id": "C",
+          "text": "Request the signing view before the envelope is sent"
+        },
+        {
+          "id": "D",
+          "text": "Identify the signer by its position number in the envelope"
+        }
+      ],
+      "correct": "A",
+      "explanation": "createRecipient matches email, userName and clientUserId; the request uses 'Maria Lopez' while the envelope has 'Dr. Maria Lopez', so the lookup fails.",
+      "clues": [
+        "'name is \"Dr. Maria Lopez\"' vs 'userName \"Maria Lopez\"' -> name mismatch",
+        "'clientUserId \"pt-1001\"' matches -> embedded signer is set up correctly",
+        "'returnUrl ... already registered' -> red herring"
+      ],
+      "needs": "Send userName identical to the signer name at envelope creation."
+    }
+  },
+  {
+    "id": 10019,
+    "decode": {
+      "prompt": "Which requirement decides the Connect level?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Capture both sent and received envelopes across several accounts with a single configuration to maintain"
+        },
+        {
+          "id": "B",
+          "text": "Give each subsidiary account its own independently managed feed"
+        },
+        {
+          "id": "C",
+          "text": "Capture only envelopes created by the custom portal's API calls"
+        },
+        {
+          "id": "D",
+          "text": "Track only envelopes received by a specific group of users"
+        }
+      ],
+      "correct": "A",
+      "explanation": "'one configuration, not one per account' plus 'received envelopes must be captured too' across four accounts in one organization points to organization-level Connect, which uses JSON SIM.",
+      "clues": [
+        "'four Docusign eSignature accounts ... under one Docusign organization' -> org-level Connect",
+        "'received envelopes must be captured too' -> envelope-level eventNotification is not enough",
+        "'one configuration to maintain' -> not one per account",
+        "'already written a JSON parser' -> fits JSON SIM"
+      ],
+      "needs": "One organization-level Connect configuration in JSON SIM covering all four accounts."
+    }
+  },
+  {
+    "id": 10021,
+    "decode": {
+      "prompt": "What infrastructure gaps must be closed?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Allow browser cross-origin calls from Docusign pages"
+        },
+        {
+          "id": "B",
+          "text": "Promote a credential to production before installation"
+        },
+        {
+          "id": "C",
+          "text": "Host the service under a Docusign-owned domain name"
+        },
+        {
+          "id": "D",
+          "text": "Translate between Docusign's JSON action contract and a legacy XML service, and let Docusign traffic through the network restrictions"
+        }
+      ],
+      "correct": "D",
+      "explanation": "'SOAP endpoint that accepts and returns XML' needs an API proxy, and 'only accepts traffic from approved addresses' plus 'ad blockers' needs firewall and ad blocker changes.",
+      "clues": [
+        "'SOAP endpoint ... XML' -> API proxy to the JSON action contract",
+        "'only accepts traffic from approved addresses' -> firewall must allow Docusign",
+        "'browser ad blockers' -> can block App Center installation",
+        "'OAuth 2.0 through Okta' -> auth is already solved"
+      ],
+      "needs": "An API proxy for SOAP/XML plus firewall and ad blocker configuration."
+    }
+  },
+  {
+    "id": 10024,
+    "decode": {
+      "prompt": "Which requirement decides the approach?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Read expiration data from the signing transaction records"
+        },
+        {
+          "id": "B",
+          "text": "Retrieve a filtered set of agreements by party and expiration window, with their provisions, in as few calls as possible"
+        },
+        {
+          "id": "C",
+          "text": "Look up only the agreements whose IDs are already known"
+        },
+        {
+          "id": "D",
+          "text": "Generate natural-language overviews of each agreement"
+        }
+      ],
+      "correct": "B",
+      "explanation": "'fewest calls possible' over 40,000 agreements, filtered by party and an expiration date range with provisions, is a single filtered and paged list query.",
+      "clues": [
+        "'every agreement with the party Orion Freight' -> filter on parties",
+        "'expiration date within the next 90 days' -> provisions.expiration_date range",
+        "'fewest calls possible' -> one paged list query, not per-ID gets",
+        "'CRM already stores some agreement IDs' -> red herring, incomplete"
+      ],
+      "needs": "GetAgreementsList with party and expiration filters, paging with ctoken."
+    }
+  },
+  {
+    "id": 10029,
+    "decode": {
+      "prompt": "Which requirement decides the next step?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Make an approved extension app available only to a few named customer accounts, which must each accept it"
+        },
+        {
+          "id": "B",
+          "text": "Promote an integration key from development to production"
+        },
+        {
+          "id": "C",
+          "text": "Make the app listed for every customer and then narrow it by region"
+        },
+        {
+          "id": "D",
+          "text": "Make the app available to the developer and test accounts"
+        }
+      ],
+      "correct": "A",
+      "explanation": "'installable only by the credit union's three production accounts' and 'not a Docusign partner' mean private publication by account ID, with each admin accepting the app.",
+      "clues": [
+        "'only by the credit union's three production accounts' -> private app",
+        "'not a Docusign partner' -> public listing is not the path",
+        "'Approved status' -> next step is publishing, not Go-Live",
+        "'same way as the public apps' -> misleading wording from the manager"
+      ],
+      "needs": "Publish privately by adding each production account GUID with an alias; admins accept it."
+    }
+  },
+  {
+    "id": 10030,
+    "decode": {
+      "prompt": "What does the error really indicate?",
+      "options": [
+        {
+          "id": "A",
+          "text": "The key has not yet been used enough times in development"
+        },
+        {
+          "id": "B",
+          "text": "The way the key is classified does not fit the kind of account being used to promote it"
+        },
+        {
+          "id": "C",
+          "text": "The person logging in lacks admin rights on the production account"
+        },
+        {
+          "id": "D",
+          "text": "An earlier review has lapsed and must be redone"
+        }
+      ],
+      "correct": "B",
+      "explanation": "An error instead of the account list means a type mismatch, and the teammate set the internal tool's key to Public integration.",
+      "clues": [
+        "'error message appeared instead of a list of accounts' -> integration type mismatch",
+        "'set ... to Public integration' -> wrong classification for an internal tool",
+        "'old minimum-call rule' -> red herring",
+        "'administrator of her company's production account' -> admin rights are fine"
+      ],
+      "needs": "Integration type on the key must match the account type logged into during Go-Live."
+    }
+  },
+  {
+    "id": 10031,
+    "decode": {
+      "prompt": "What is the actual timing requirement?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Delay sending the transaction until the patient arrives"
+        },
+        {
+          "id": "B",
+          "text": "Lengthen how long a signing session link stays valid"
+        },
+        {
+          "id": "C",
+          "text": "Obtain the signing session link only at the moment the patient is ready to sign, since that link is short-lived and single-use"
+        },
+        {
+          "id": "D",
+          "text": "Recreate the whole transaction when the patient arrives"
+        }
+      ],
+      "correct": "C",
+      "explanation": "The URL is cached at 8 a.m. and used 10 minutes to 3 hours later, but recipient view URLs expire in about 5 minutes; the envelope itself is fine, so only the createRecipient call moves.",
+      "clues": [
+        "'caches the returned URL' -> signing URLs are single-use and short-lived",
+        "'10 minutes to 3 hours later' -> far beyond the URL lifetime",
+        "'least rework' -> keep the envelope, move only createRecipient",
+        "'Docusign JS loads correctly' -> not a front-end problem"
+      ],
+      "needs": "Call createRecipient only when the patient taps Start at the station."
+    }
+  },
+  {
+    "id": 10032,
+    "decode": {
+      "prompt": "Which requirement decides the redirect mechanism?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Redirect remote signers after signing, which for remote web form flows works only through account branding settings"
+        },
+        {
+          "id": "B",
+          "text": "Customize the signing page's resource file"
+        },
+        {
+          "id": "C",
+          "text": "Pass a return address on the API call that creates the instance"
+        },
+        {
+          "id": "D",
+          "text": "Show a landing page right after the form is submitted"
+        }
+      ],
+      "correct": "A",
+      "explanation": "'remote web form instances' signed from Docusign email have no returnUrl, so the redirect needs a brand with a Signing Completed destination URL; the 'not associated with any brand yet' clue confirms it.",
+      "clues": [
+        "'remote web form instances (sendOption set to now)' -> no embedded returnUrl",
+        "'sign ... remotely from Docusign's email' -> redirect comes from branding",
+        "'not associated with any brand yet' -> associate a brand with Destination URLs"
+      ],
+      "needs": "A brand with a Signing Completed Destination URL associated with the instance or template."
+    }
+  },
+  {
+    "id": 10034,
+    "decode": {
+      "prompt": "What does Tomas's portal need?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Build the field definitions by calling the extension service directly"
+        },
+        {
+          "id": "B",
+          "text": "Attach verification to an envelope after it has been created"
+        },
+        {
+          "id": "C",
+          "text": "Add verified app fields to API-created envelopes automatically, using the definitions Docusign holds for the installed app"
+        },
+        {
+          "id": "D",
+          "text": "Hand envelope creation over to an orchestrated workflow"
+        }
+      ],
+      "correct": "C",
+      "explanation": "'add the same verified fields to envelopes his portal sends without any manual preparation' is the connected fields by API flow: get the tab groups, fill extensionData, then create the envelope.",
+      "clues": [
+        "'creates envelopes through the eSignature REST API' -> stays on Envelopes:create",
+        "'same verified fields ... App Fields' -> connected fields tab groups",
+        "'keep his existing JSON SIM Connect listener' -> red herring"
+      ],
+      "needs": "GetConnectedFieldsTabGroups, then extensionData in each tab, then Envelopes:create."
+    }
+  },
+  {
+    "id": 10036,
+    "decode": {
+      "prompt": "What has actually expired?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Extend the lifetime of the existing instance"
+        },
+        {
+          "id": "B",
+          "text": "Create a new instance with a longer lifetime"
+        },
+        {
+          "id": "C",
+          "text": "Renew the short-lived access token for an existing instance without creating a new instance"
+        },
+        {
+          "id": "D",
+          "text": "Obtain a signing session link for the form user"
+        }
+      ],
+      "correct": "C",
+      "explanation": "'about ten minutes later' while 'the instance itself still has days left' means the five-minute instance token expired, not the instance; refreshToken issues a new token for the same instance.",
+      "clues": [
+        "'caches the whole response' -> cached instanceToken goes stale",
+        "'about ten minutes later' -> instance tokens last five minutes",
+        "'instance itself still has days left' -> expirationOffset is not the issue",
+        "'does not want duplicate instances' -> no new createInstance"
+      ],
+      "needs": "Call Instances:refreshToken with the cached instance id and render with the new token."
+    }
+  },
+  {
+    "id": 10037,
+    "decode": {
+      "prompt": "Which requirement decides the extension type?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Validate a single standard data type such as a mailing address"
+        },
+        {
+          "id": "B",
+          "text": "Read data into an orchestrated workflow step"
+        },
+        {
+          "id": "C",
+          "text": "Check values in a workflow step after signing"
+        },
+        {
+          "id": "D",
+          "text": "Verify a combination of values against the company's own system of record while the signer fills in the envelope"
+        }
+      ],
+      "correct": "D",
+      "explanation": "'together match one record in Meridian's own policy administration system' during envelope fill-in is a proprietary multi-property check at the eSignature Add Fields and signing point, which is connected fields.",
+      "clues": [
+        "'together match one record' -> multi-property concept, connected fields",
+        "'Meridian's own policy administration system' -> proprietary system of record",
+        "'while the policyholder is filling in the envelope' -> eSignature Add Fields and signing",
+        "'Maestro workflows ... out of scope' and 'address-validation' -> red herrings"
+      ],
+      "needs": "Connected fields extension at the eSignature Add Fields and signing extension point."
+    }
+  },
+  {
+    "id": 10038,
+    "decode": {
+      "prompt": "Which requirement decides the start method?",
+      "options": [
+        {
+          "id": "A",
+          "text": "React to an occurrence inside Docusign"
+        },
+        {
+          "id": "B",
+          "text": "A server starts each run itself and passes starting variable values with the request"
+        },
+        {
+          "id": "C",
+          "text": "Display the running workflow inside the portal page"
+        },
+        {
+          "id": "D",
+          "text": "Have a Docusign user start each run by hand"
+        }
+      ],
+      "correct": "B",
+      "explanation": "The server 'must start a Docusign workflow, pass ... starting variable values in trigger_inputs', which is the From an API call start method; embedding via instance URL also works with that method.",
+      "clues": [
+        "'server must start a Docusign workflow' -> triggerWorkflow call",
+        "'starting variable values in trigger_inputs' -> API-call start method",
+        "'inside an iframe' -> red herring, API-triggered instances can be embedded",
+        "'shareable URL ... out of scope' -> not From a Link"
+      ],
+      "needs": "Start method From an API call."
+    }
+  },
+  {
+    "id": 10039,
+    "decode": {
+      "prompt": "What do the copilot's constraints require?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Use AI-written prose overviews as the structured data"
+        },
+        {
+          "id": "B",
+          "text": "Use data captured during signing as the source"
+        },
+        {
+          "id": "C",
+          "text": "A read-only source of structured agreement data, indexed so each answer can point back to its agreement"
+        },
+        {
+          "id": "D",
+          "text": "Clean the repository after indexing to avoid duplicates"
+        }
+      ],
+      "correct": "C",
+      "explanation": "'cite the agreement it came from' needs indexing by agreementId, 'never modify the agreement repository' rules out deletes, and list and get return the corrected parties and provisions.",
+      "clues": [
+        "'retrieval-augmented generation over Agreement Manager data' -> list and get as data source",
+        "'must cite the agreement' -> key records by agreementId",
+        "'correct AI-extracted values' -> read provisions from Agreement Manager, not envelopes",
+        "'never modify the agreement repository' -> no DeleteAgreement"
+      ],
+      "needs": "GetAgreementsList and GetAgreement as the source, indexed by agreementId."
+    }
+  },
+  {
+    "id": 10040,
+    "decode": {
+      "prompt": "What does the business really need?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Check each envelope a little less often"
+        },
+        {
+          "id": "B",
+          "text": "Check status through a different resource on the same schedule"
+        },
+        {
+          "id": "C",
+          "text": "Allow the current per-envelope checking to continue unchanged"
+        },
+        {
+          "id": "D",
+          "text": "Learn about status changes when they happen instead of repeatedly asking about each envelope"
+        }
+      ],
+      "correct": "D",
+      "explanation": "'only needs the dashboard to change when an envelope or recipient status actually changes' is event-driven notification, and per-envelope polling every 5 minutes breaks the 15-minute rule regardless of the hourly limit.",
+      "clues": [
+        "'Hourly_Envelope_Polling_Limit_Exceeded' -> per-envelope polling rule, not the hourly limit",
+        "'every 5 minutes' -> more often than once per 15 minutes",
+        "'only ... when ... status actually changes' -> Connect events",
+        "'raise the account's limit' -> red herring"
+      ],
+      "needs": "Connect for envelope and recipient events, with listStatusChanges only for catch-up."
+    }
+  },
+  {
+    "id": 10042,
+    "decode": {
+      "prompt": "Which requirement decides the approach?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Change who the recipient is"
+        },
+        {
+          "id": "B",
+          "text": "Temporarily stop anyone acting on an in-flight envelope while a field value is edited, then let the same envelope continue"
+        },
+        {
+          "id": "C",
+          "text": "Cancel the envelope and send it again after the edit"
+        },
+        {
+          "id": "D",
+          "text": "Move the envelope back to a draft state"
+        }
+      ],
+      "correct": "B",
+      "explanation": "'nobody may sign the old value' while 'the same envelope must continue ... without being re-sent' is an envelope lock followed by a tab update, then release.",
+      "clues": [
+        "'nobody may sign the old value' -> lock the envelope",
+        "'same envelope must continue to the same signer' -> no void, no new envelope",
+        "'change the premium field' -> EnvelopeRecipientTabs:update",
+        "'already has Connect' -> red herring"
+      ],
+      "needs": "EnvelopeLocks:create, EnvelopeRecipientTabs:update, then release the lock."
+    }
+  },
+  {
+    "id": 10043,
+    "decode": {
+      "prompt": "What kind of capability does VaultCo's app provide?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Write completed agreement files to external storage from a workflow step, using the current (not legacy) storage extension"
+        },
+        {
+          "id": "B",
+          "text": "Verify field values during signing"
+        },
+        {
+          "id": "C",
+          "text": "Write a business record into a system of record"
+        },
+        {
+          "id": "D",
+          "text": "Use the storage extension found in older samples"
+        }
+      ],
+      "correct": "A",
+      "explanation": "'drop their completed agreements into it ... as the last step of their Maestro workflows' is file storage from a workflow, which is file output cloud storage; file archive is legacy.",
+      "clues": [
+        "'drop their completed agreements into it' -> files, not records",
+        "'last step of their Maestro workflows' -> workflow step extension",
+        "'a file is just another record' -> misreading toward Data IO",
+        "'older sample built on the file archive extension' -> legacy"
+      ],
+      "needs": "File output cloud storage (File IO) extension used from a Maestro workflow step."
+    }
+  },
+  {
+    "id": 10044,
+    "decode": {
+      "prompt": "Which fact decides the classification?",
+      "options": [
+        {
+          "id": "A",
+          "text": "The product serves many customers and may earn partner revenue"
+        },
+        {
+          "id": "B",
+          "text": "Customers never see the integration credentials"
+        },
+        {
+          "id": "C",
+          "text": "Only one Docusign account is ever called"
+        },
+        {
+          "id": "D",
+          "text": "Customers use signing features through one account owned and paid for by the software vendor, without their own accounts"
+        }
+      ],
+      "correct": "D",
+      "explanation": "'will not buy their own accounts' and one account Kestrel 'owns and controls' sending on customers' behalf define an Embedded integration, which needs an ISV Embed license.",
+      "clues": [
+        "'will not buy their own accounts' -> not Public integration",
+        "'one Docusign account that it owns and controls' -> Embedded integration",
+        "'on its customers' behalf' -> ISV Embed partner license",
+        "'App Center listing ... later year' -> red herring"
+      ],
+      "needs": "Embedded integration classification with an ISV Embed partner license."
+    }
+  },
+  {
+    "id": 10046,
+    "decode": {
+      "prompt": "What does the placement really require?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Ignore a marker when it cannot be found"
+        },
+        {
+          "id": "B",
+          "text": "A reusable document definition with fixed field positions"
+        },
+        {
+          "id": "C",
+          "text": "A marker that occurs only at the signature line, so placement stays dynamic but matches once"
+        },
+        {
+          "id": "D",
+          "text": "Fixed coordinates on the most likely page"
+        }
+      ],
+      "correct": "C",
+      "explanation": "Anchor tabs are placed at every occurrence of the anchor string, and 'Borrower Signature' also appears in the table of contents; a unique hidden string fixes the duplicate while keeping dynamic placement.",
+      "clues": [
+        "'signature line moves between pages 3 and 5' -> placement must stay dynamic",
+        "'second signature tab on page 1 ... table of contents' -> anchor matches every occurrence",
+        "'no template' and 'direct documents model' -> anchors in the request"
+      ],
+      "needs": "A unique hidden anchor string such as /sn1/ placed only at the signature line."
+    }
+  },
+  {
+    "id": 10047,
+    "decode": {
+      "prompt": "Which requirement decides the OAuth flow?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Authenticate from a client that cannot hold a secret"
+        },
+        {
+          "id": "B",
+          "text": "Obtain tokens repeatedly with no user or browser present, even after a long outage, from a server that can hold a private key"
+        },
+        {
+          "id": "C",
+          "text": "Let a signed-in person authorize in a browser and keep a refreshable token"
+        },
+        {
+          "id": "D",
+          "text": "Receive tokens directly in a browser redirect"
+        }
+      ],
+      "correct": "B",
+      "explanation": "'nobody ever signs in', 'must never open a browser' and 'resume after a 45-day pause with no human re-authorization' mean JWT Grant: sign a new assertion whenever a token is needed after one-time consent.",
+      "clues": [
+        "'nobody ever signs in as ops-sender' -> no user present",
+        "'must never open a browser' -> no Authorization Code flow",
+        "'paused for 45 days' -> refresh tokens would expire, JWT does not depend on them",
+        "'Grafana dashboard through SSO' -> red herring"
+      ],
+      "needs": "JWT Grant, signing a new assertion with the RSA private key for each token."
+    }
+  },
+  {
+    "id": 10048,
+    "decode": {
+      "prompt": "What must the request URL be built from?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Use the integration key as the account in the path"
+        },
+        {
+          "id": "B",
+          "text": "Use the account's own server and API account identifier, both discovered after authentication"
+        },
+        {
+          "id": "C",
+          "text": "Switch to a single well-known production host"
+        },
+        {
+          "id": "D",
+          "text": "Use the user's identifier as the account in the path"
+        }
+      ],
+      "correct": "B",
+      "explanation": "She used the user GUID (sub) as the account and hard-coded a demo host, while 'users sit on a different server pod'; userinfo returns base_uri and account_id for {base_uri}/restapi/v2.1/accounts/{account_id}.",
+      "clues": [
+        "'user GUID from her JWT sub claim in the accounts segment' -> wrong identifier",
+        "'hard-coded https://demo.docusign.net' -> wrong host after go-live",
+        "'different server pod' -> base_uri must come from userinfo",
+        "'tokens are issued correctly' -> auth is fine"
+      ],
+      "needs": "base_uri and account_id from /oauth/userinfo to build the request URL."
+    }
+  },
+  {
+    "id": 10049,
+    "decode": {
+      "prompt": "What is the consent actually missing?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Replace the signing key pair"
+        },
+        {
+          "id": "B",
+          "text": "The user's one-time consent must include the right to be impersonated; the token request itself lists only the API scopes it needs"
+        },
+        {
+          "id": "C",
+          "text": "Point the token request at the production auth server"
+        },
+        {
+          "id": "D",
+          "text": "Put the impersonation right into each token request"
+        }
+      ],
+      "correct": "B",
+      "explanation": "The consent URL used only scope=signature, but JWT Grant needs consent covering signature impersonation; the JWT payload scope can stay signature.",
+      "clues": [
+        "'scope=signature' in the consent URL -> impersonation consent missing",
+        "'aud is account-d.docusign.com' -> correct for demo",
+        "'required consent is missing' -> fix the consent, not the payload"
+      ],
+      "needs": "Redo consent with scope=signature%20impersonation; keep signature in the JWT payload."
+    }
+  },
+  {
+    "id": 10050,
+    "decode": {
+      "prompt": "Which requirement decides the trigger?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Get the document only when everyone has finished"
+        },
+        {
+          "id": "B",
+          "text": "Check periodically whether the first signer has finished"
+        },
+        {
+          "id": "C",
+          "text": "Detect when a later recipient opens the envelope"
+        },
+        {
+          "id": "D",
+          "text": "Get notified the moment one specific signer finishes, with the document, before the next signer is routed"
+        }
+      ],
+      "correct": "D",
+      "explanation": "'immediately after the borrower signs and before the officer receives it' needs a per-recipient completion event; 'stay well within API limits' rules out polling.",
+      "clues": [
+        "'immediately after the borrower signs' -> recipient-completed event",
+        "'before the officer receives it' -> envelope-completed is too late",
+        "'show who signed when' -> include documents and recipient data in the message",
+        "'well within API limits' -> no polling"
+      ],
+      "needs": "Subscribe to recipient-completed with documents included."
+    }
+  },
+  {
+    "id": 10053,
+    "decode": {
+      "prompt": "Why do redirects and token requests fail in production?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Wait for settings to synchronize automatically"
+        },
+        {
+          "id": "B",
+          "text": "Obtain a different key identifier for production"
+        },
+        {
+          "id": "C",
+          "text": "Recreate on the production copy of the key the settings that are not carried over by promotion"
+        },
+        {
+          "id": "D",
+          "text": "Have the key reviewed again"
+        }
+      ],
+      "correct": "C",
+      "explanation": "Promotion copies the key with the same GUID, but redirect URIs and secrets are not copied, so they must be added on the production key in the production account's Apps and Keys.",
+      "clues": [
+        "'kept the same integration key GUID' -> correct, the GUID does not change",
+        "'production login now rejects his redirect' -> redirect URIs not copied",
+        "'token requests fail' -> secret key not copied",
+        "'GUID must therefore have changed' -> red herring"
+      ],
+      "needs": "Add redirect URIs and a new secret key on the production key, then update the app."
+    }
+  },
+  {
+    "id": 10055,
+    "decode": {
+      "prompt": "Which requirement decides the authentication steps?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Receive the token directly in the browser redirect"
+        },
+        {
+          "id": "B",
+          "text": "Authenticate the token request with the app's client secret"
+        },
+        {
+          "id": "C",
+          "text": "Prove the token request comes from the same client that started login, without any stored secret"
+        },
+        {
+          "id": "D",
+          "text": "Keep a long-lived token in the browser"
+        }
+      ],
+      "correct": "C",
+      "explanation": "A CDN-hosted SPA that 'cannot securely store a client secret' and forbids 'any long-lived secret in the JavaScript bundle' uses Public Auth Code Grant with PKCE: code_challenge on /oauth/auth, code_verifier on /oauth/token.",
+      "clues": [
+        "'no backend' and 'cannot securely store a client secret' -> public client",
+        "'forbids any long-lived secret' -> no Basic header, no extended refresh tokens",
+        "'copying ... Confidential Authorization Code Grant' -> red herring"
+      ],
+      "needs": "PKCE: S256 code_challenge on the auth request, code_verifier on the token request."
+    }
+  },
+  {
+    "id": 10056,
+    "decode": {
+      "prompt": "What two separate controls are needed?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Block new runs of a workflow while letting current ones finish, and stop one specific run while keeping its data"
+        },
+        {
+          "id": "B",
+          "text": "Remove the workflow from use entirely"
+        },
+        {
+          "id": "C",
+          "text": "Apply the fix to runs already in progress"
+        },
+        {
+          "id": "D",
+          "text": "Stop all current runs at once"
+        }
+      ],
+      "correct": "A",
+      "explanation": "'No customer may start a new instance' while the 40 in progress finish is pausing new instances, and Mr. Osei's 'must stop now while everything collected ... is kept' is cancelling that one instance.",
+      "clues": [
+        "'legal is happy for them to finish' -> active instances keep running",
+        "'No customer may start a new instance' -> pause new instances",
+        "'his instance must stop now ... is kept' -> cancel that instance"
+      ],
+      "needs": "pauseNewWorkflowInstances on the workflow and cancelWorkflowInstance on one instance."
+    }
+  },
+  {
+    "id": 10057,
+    "decode": {
+      "prompt": "What does management care about?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Keep querying status after each notification"
+        },
+        {
+          "id": "B",
+          "text": "Make the current polling schedule compliant"
+        },
+        {
+          "id": "C",
+          "text": "Track each recipient's progress with a single envelope event"
+        },
+        {
+          "id": "D",
+          "text": "Reduce API consumption and remove scheduling and re-query logic from the integration"
+        }
+      ],
+      "correct": "D",
+      "explanation": "Management 'care most about API consumption and code complexity', which match the documented Connect advantages: messages do not count against limits and arrive only on change.",
+      "clues": [
+        "'API consumption' -> Connect messages do not count against API limits",
+        "'code complexity' -> no scheduling or re-query logic",
+        "'rather than message format' -> format is not the point"
+      ],
+      "needs": "Justify Connect by no API-limit cost and change-only delivery."
+    }
+  },
+  {
+    "id": 10058,
+    "decode": {
+      "prompt": "What output does the panel really need?",
+      "options": [
+        {
+          "id": "A",
+          "text": "The agreement's structured extracted terms"
+        },
+        {
+          "id": "B",
+          "text": "A plain-language overview of one agreement generated by Docusign AI on request"
+        },
+        {
+          "id": "C",
+          "text": "Strictly read-only access to a precomputed summary"
+        },
+        {
+          "id": "D",
+          "text": "A summary attribute returned when listing agreements"
+        }
+      ],
+      "correct": "B",
+      "explanation": "'short plain-language overview ... written by Docusign AI' is only produced by CreateAgreementSummary; structured provisions are already synced and no GET summary endpoint exists.",
+      "clues": [
+        "'written by Docusign AI' -> CreateAgreementSummary",
+        "'structured provisions ... already synced' -> not GetAgreement",
+        "'getAgreementSummary ... read-only' -> red herring, no such endpoint"
+      ],
+      "needs": "CreateAgreementSummary POST to .../ai/actions/summarize."
+    }
+  },
+  {
+    "id": 10059,
+    "decode": {
+      "prompt": "Why do preparers still see the old fields?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Change the app's manifest to declare the new field"
+        },
+        {
+          "id": "B",
+          "text": "Make Docusign re-read the app's data model for an existing connection, without reinstalling or re-reviewing"
+        },
+        {
+          "id": "C",
+          "text": "Remove and reinstall the app in the account"
+        },
+        {
+          "id": "D",
+          "text": "Have the changed app approved again"
+        }
+      ],
+      "correct": "B",
+      "explanation": "The data model changed after the app was connected, so the account holds the old type definitions; refreshing the connection makes Docusign call Get Type Names and Get Type Definitions again.",
+      "clues": [
+        "'added a new LoanPurpose property' -> data model changed after connection",
+        "'extension test ... returns it correctly' -> back end is fine",
+        "'Nothing in the manifest changed' -> no review or manifest edit needed",
+        "'OAuth tokens are still valid' -> connection itself is fine"
+      ],
+      "needs": "Refresh the extension app's connection in the App Center."
+    }
+  },
+  {
+    "id": 10060,
+    "decode": {
+      "prompt": "What must change for production?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Allow the embedding site and the production Docusign app origin to frame and message, with no demo values"
+        },
+        {
+          "id": "B",
+          "text": "Add trailing slashes to make the origins explicit"
+        },
+        {
+          "id": "C",
+          "text": "Allow messages from the embedding site's own origin"
+        },
+        {
+          "id": "D",
+          "text": "Keep the values that worked in the demo environment"
+        }
+      ],
+      "correct": "A",
+      "explanation": "'no demo-environment value remains' means apps-d becomes apps.docusign.com in frameAncestors, and messageOrigins is the single production Docusign origin.",
+      "clues": [
+        "'going live in production' -> apps.docusign.com, not apps-d",
+        "'no demo-environment value remains' -> replace apps-d everywhere",
+        "'focused view' -> needs frameAncestors and messageOrigins"
+      ],
+      "needs": "frameAncestors with site origin plus https://apps.docusign.com; messageOrigins https://apps.docusign.com."
+    }
+  }
+]

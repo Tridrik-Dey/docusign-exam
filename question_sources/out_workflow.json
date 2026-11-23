@@ -1,0 +1,773 @@
+[
+  {
+    "paper": "A",
+    "length": "long",
+    "domain": "Workflow Builder and Workflow API",
+    "topic": "Start method for an API-triggered embedded workflow",
+    "stem": "Priya at Kestrel Lending is wiring a 'Start application' button in the company's authenticated loan portal. Her Node.js server already holds a JWT access token with the aow_manage scope. When a logged-in customer clicks the button, the server must start a Docusign workflow, pass the customer's name, email and loan amount as starting variable values in trigger_inputs, and then show the returned instance URL inside an iframe on the portal page. The marketing team also wants a shareable URL for a future email campaign, but that is out of scope for this release. Which start method should Priya set on the workflow?",
+    "options": [
+      {
+        "id": "A",
+        "text": "From a Link, because the instance will be displayed in an iframe on the portal"
+      },
+      {
+        "id": "B",
+        "text": "Manually in Docusign, so a user with Workflows: Prepare permission runs it for each applicant"
+      },
+      {
+        "id": "C",
+        "text": "From an API call, because the server triggers it and passes starting variables in trigger_inputs"
+      },
+      {
+        "id": "D",
+        "text": "From an Event, so the portal's button click is treated as a Docusign platform event"
+      }
+    ],
+    "correct": "C",
+    "answerText": "From an API call, because the server triggers it and passes starting variables in trigger_inputs",
+    "explanation": "The server itself triggers the workflow with Workflows:triggerWorkflow and passes starting variable values in trigger_inputs; for that case Docusign recommends the From an API call start method, and API-call workflows can still be embedded via the returned instance URL.",
+    "whyNotOthers": "C is right because the deciding clue is that the server triggers the instance and passes starting variables in trigger_inputs. The trap is A: From a Link is also supported for embedded instances, but it is meant for a participant opening a URL, and Docusign recommends From an API call when trigger_inputs carry starting values; the email-campaign link is explicitly out of scope. B needs an internal user to run every instance, and D is not driven by a button in your own application.",
+    "optionExplanations": {
+      "A": "Wrong. From a Link suits a participant opening a URL (website or email); with starting values passed in trigger_inputs, the recommended start method is From an API call.",
+      "B": "Wrong. Manually in Docusign means someone inside the organization clicks Run Workflow; it does not let the portal start instances for customers.",
+      "C": "Correct. A server-side trigger with trigger_inputs is the From an API call pattern, and the instance_url it returns can be embedded in an iframe.",
+      "D": "Wrong. An event-based start reacts to a Docusign event, not to a click in a custom application; the button maps to an API call."
+    },
+    "trapOption": "A",
+    "importance": "HIGH",
+    "basedOn": [
+      15,
+      46,
+      16
+    ]
+  },
+  {
+    "paper": "A",
+    "length": "long",
+    "domain": "Workflow Builder and Workflow API",
+    "topic": "Building trigger_inputs from the trigger requirements",
+    "stem": "Tomasz maintains an integration at Harbourline Logistics that starts a published carrier-onboarding workflow through the Maestro API. Last week a process builder renamed two starting variables in Workflow Builder and republished. Since then, every POST to /v1/accounts/{accountId}/workflows/{workflowId}/actions/trigger returns 400 Bad Request, while his token, account ID and workflow ID are unchanged and other Maestro calls succeed. Tomasz wants his code to adapt automatically the next time variables change instead of hard-coding field names. What should the integration do before each trigger call?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Call Workflows:getWorkflowTriggerRequirements and build trigger_inputs from the trigger_input_schema it returns"
+      },
+      {
+        "id": "B",
+        "text": "Call getWorkflowInstance on the last successful instance and copy its input values into the new request"
+      },
+      {
+        "id": "C",
+        "text": "Append the starting variables as query parameters to the instance_url and open it instead of calling trigger"
+      },
+      {
+        "id": "D",
+        "text": "Call pauseNewWorkflowInstances and then resumePausedWorkflow so the new variable names are applied"
+      }
+    ],
+    "correct": "A",
+    "answerText": "Call Workflows:getWorkflowTriggerRequirements and build trigger_inputs from the trigger_input_schema it returns",
+    "explanation": "getWorkflowTriggerRequirements returns the trigger configuration and the trigger_input_schema (field names, data types, defaults); trigger_inputs must match that schema, so reading it before each trigger keeps the request in step with renamed variables.",
+    "whyNotOthers": "A is right because the 400 follows a change to the starting variables, and the trigger_input_schema from getWorkflowTriggerRequirements is the source of the field names trigger_inputs must use. The trap is B: getWorkflowInstance reports an existing instance's status and timing, not the current input schema, and old values carry the old names. C misuses the instance_url, which only exists after a trigger, and D only controls whether new instances can start.",
+    "optionExplanations": {
+      "A": "Correct. The trigger requirements expose the current trigger_input_schema, which trigger_inputs must match.",
+      "B": "Wrong. getWorkflowInstance describes an instance that already ran (status, times, started_by); it would reproduce the outdated variable names.",
+      "C": "Wrong. The instance_url is returned by a successful trigger to display the running instance; it is not a way to pass starting variables.",
+      "D": "Wrong. Pause and resume affect whether new instances can be created; they do not change the input schema or fix a malformed request."
+    },
+    "trapOption": "B",
+    "importance": "HIGH",
+    "basedOn": [
+      15,
+      16
+    ]
+  },
+  {
+    "paper": "A",
+    "length": "short",
+    "domain": "Workflow Builder and Workflow API",
+    "topic": "Maestro OAuth scope",
+    "stem": "An integration's JWT token requests the signature and impersonation scopes, and its eSignature calls work, but Workflows:triggerWorkflow is rejected as unauthorized. Which scope must be added to the token request?",
+    "options": [
+      {
+        "id": "A",
+        "text": "extended"
+      },
+      {
+        "id": "B",
+        "text": "organization_read"
+      },
+      {
+        "id": "C",
+        "text": "user_read"
+      },
+      {
+        "id": "D",
+        "text": "aow_manage"
+      }
+    ],
+    "correct": "D",
+    "answerText": "aow_manage",
+    "explanation": "Maestro API calls such as triggerWorkflow, pause, resume and cancel require the Maestro-specific aow_manage scope in addition to the normal eSignature scopes.",
+    "whyNotOthers": "D is right because aow_manage is the Maestro scope named for trigger and instance-management calls. The trap is A: extended changes refresh token lifetime in Authorization Code Grant and grants no Maestro access. B and C are Admin API scopes for organization and user data that do not authorize workflow calls.",
+    "optionExplanations": {
+      "A": "Wrong. extended relates to refresh token lifetime; it adds no API permissions for Maestro.",
+      "B": "Wrong. organization_read is an Admin API scope for organization data, not for triggering workflows.",
+      "C": "Wrong. user_read is an Admin API user scope; it does not authorize Maestro endpoints.",
+      "D": "Correct. aow_manage is required to call Maestro endpoints such as triggerWorkflow."
+    },
+    "trapOption": "A",
+    "importance": "HIGH",
+    "basedOn": [
+      14,
+      2
+    ]
+  },
+  {
+    "paper": "A",
+    "length": "long",
+    "domain": "Workflow Builder and Workflow API",
+    "topic": "Pause new instances vs cancel one instance",
+    "stem": "Brightwell Telecom runs a published 'Spring upgrade offer' workflow that customers start from an API call. Legal discovers a pricing error at 10:00. About 40 instances are already in progress and legal is happy for them to finish, because those customers saw the old, valid price. No customer may start a new instance until a corrected version is published. Separately, one in-progress customer, Mr. Osei, has asked to withdraw, so his instance must stop now while everything collected from him so far is kept. Which two Maestro API operations meet these requirements? (Select two)",
+    "options": [
+      {
+        "id": "A",
+        "text": "pauseNewWorkflowInstances on the workflow"
+      },
+      {
+        "id": "B",
+        "text": "Unpublish the workflow so no new instances can be triggered"
+      },
+      {
+        "id": "C",
+        "text": "Edit the workflow steps and republish so running instances pick up the fix"
+      },
+      {
+        "id": "D",
+        "text": "cancelWorkflowInstance on Mr. Osei's instance"
+      }
+    ],
+    "correct": "A,D",
+    "correctAnswers": [
+      "A",
+      "D"
+    ],
+    "answerText": "pauseNewWorkflowInstances on the workflow; cancelWorkflowInstance on Mr. Osei's instance",
+    "explanation": "Pausing blocks new instances while active instances keep running, and cancelling a single instance stops further steps while keeping the data collected so far.",
+    "whyNotOthers": "A and D are right: 'about 40 already in progress ... happy for them to finish' plus 'no new instance' is exactly what pause does, and cancelWorkflowInstance stops one instance and keeps its collected data. The trap is B: you can only unpublish a workflow that is already paused and has no running instances, so it cannot be the move here. C fails because editing never changes active instances; only new instances reflect the edit.",
+    "optionExplanations": {
+      "A": "Correct. Pausing stops new instances from being created while active instances continue to run.",
+      "B": "Wrong. Unpublishing requires the workflow to be paused first and no running instances, and 40 are still running.",
+      "C": "Wrong. Edits do not modify current active instances; only new instances reflect the changes.",
+      "D": "Correct. Cancelling an instance stops further steps for that instance; data collected up to that point is stored."
+    },
+    "trapOption": "B",
+    "importance": "HIGH",
+    "basedOn": [
+      16,
+      15
+    ]
+  },
+  {
+    "paper": "A",
+    "length": "long",
+    "domain": "Workflow Builder and Workflow API",
+    "topic": "Archive step and its prerequisite",
+    "stem": "Marisol builds a claims workflow for Pinecrest Insurance: Collect Data with Web Forms, then Verify Someone's Identity, then Send Documents for Signature. After the claimant signs, the completed claim packet must be stored automatically in the company's Box folder, and the adjuster must also receive an email. The IT team has already set up a Connect listener for envelope events and suggests reusing it. When Marisol opens the step library, she cannot find any Box step. What must happen so she can add the storage step?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Add a Use eSignature API step that includes an eventNotification object pointing at a Box webhook"
+      },
+      {
+        "id": "B",
+        "text": "An admin installs and authorizes a Box extension app from the App Center, which then appears as a Store Files apps step"
+      },
+      {
+        "id": "C",
+        "text": "Install a Connected Fields extension for Box so the packet is pushed during the signing ceremony"
+      },
+      {
+        "id": "D",
+        "text": "Add a Send an Email step addressed to the Box folder's upload address after the signing step"
+      }
+    ],
+    "correct": "B",
+    "answerText": "An admin installs and authorizes a Box extension app from the App Center, which then appears as a Store Files apps step",
+    "explanation": "Apps steps (Read, Store Files, Writeback) come from extension apps that an admin has installed and authorized for the account from the App Center; until a Box app is installed, no Box step appears.",
+    "whyNotOthers": "B is right because the missing Box step is the clue: apps steps only appear for extension apps an admin has authorized. The trap is A: eventNotification sends envelope status webhooks, not documents to Box, and Connect is outbound notification, not storage. C fails because Connected Fields targets the eSignature Add Fields and signing extension points and is not supported in Maestro workflows; D is a notification step, not a file storage integration.",
+    "optionExplanations": {
+      "A": "Wrong. eventNotification configures envelope-level webhooks for status events; it does not archive files to cloud storage.",
+      "B": "Correct. Store Files apps steps (Box, Google Drive, Dropbox, OneDrive, SharePoint) come from extension apps an admin installs from the App Center.",
+      "C": "Wrong. Connected Fields verifies field data in eSignature; it is not supported in Maestro workflows and does not store files.",
+      "D": "Wrong. Send an Email is a utility notification step; it does not perform an authorized file store to Box."
+    },
+    "trapOption": "A",
+    "importance": "HIGH",
+    "basedOn": [
+      4,
+      23,
+      22
+    ]
+  },
+  {
+    "paper": "A",
+    "length": "long",
+    "domain": "Workflow Builder and Workflow API",
+    "topic": "Connect message format for Maestro events",
+    "stem": "Dev lead Hannah at Corvid Health has a Connect configuration that has delivered envelope events to her listener for years using the XML Aggregated message format, with HMAC signatures and retries enabled. Her team now triggers Maestro workflows from the patient portal and wants workflow-started, workflow-failed and workflow-completed events in the same listener. She adds the workflow events to a copy of the configuration, keeps every other setting, and runs a test instance, but no workflow events arrive although envelope events still do. What change is required?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Turn on Include HMAC for the copy, because workflow events are only sent to authenticated listeners"
+      },
+      {
+        "id": "B",
+        "text": "Add an eventNotification object to each envelope the workflow creates, overriding the account configuration"
+      },
+      {
+        "id": "C",
+        "text": "Enable Require Acknowledgement so failed workflow messages are retried"
+      },
+      {
+        "id": "D",
+        "text": "Set the configuration's message format to JSON SIM, the only format that carries Maestro events"
+      }
+    ],
+    "correct": "D",
+    "answerText": "Set the configuration's message format to JSON SIM, the only format that carries Maestro events",
+    "explanation": "Maestro workflow events are only available with the JSON SIM event message format; the copied configuration still uses XML Aggregated.",
+    "whyNotOthers": "D is right because the clue is that every other setting, including the XML Aggregated format, was kept. The trap is A: HMAC is a recommended security option but it is already on and is not the requirement for workflow events. B configures envelope-level webhooks, not Maestro events, and C improves delivery reliability but cannot make an unsupported format carry workflow events.",
+    "optionExplanations": {
+      "A": "Wrong. HMAC is already enabled and is optional message authentication, not the requirement for workflow events.",
+      "B": "Wrong. eventNotification gives envelope-level Connect for one envelope; it does not subscribe to workflow-started or workflow-completed.",
+      "C": "Wrong. Acknowledgement and retries help reliability; they do not change the message model that workflow events require.",
+      "D": "Correct. Maestro events (workflow-started, workflow-failed, workflow-completed) are only delivered in JSON SIM."
+    },
+    "trapOption": "A",
+    "importance": "HIGH",
+    "basedOn": [
+      6,
+      13,
+      5
+    ]
+  },
+  {
+    "paper": "A",
+    "length": "short",
+    "domain": "Workflow Builder and Workflow API",
+    "topic": "Prepare Document Template vs Prepare eSignature Template",
+    "stem": "A workflow must produce an agreement whose clauses appear or disappear based on workflow variables (region and contract type) collected earlier. Which step pattern fits?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Prepare Document Template using conditional show/hide logic, followed by Send Documents for Signature"
+      },
+      {
+        "id": "B",
+        "text": "Prepare eSignature Template with one template for all instances, followed by Send Documents for Signature"
+      },
+      {
+        "id": "C",
+        "text": "Collect Data with Web Forms, followed directly by Send Documents for Signature with no prepare step"
+      },
+      {
+        "id": "D",
+        "text": "Prepare Document Template on its own, because it sends the generated document for signature itself"
+      }
+    ],
+    "correct": "A",
+    "answerText": "Prepare Document Template using conditional show/hide logic, followed by Send Documents for Signature",
+    "explanation": "Prepare Document Template generates different document content from workflow variables using conditional show/hide logic; it, like Prepare eSignature Template, should be followed by Send Documents for Signature.",
+    "whyNotOthers": "A is right because clauses vary with variables, which is the Prepare Document Template use case. The trap is B: Prepare eSignature Template is for a single template where the signed document is always exactly the same. C skips document preparation entirely, and D forgets that both prepare steps must be followed by the send step.",
+    "optionExplanations": {
+      "A": "Correct. Variable-driven content uses Prepare Document Template, then Send Documents for Signature.",
+      "B": "Wrong. Prepare eSignature Template fits when one fixed template serves every instance, not variable clauses.",
+      "C": "Wrong. A web form collects data but does not generate the agreement document to be signed.",
+      "D": "Wrong. A prepare step only prepares the document; Send Documents for Signature is still required."
+    },
+    "trapOption": "B",
+    "importance": "MEDIUM",
+    "basedOn": [
+      4,
+      18
+    ]
+  },
+  {
+    "paper": "A",
+    "length": "long",
+    "domain": "Workflow Builder and Workflow API",
+    "topic": "Embedded workflow step restrictions",
+    "stem": "Ana at Solano Credit Union embeds Maestro workflow instances in the member portal by placing the instance_url from Workflows:triggerWorkflow in an iframe. Her draft workflow is: Set Up Invite, Verify Someone's Identity configured for government photo ID verification, Collect Data with Web Forms, Send Documents for Signature with focused view display enabled, and a Store Files step to SharePoint. The start method is From an API call and the token includes aow_manage. Testing in the iframe shows problems in two steps. Which two changes align the workflow with the documented restrictions for embedded instances? (Select two)",
+    "options": [
+      {
+        "id": "A",
+        "text": "Change the start method to From a Link, since API-triggered instances cannot be embedded"
+      },
+      {
+        "id": "B",
+        "text": "Configure the Verify Someone's Identity step to use Phone Authentication"
+      },
+      {
+        "id": "C",
+        "text": "Turn off focused view display for the Send Documents for Signature step"
+      },
+      {
+        "id": "D",
+        "text": "Set frameAncestors on the signing step so focused view can render inside the portal's iframe"
+      },
+      {
+        "id": "E",
+        "text": "Replace the iframe with the Docusign JS client SDK, which is required to render workflow instances"
+      }
+    ],
+    "correct": "B,C",
+    "correctAnswers": [
+      "B",
+      "C"
+    ],
+    "answerText": "Configure the Verify Someone's Identity step to use Phone Authentication; Turn off focused view display for the Send Documents for Signature step",
+    "explanation": "For embedded workflow instances, only the Phone Authentication method is supported in Verify Someone's Identity steps, and focused view display is not supported for Send Documents for Signature steps.",
+    "whyNotOthers": "B and C are right because the two failing steps are the government ID check and focused-view signing, both restricted when an instance is embedded. The trap is D: frameAncestors belongs to focused view in eSignature embedded signing, but focused view itself is not supported inside an embedded workflow, so configuring it does not help. A is wrong because From an API call is a supported start method for embedding, and E is wrong because the instance_url is embedded with a plain iframe.",
+    "optionExplanations": {
+      "A": "Wrong. Both From a Link and From an API call are supported start methods for embedded instances.",
+      "B": "Correct. Only the Phone Authentication verification method is supported in embedded workflow instances.",
+      "C": "Correct. Focused view display of the agreement is not supported for Send Documents for Signature in embedded instances.",
+      "D": "Wrong. frameAncestors configures focused view embedding for eSignature; focused view is not supported in an embedded workflow at all.",
+      "E": "Wrong. The documented approach is to place the instance_url in an iframe (or redirect); the JS SDK is not required."
+    },
+    "trapOption": "D",
+    "importance": "HIGH",
+    "basedOn": [
+      1,
+      15,
+      46
+    ]
+  },
+  {
+    "paper": "A",
+    "length": "short",
+    "domain": "Workflow Builder and Workflow API",
+    "topic": "Deleting a published workflow",
+    "stem": "A process builder wants to permanently delete a published workflow that still has active instances. Which sequence is allowed?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Delete it directly from the Workflows list; active instances are cancelled automatically"
+      },
+      {
+        "id": "B",
+        "text": "Unpublish it, then delete it once it shows as unpublished"
+      },
+      {
+        "id": "C",
+        "text": "Pause it, unpublish it once no instances are running, then delete it"
+      },
+      {
+        "id": "D",
+        "text": "Pause it, then delete it, since paused workflows no longer count toward the quota"
+      }
+    ],
+    "correct": "C",
+    "answerText": "Pause it, unpublish it once no instances are running, then delete it",
+    "explanation": "Only a paused workflow with no running instances can be unpublished, and only an unpublished workflow can be deleted; deletion is permanent.",
+    "whyNotOthers": "C is right because it follows pause, then unpublish with no running instances, then delete. The trap is B: unpublish requires the workflow to be paused first. A skips every precondition, and D is wrong twice: a paused workflow still counts toward the quota and cannot be deleted until it is unpublished.",
+    "optionExplanations": {
+      "A": "Wrong. A published workflow cannot be deleted directly; only unpublished workflows can be deleted.",
+      "B": "Wrong. You can only unpublish a workflow that has been paused.",
+      "C": "Correct. Pause, wait until no instances are running, unpublish, then delete permanently.",
+      "D": "Wrong. Paused workflows still count toward the quota, and deletion requires the unpublished state."
+    },
+    "trapOption": "B",
+    "importance": "MEDIUM",
+    "basedOn": [
+      15,
+      16
+    ]
+  },
+  {
+    "paper": "B",
+    "length": "long",
+    "domain": "Workflow Builder and Workflow API",
+    "topic": "Start method for self-service intake",
+    "stem": "Westgate Property Management wants prospective tenants to start a rental pre-qualification workflow themselves from a button on the company's public marketing website and from an automatic email reply. The website is a static site hosted by an agency, with no server-side code and no place to store OAuth credentials. The workflow collects applicant data with a web form, verifies identity, and routes a disclosure for signature. Leasing agents sometimes ask whether they could also start it on behalf of walk-in applicants, but management says that is not needed. Which start method should the process builder choose?",
+    "options": [
+      {
+        "id": "A",
+        "text": "From a Link, copying the workflow URL into the website button and the email reply"
+      },
+      {
+        "id": "B",
+        "text": "From an API call, with the static site calling Workflows:triggerWorkflow when the button is clicked"
+      },
+      {
+        "id": "C",
+        "text": "Manually in Docusign, so leasing agents with Workflows: Prepare start each application"
+      },
+      {
+        "id": "D",
+        "text": "Collect Data with Web Forms as the first step, embedded on the site with the Docusign JS client SDK"
+      }
+    ],
+    "correct": "A",
+    "answerText": "From a Link, copying the workflow URL into the website button and the email reply",
+    "explanation": "From a Link is meant for workflows initiated by a participant opening a URL, such as a link on a website or in an automatic email response, and it needs no server or token.",
+    "whyNotOthers": "A is right because the participant starts it from a public site and an email, and the clue 'no server-side code and no place to store OAuth credentials' rules out an API trigger. The trap is B: triggerWorkflow needs an access token with aow_manage held by a backend. C is for people inside the organization, which management said is not needed, and D is a step, not a start method, and embeds only a form rather than starting the multi-step workflow.",
+    "optionExplanations": {
+      "A": "Correct. From a Link gives a URL to place on a website or in an automated email for self-service starts.",
+      "B": "Wrong. An API trigger requires a server holding an OAuth token with aow_manage; the static site has none.",
+      "C": "Wrong. Manually in Docusign is for someone in your organization to run the workflow, not applicants.",
+      "D": "Wrong. This is a step choice, not a start method, and embedding a single web form does not start the workflow."
+    },
+    "trapOption": "B",
+    "importance": "HIGH",
+    "basedOn": [
+      15,
+      46,
+      1
+    ]
+  },
+  {
+    "paper": "B",
+    "length": "long",
+    "domain": "Workflow Builder and Workflow API",
+    "topic": "Data IO read and writeback in a workflow",
+    "stem": "Orchard Wholesale's sales operations team wants a Maestro workflow that, at the start of each renewal, reads the customer's current credit limit and payment terms from the company's own order management system, uses them in a generated renewal agreement, and after signing writes the new contract status back to that same system. An architect suggests Connected Fields because the company already uses it to verify account numbers during signing, and IT also mentions its existing Connect listener. Which extension type should the developer build or install for the read and write steps?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Connected Fields, reusing the existing verification connection inside the workflow"
+      },
+      {
+        "id": "B",
+        "text": "File IO, using a Store Files step to move the data in and out of the system"
+      },
+      {
+        "id": "C",
+        "text": "A Docusign Connect listener that receives envelope-completed events and writes the status back"
+      },
+      {
+        "id": "D",
+        "text": "Data IO, exposed in Workflow Builder as Read and Writeback apps steps"
+      }
+    ],
+    "correct": "D",
+    "answerText": "Data IO, exposed in Workflow Builder as Read and Writeback apps steps",
+    "explanation": "Data IO extension apps read and write structured data to and from a system of record and are used in Maestro workflows as read and writeback steps.",
+    "whyNotOthers": "D is right because the workflow must read structured fields at the start and write status back later, which is the Data IO use case. The trap is A: Connected Fields works at the eSignature Add Fields and signing extension points and is not supported in Maestro workflows. B moves files, not structured field values, and C is an outbound notification channel that cannot read data into a workflow.",
+    "optionExplanations": {
+      "A": "Wrong. Connected Fields is an eSignature extension point and is not currently supported in Maestro workflows.",
+      "B": "Wrong. File IO and Store Files steps handle documents, not reading credit limits into workflow variables.",
+      "C": "Wrong. Connect pushes event notifications out; it does not read data into the workflow and is not a workflow step.",
+      "D": "Correct. Data IO apps provide read and writeback steps against a system of record inside Maestro workflows."
+    },
+    "trapOption": "A",
+    "importance": "HIGH",
+    "basedOn": [
+      23,
+      29,
+      35
+    ]
+  },
+  {
+    "paper": "B",
+    "length": "short",
+    "domain": "Workflow Builder and Workflow API",
+    "topic": "Editing a workflow with active instances",
+    "stem": "A process builder edits the participants and steps of a published workflow while 12 instances are active. What happens?",
+    "options": [
+      {
+        "id": "A",
+        "text": "All 12 active instances restart from the first step with the new definition"
+      },
+      {
+        "id": "B",
+        "text": "The 12 active instances keep their original definition, and new instances reflect the changes"
+      },
+      {
+        "id": "C",
+        "text": "The edit is blocked until all 12 instances complete or are cancelled"
+      },
+      {
+        "id": "D",
+        "text": "The 12 active instances adopt the new steps from their current step onward"
+      }
+    ],
+    "correct": "B",
+    "answerText": "The 12 active instances keep their original definition, and new instances reflect the changes",
+    "explanation": "Editing participants or steps does not modify current active instances; only new instances reflect the changes.",
+    "whyNotOthers": "B is right per the Workflow Builder rules: active instances are not modified. The trap is D: it sounds like a graceful migration, but running instances are never changed by an edit. A and C invent restart and blocking behaviour that does not exist.",
+    "optionExplanations": {
+      "A": "Wrong. Active instances are not restarted by an edit.",
+      "B": "Correct. Current active instances are unchanged; new instances use the edited definition.",
+      "C": "Wrong. You can edit published workflows while instances run; edits are not blocked.",
+      "D": "Wrong. Active instances are not modified at all, not even from their current step."
+    },
+    "trapOption": "D",
+    "importance": "MEDIUM",
+    "basedOn": [
+      16
+    ]
+  },
+  {
+    "paper": "B",
+    "length": "long",
+    "domain": "Workflow Builder and Workflow API",
+    "topic": "Tracking one triggered instance",
+    "stem": "Luca at Ferro Motors triggers a vehicle-finance workflow from the dealership CRM through the Maestro API. The CRM must show, for each deal record, whether that customer's workflow is still running, completed or canceled, who started it and when it ended. Luca stored the response of each triggerWorkflow call in the deal record. A colleague proposes polling the eSignature EnvelopeRecipients endpoint because a signing step exists, and another suggests listing every workflow on the account each hour. Which approach returns the required details for a single deal most directly?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Call GetWorkflowsList hourly and match each deal by workflow name"
+      },
+      {
+        "id": "B",
+        "text": "Call EnvelopeRecipients:list for the envelope the workflow created and infer the instance status"
+      },
+      {
+        "id": "C",
+        "text": "Call getWorkflowInstance with the workflowId and the instance ID saved from the trigger response"
+      },
+      {
+        "id": "D",
+        "text": "Call getWorkflowInstancesList and read the trigger_input_schema for each instance"
+      }
+    ],
+    "correct": "C",
+    "answerText": "Call getWorkflowInstance with the workflowId and the instance ID saved from the trigger response",
+    "explanation": "The trigger response returns the instance ID; getWorkflowInstance on /workflows/{workflowId}/instances/{instanceId} returns that instance's status, start and end times and started_by.",
+    "whyNotOthers": "C is right because the stored trigger response contains the instance ID, and getWorkflowInstance returns status, times and started_by for that one instance. The trap is B: recipient status covers only the signing step, not whether the whole workflow completed or was canceled. A returns workflow definitions, not instance status, and D lists instances but the trigger_input_schema belongs to the trigger requirements, not instance status.",
+    "optionExplanations": {
+      "A": "Wrong. GetWorkflowsList returns workflow definitions and their input schemas, not the status of a deal's instance.",
+      "B": "Wrong. Envelope recipient status shows only the signing step, not instance status, started_by or end time.",
+      "C": "Correct. getWorkflowInstance with the saved instance ID returns status, start and end times and started_by.",
+      "D": "Wrong. trigger_input_schema describes required trigger inputs; it is not instance status data."
+    },
+    "trapOption": "B",
+    "importance": "MEDIUM",
+    "basedOn": [
+      39,
+      42,
+      16
+    ]
+  },
+  {
+    "paper": "B",
+    "length": "long",
+    "domain": "Workflow Builder and Workflow API",
+    "topic": "Promoting a workflow from demo to production",
+    "stem": "Imani at Northbay Utilities built and tested a service-transfer workflow in her developer (demo) account. It uses a Collect Data with Web Forms step, a Prepare eSignature Template step with several field mappings, and is triggered by her app at https://api-d.docusign.com/v1. The production account has none of these web forms or templates yet, and the go-live review for her integration key is already approved. A teammate offers to rebuild the workflow by hand in production. Which two actions follow Docusign's documented approach for moving it? (Select two)",
+    "options": [
+      {
+        "id": "A",
+        "text": "Rebuild the field mappings manually after import, because import keeps steps but drops mappings"
+      },
+      {
+        "id": "B",
+        "text": "Recreate the web form and eSignature template in production before importing, because import omits them"
+      },
+      {
+        "id": "C",
+        "text": "Export the workflow from demo and import it into production; referenced web forms and templates are added"
+      },
+      {
+        "id": "D",
+        "text": "Keep the api-d.docusign.com/v1 base path, because the Maestro API uses one global host"
+      },
+      {
+        "id": "E",
+        "text": "Point the app's Maestro calls at https://api.docusign.com/v1 for production"
+      }
+    ],
+    "correct": "C,E",
+    "correctAnswers": [
+      "C",
+      "E"
+    ],
+    "answerText": "Export the workflow from demo and import it into production; referenced web forms and templates are added; Point the app's Maestro calls at https://api.docusign.com/v1 for production",
+    "explanation": "Docusign recommends creating and testing in demo, exporting, then importing into production; import preserves step configuration and field mappings and adds referenced Web Forms and eSignature templates. Production Maestro calls use https://api.docusign.com/v1.",
+    "whyNotOthers": "C and E are right: export/import carries the steps, mappings and referenced resources, and production calls go to api.docusign.com/v1 instead of api-d. The trap is B: it sounds prudent, but import adds the referenced web forms and eSignature templates itself. A is wrong because field mappings are preserved, and D is wrong because demo and production have different base paths.",
+    "optionExplanations": {
+      "A": "Wrong. All field mappings configured in workflow steps are preserved on import.",
+      "B": "Wrong. Resources referenced in steps, including Web Forms and eSignature templates, are added when the workflow is imported.",
+      "C": "Correct. Export from demo and import into production is the documented best practice, and referenced resources come along.",
+      "D": "Wrong. Demo uses api-d.docusign.com/v1 and production uses api.docusign.com/v1.",
+      "E": "Correct. Production Maestro API calls use the https://api.docusign.com/v1 base path."
+    },
+    "trapOption": "B",
+    "importance": "MEDIUM",
+    "basedOn": [
+      11,
+      9,
+      36
+    ]
+  },
+  {
+    "paper": "B",
+    "length": "long",
+    "domain": "Workflow Builder and Workflow API",
+    "topic": "Step order for verify-before-reveal",
+    "stem": "Greenleaf Wealth is designing an account-update workflow. The first form a client sees is pre-filled with sensitive data from the client's file (tax ID and account balances), so compliance insists that the client's identity is confirmed before that form is ever displayed. After the client reviews and corrects the form, an updated mandate is sent for signature. A business analyst points to an onboarding workflow from last year that collected data first and verified identity afterwards, and suggests copying it. Which step sequence meets the compliance requirement?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Collect Data with Web Forms, Set Up Invite, Verify Someone's Identity, Send Documents for Signature"
+      },
+      {
+        "id": "B",
+        "text": "Send Documents for Signature, Verify Someone's Identity, Collect Data with Web Forms"
+      },
+      {
+        "id": "C",
+        "text": "Collect Data with Web Forms, then a Branching Rule on Validated = True, then Send Documents for Signature"
+      },
+      {
+        "id": "D",
+        "text": "Set Up Invite, Verify Someone's Identity, Collect Data with Web Forms, Send Documents for Signature"
+      }
+    ],
+    "correct": "D",
+    "answerText": "Set Up Invite, Verify Someone's Identity, Collect Data with Web Forms, Send Documents for Signature",
+    "explanation": "Steps can be sequenced as needed, including an ID verification step before a web form step so a participant's identity is verified before sensitive pre-filled data is shown; the course pairs Set Up Invite with Verify Someone's Identity.",
+    "whyNotOthers": "D is right because compliance requires identity to be confirmed before the pre-filled form is displayed. The trap is A: it copies last year's collect-then-verify order, which would show the sensitive data before verification. B signs before the data is reviewed, and C has no identity verification step at all, so Validated has nothing to evaluate.",
+    "optionExplanations": {
+      "A": "Wrong. This order displays the pre-filled sensitive form before identity is verified.",
+      "B": "Wrong. It sends the mandate before the client has reviewed and corrected the data.",
+      "C": "Wrong. There is no identity verification step, so the branch on Validated has nothing to test.",
+      "D": "Correct. Invite and verify identity first, then show the pre-filled form, then send for signature."
+    },
+    "trapOption": "A",
+    "importance": "HIGH",
+    "basedOn": [
+      18
+    ]
+  },
+  {
+    "paper": "B",
+    "length": "short",
+    "domain": "Workflow Builder and Workflow API",
+    "topic": "Effect of cancelling an instance",
+    "stem": "Which two statements describe what happens when a running workflow instance is canceled? (Select two)",
+    "options": [
+      {
+        "id": "A",
+        "text": "The workflow is paused so no new instances can start until it is resumed"
+      },
+      {
+        "id": "B",
+        "text": "Data collected up to the point of cancellation is stored"
+      },
+      {
+        "id": "C",
+        "text": "No further workflow steps are triggered for that instance"
+      },
+      {
+        "id": "D",
+        "text": "Any envelope the instance already sent is automatically voided and purged"
+      }
+    ],
+    "correct": "B,C",
+    "correctAnswers": [
+      "B",
+      "C"
+    ],
+    "answerText": "Data collected up to the point of cancellation is stored; No further workflow steps are triggered for that instance",
+    "explanation": "Cancelling an instance stores the data collected so far and stops any further steps for that instance.",
+    "whyNotOthers": "B and C are right: cancel keeps collected data and triggers no further steps. The trap is A: stopping new instances is what pause does at the workflow level, not cancel on one instance. D invents automatic envelope voiding and purging, which is not part of instance cancellation.",
+    "optionExplanations": {
+      "A": "Wrong. Pausing the workflow blocks new instances; cancelling affects only one instance.",
+      "B": "Correct. Data collected up to that point is stored.",
+      "C": "Correct. No further workflow steps are triggered for the canceled instance.",
+      "D": "Wrong. Cancelling the instance is not described as voiding or purging envelopes; voiding is an eSignature envelope action."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "basedOn": [
+      8,
+      16
+    ]
+  },
+  {
+    "paper": "B",
+    "length": "long",
+    "domain": "Workflow Builder and Workflow API",
+    "topic": "Diagnosing a 400 on triggerWorkflow",
+    "stem": "Ravi at Copperline Clinics calls POST /v1/accounts/{accountId}/workflows/{workflowId}/actions/trigger from a scheduler. The token was obtained with JWT Grant and includes signature and aow_manage, and the same token successfully calls getWorkflowInstancesList on that workflow. The trigger call returns 400 Bad Request. His request body is {\"name\": \"Clinic 42 intake\", \"inputs\": {\"clinicEmail\": \"ops@example.com\"}}. The workflow's start method is From an API call and it is published and not paused. What is the most likely fix?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Send instance_name and trigger_inputs, with trigger_inputs keys matching the workflow's trigger_input_schema"
+      },
+      {
+        "id": "B",
+        "text": "Request a new token that adds the aow_manage scope, because 400 indicates a missing Maestro permission"
+      },
+      {
+        "id": "C",
+        "text": "Call resumePausedWorkflow before triggering so the workflow accepts new instances"
+      },
+      {
+        "id": "D",
+        "text": "Change the start method to From a Link, because API triggers cannot accept starting variable values"
+      }
+    ],
+    "correct": "A",
+    "answerText": "Send instance_name and trigger_inputs, with trigger_inputs keys matching the workflow's trigger_input_schema",
+    "explanation": "The TriggerWorkflow body requires instance_name and trigger_inputs, whose key-value pairs must match the trigger_input_schema; Ravi's body uses name and inputs.",
+    "whyNotOthers": "A is right because the body uses the wrong property names, and a malformed body is what a 400 Bad Request signals. The trap is B: a missing scope produces an authorization failure (401/403), and the token already includes aow_manage and works on another Maestro call. C is irrelevant because the workflow is not paused, and D is backwards: trigger_inputs exists precisely to pass starting values through the API.",
+    "optionExplanations": {
+      "A": "Correct. instance_name and trigger_inputs are both required, and inputs must match the trigger_input_schema.",
+      "B": "Wrong. The token already has aow_manage and works on another Maestro call; a scope problem is 401/403, not 400.",
+      "C": "Wrong. The workflow is published and not paused, so resuming changes nothing.",
+      "D": "Wrong. API triggers pass starting variables in trigger_inputs; From a Link is not required for that."
+    },
+    "trapOption": "B",
+    "importance": "MEDIUM",
+    "basedOn": [
+      15,
+      16
+    ]
+  },
+  {
+    "paper": "B",
+    "length": "long",
+    "domain": "Workflow Builder and Workflow API",
+    "topic": "Choosing the Maestro Connect event",
+    "stem": "Sofia at Arcadia Realty triggers a lease workflow that ends with three steps after signing: a Branching Rule on envelope status, a Store Files step that archives the lease to Google Drive, and a Writeback step to the property system. Her listener already receives JSON SIM messages. The property manager wants the lease marked 'Done' in the portal only when everything, including the archive and the writeback, has finished. A teammate proposes keying off envelope-completed because the lease is fully signed at that point. Which event should Sofia subscribe to for this status?",
+    "options": [
+      {
+        "id": "A",
+        "text": "workflow-started"
+      },
+      {
+        "id": "B",
+        "text": "workflow-completed"
+      },
+      {
+        "id": "C",
+        "text": "envelope-completed"
+      },
+      {
+        "id": "D",
+        "text": "recipient-completed"
+      }
+    ],
+    "correct": "B",
+    "answerText": "workflow-completed",
+    "explanation": "workflow-completed is published when all steps in the workflow are completed by all participants, which includes the archive and writeback steps that run after signing.",
+    "whyNotOthers": "B is right because the clue is that 'Done' must wait for the archive and writeback steps after signing. The trap is C: envelope-completed fires when signing finishes, before the Store Files and Writeback steps run. A fires when execution begins, and D tracks a single recipient within the envelope.",
+    "optionExplanations": {
+      "A": "Wrong. workflow-started fires when the instance is triggered and execution begins.",
+      "B": "Correct. workflow-completed fires only when every step in the workflow has completed.",
+      "C": "Wrong. envelope-completed fires when signing is done, but the archive and writeback steps still follow.",
+      "D": "Wrong. recipient-completed tracks one recipient in the envelope, not the whole workflow."
+    },
+    "trapOption": "C",
+    "importance": "HIGH",
+    "basedOn": [
+      42,
+      13,
+      6
+    ]
+  }
+]

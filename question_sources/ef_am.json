@@ -1,0 +1,797 @@
+[
+  {
+    "paper": "E",
+    "length": "long",
+    "style": "design",
+    "domain": "Agreement Manager API",
+    "topic": "Bulk import of legacy agreements",
+    "stem": "Halden Mutual has acquired a regional insurer whose 6,000 legacy vendor contracts exist only as scanned PDFs on a file share. Procurement wants the AI-extracted renewal dates and payment terms of all vendor contracts in its ERP, and from next month every new vendor contract will be signed through Docusign eSignature. The legal team insists that the legacy contracts must not be re-signed or altered in any way. An offshore team has already been booked for the migration, and the ERP sync job already holds a token with the Agreement Manager read scope. Which two statements describe a correct migration plan? (Select two)",
+    "options": [
+      {
+        "id": "A",
+        "text": "Call GetAgreementsList with the file-share path as a filter so Agreement Manager pulls the scanned PDFs into the repository overnight."
+      },
+      {
+        "id": "B",
+        "text": "Send each scanned PDF as an eSignature envelope to an internal signer so that completing the envelope places the contract in the repository."
+      },
+      {
+        "id": "C",
+        "text": "Import the scanned PDFs into Agreement Manager as legacy agreements, not as envelopes, so AI extraction runs on them without re-signing."
+      },
+      {
+        "id": "D",
+        "text": "After the import, call CreateAgreementSummary on each contract so that Docusign AI extracts its parties, dates and provisions for the ERP."
+      },
+      {
+        "id": "E",
+        "text": "Expect new contracts completed through eSignature to reach the repository automatically, so only the legacy scans need a one-time import."
+      }
+    ],
+    "correct": "C,E",
+    "correctAnswers": [
+      "C",
+      "E"
+    ],
+    "answerText": "Import the scanned PDFs into Agreement Manager as legacy agreements, not as envelopes, so AI extraction runs on them without re-signing.; Expect new contracts completed through eSignature to reach the repository automatically, so only the legacy scans need a one-time import.",
+    "explanation": "Legacy agreements are imported into Agreement Manager (not sent as envelopes), and AI extraction runs automatically on import, which respects 'must not be re-signed or altered'. Completed eSignature envelopes reach the repository automatically, which covers 'every new vendor contract signed through eSignature'.",
+    "whyNotOthers": "C and E are right: legacy files are imported once, and new eSignature agreements arrive automatically. The trap is A: GetAgreementsList is the API's search call, but it only reads existing agreements and cannot import files. B re-signs the contracts, which legal forbids, and D creates a prose summary; extraction already runs on import.",
+    "optionExplanations": {
+      "A": "GetAgreementsList only reads agreements already in the repository; it cannot pull files from a file share or import anything.",
+      "B": "Routing old contracts through a new signing ceremony alters and re-signs them, which the legal team explicitly ruled out.",
+      "C": "Correct. Importing the legacy PDFs into Agreement Manager adds them to the repository and AI extraction runs automatically, with no re-signing.",
+      "D": "CreateAgreementSummary returns an AI-written overview; extraction of type, parties and provisions already runs automatically when agreements are imported.",
+      "E": "Correct. Completed eSignature envelopes are added to the repository and analyzed by AI automatically, so only the legacy backlog needs importing."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "A one-time import of non-Docusign contracts plus automatic ingestion of completed envelopes, then API reads.",
+      "clues": [
+        "scanned PDFs on a file share -> legacy (non-Docusign) agreements that must be imported",
+        "signed through Docusign eSignature from next month -> completed envelopes reach the repository automatically",
+        "must not be re-signed or altered -> rules out pushing old contracts through new envelopes",
+        "offshore team booked -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "Import legacy, envelopes arrive automatically",
+      "line": "Legacy files are imported through Agreement Manager because the API cannot upload; completed eSignature envelopes enter the repository and get AI extraction automatically."
+    }
+  },
+  {
+    "paper": "E",
+    "length": "long",
+    "style": "design",
+    "domain": "Agreement Manager API",
+    "topic": "Locate an agreement from an envelope ID",
+    "stem": "Corvane Logistics' service desk tool shows a customer's signed contract whenever an agent opens a ticket. The CRM stores the Docusign envelope ID of each contract it sent for signature, but it has never stored any Agreement Manager identifiers. Agents now want the contract's AI-extracted payment terms and renewal notice period on the ticket screen. The desk handles about 400 tickets a day, the CRM is hosted in a separate EU region, and the account's hourly API limit is shared with a billing integration. How should the tool look up the agreement?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Call GetAgreement with the stored envelope ID as the agreementId, because a completed envelope keeps its envelope ID as its agreement ID."
+      },
+      {
+        "id": "B",
+        "text": "Call GetAgreementsList filtered on related_agreement_documents.parent_agreement_document_id set to the stored envelope ID, then read the provisions."
+      },
+      {
+        "id": "C",
+        "text": "Call the eSignature Envelopes:get endpoint with the stored envelope ID and read the AI-extracted provisions from the envelope's custom fields."
+      },
+      {
+        "id": "D",
+        "text": "Call GetAgreementsList filtered on source_id set to the stored envelope ID, then read the payment terms and renewal notice period from the record."
+      }
+    ],
+    "correct": "D",
+    "answerText": "Call GetAgreementsList filtered on source_id set to the stored envelope ID, then read the payment terms and renewal notice period from the record.",
+    "explanation": "source_id holds the record's identifier in the originating system (for eSignature, the envelope ID) and GetAgreementsList can filter on it, so one call turns 'the envelope ID the CRM stores' into the agreement and its provisions.",
+    "whyNotOthers": "D is right because the source_id filter bridges the envelope ID to the agreement record. The trap is A: the agreement id is Agreement Manager's own GUID, not the envelope ID, so GetAgreement would not find it. B uses the link from an amendment to its parent document, and C fails because eSignature does not expose AI-extracted provisions.",
+    "optionExplanations": {
+      "A": "The agreement id is a separate GUID generated by Agreement Manager; the envelope ID lives in source_id, so this lookup fails.",
+      "B": "parent_agreement_document_id links a child agreement (such as an amendment) to its parent document, not to an eSignature envelope.",
+      "C": "The eSignature API returns envelope data; AI-extracted payment terms and notice periods come only from the Agreement Manager API.",
+      "D": "Correct. GetAgreementsList accepts a source_id filter, and source_id carries the originating envelope ID for eSignature agreements."
+    },
+    "trapOption": "A",
+    "importance": "HIGH",
+    "decode": {
+      "needs": "Find the agreement record from an envelope ID by filtering GetAgreementsList on source_id.",
+      "clues": [
+        "stores the envelope ID, never any Agreement Manager identifiers -> the agreementId is unknown",
+        "AI-extracted payment terms and renewal notice period -> provisions from the Agreement Manager record",
+        "EU region, 400 tickets a day -> red herrings"
+      ]
+    },
+    "concept": {
+      "title": "source_id links agreement to envelope",
+      "line": "An agreement's source_id is its identifier in the originating system; filter GetAgreementsList on it when only the envelope ID is known."
+    }
+  },
+  {
+    "paper": "E",
+    "length": "short",
+    "style": "fact",
+    "domain": "Agreement Manager API",
+    "topic": "Base path",
+    "stem": "An Agreement Manager integration built against the developer environment is moving to production. Which base path should its production calls use?",
+    "options": [
+      {
+        "id": "A",
+        "text": "https://api.docusign.com/v1"
+      },
+      {
+        "id": "B",
+        "text": "https://api-d.docusign.com/v1"
+      },
+      {
+        "id": "C",
+        "text": "https://na3.docusign.net/restapi/v1"
+      },
+      {
+        "id": "D",
+        "text": "https://account.docusign.com/v1"
+      }
+    ],
+    "correct": "A",
+    "answerText": "https://api.docusign.com/v1",
+    "explanation": "The Agreement Manager (Navigator) API uses https://api-d.docusign.com/v1 in the developer environment and https://api.docusign.com/v1 in production.",
+    "whyNotOthers": "A is right because production uses api.docusign.com. The trap is C: the account's eSignature base URI from userinfo is for eSignature calls, not for Agreement Manager. B is the developer host, and D is the authentication server.",
+    "optionExplanations": {
+      "A": "Correct. Production Agreement Manager calls go to https://api.docusign.com/v1/accounts/{accountId}/agreements.",
+      "B": "This is the developer (demo) host that the integration is moving away from.",
+      "C": "An eSignature base URI of the account; Agreement Manager calls do not use the restapi host.",
+      "D": "account.docusign.com is the OAuth authentication server, not an API host."
+    },
+    "trapOption": "C",
+    "importance": "MEDIUM",
+    "concept": {
+      "title": "Agreement Manager hosts",
+      "line": "Agreement Manager calls use api-d.docusign.com/v1 for developer and api.docusign.com/v1 for production, not the eSignature base URI."
+    }
+  },
+  {
+    "paper": "E",
+    "length": "long",
+    "style": "design",
+    "domain": "Agreement Manager API",
+    "topic": "Copilot queries at question time",
+    "stem": "Brightwell Partners wants an internal chat assistant for its sales directors. A director types questions such as 'Which of our reseller agreements with Novatek expire before the end of June?' and gets an answer that names the agreements. Contract admins correct AI-extracted dates in Agreement Manager several times a day, and directors must see a correction as soon as it is saved. The information security team will not approve any copy of agreement data stored outside Docusign, and the assistant runs on the company's existing large language model platform. Which design fits?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Copy every agreement nightly into a vector store with GetAgreementsList, and let the model answer each question from that store while citing each agreementId."
+      },
+      {
+        "id": "B",
+        "text": "Call CreateAgreementSummary for each agreement at question time, and let the model read the expiration dates and party names out of the returned summaries."
+      },
+      {
+        "id": "C",
+        "text": "Let the model turn each question into a GetAgreementsList call filtered on parties.name_in_agreement and provisions.expiration_date, then answer."
+      },
+      {
+        "id": "D",
+        "text": "Let the model search completed envelopes with the eSignature listStatusChanges call and read expiration dates from each envelope's document fields."
+      }
+    ],
+    "correct": "C",
+    "answerText": "Let the model turn each question into a GetAgreementsList call filtered on parties.name_in_agreement and provisions.expiration_date, then answer.",
+    "explanation": "Docusign documents copilot integrations where the model constructs Agreement Manager queries from a natural-language question and interprets the returned data. Querying live at question time satisfies 'see a correction as soon as it is saved' and 'no copy stored outside Docusign'.",
+    "whyNotOthers": "C is right because a filtered live query returns current, user-corrected values without storing a copy. The trap is A: an indexed RAG store is a valid pattern in general, but a nightly copy is both stale and forbidden here. B produces AI prose per agreement, which is slow and unstructured, and D uses eSignature, which has no AI-extracted expiration dates.",
+    "optionExplanations": {
+      "A": "A nightly copy is stale for up to a day and stores agreement data outside Docusign, both ruled out by the stem.",
+      "B": "Summaries are narrative text generated per agreement; they are not a reliable or efficient way to filter by party and date.",
+      "C": "Correct. The model maps the question to party and expiration_date filters and answers from current records, so corrections show immediately.",
+      "D": "Envelope status calls do not return AI-extracted provisions such as expiration_date."
+    },
+    "trapOption": "A",
+    "importance": "HIGH",
+    "decode": {
+      "needs": "Live, filtered Agreement Manager queries generated by the LLM, with no external index.",
+      "clues": [
+        "see a correction as soon as it is saved -> user-updated values must be read live, not from a snapshot",
+        "no copy of agreement data stored outside Docusign -> rules out a vector store or data lake",
+        "reseller agreements with Novatek expire before June -> parties.name_in_agreement plus expiration_date filters",
+        "existing large language model platform -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "Copilot builds filtered queries live",
+      "line": "A copilot can translate questions into GetAgreementsList filters at answer time, giving current, user-corrected data without keeping a copy."
+    }
+  },
+  {
+    "paper": "F",
+    "length": "long",
+    "style": "design",
+    "domain": "Agreement Manager API",
+    "topic": "Amendments linked to a master agreement",
+    "stem": "Ostara Biotech's legal operations portal shows each master services agreement together with every amendment and change order signed under it. Amendments are titled inconsistently ('Addendum 2', 'Variation Letter', 'Change Order - Q3'), and the same suppliers also appear on many unrelated contracts. Each amendment's record in Agreement Manager links back to its master through its related agreement documents. The portal is rebuilt every Monday morning by a headless job, and the legal team has asked for a dark theme on the page. Which query should the job use to collect the amendments of one master agreement?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Call GetAgreementsList filtered on title with the words Amendment, Addendum and Change Order, and keep the records naming the master's supplier."
+      },
+      {
+        "id": "B",
+        "text": "Call GetAgreementsList filtered on related_agreement_documents.parent_agreement_document_id set to the master's document ID, paging with ctoken."
+      },
+      {
+        "id": "C",
+        "text": "Call GetAgreementsList filtered on parties.name_in_agreement set to the master's supplier, and treat every record returned as an amendment."
+      },
+      {
+        "id": "D",
+        "text": "Call GetAgreementsList filtered on source_id set to the master's agreement ID, because an amendment records its master as its source."
+      }
+    ],
+    "correct": "B",
+    "answerText": "Call GetAgreementsList filtered on related_agreement_documents.parent_agreement_document_id set to the master's document ID, paging with ctoken.",
+    "explanation": "related_agreement_documents.parent_agreement_document_id is the documented link from a child agreement to its parent, and GetAgreementsList can filter on it. The clue is 'links back to its master through its related agreement documents'.",
+    "whyNotOthers": "B is right because the parent link selects exactly the amendments of one master. The trap is A: title filtering looks practical, but the titles are inconsistent, so amendments would be missed. C returns every contract with that supplier, including unrelated ones, and D misuses source_id, which identifies the record in its originating system.",
+    "optionExplanations": {
+      "A": "Titles such as 'Variation Letter' would be missed, so a title filter cannot reliably collect all amendments.",
+      "B": "Correct. The parent_agreement_document_id filter returns the records linked to the master, whatever they are titled.",
+      "C": "The supplier appears on many unrelated contracts, so a party filter over-collects.",
+      "D": "source_id holds the identifier in the originating system (for example an envelope ID), not a link to a master agreement."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "Filter GetAgreementsList on the parent agreement document link.",
+      "clues": [
+        "titled inconsistently -> a title filter is unreliable",
+        "same suppliers on unrelated contracts -> a party filter over-collects",
+        "links back through related agreement documents -> parent_agreement_document_id",
+        "dark theme -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "Parent link finds child agreements",
+      "line": "Use the related_agreement_documents.parent_agreement_document_id filter to retrieve agreements linked to a parent, instead of guessing from titles or parties."
+    }
+  },
+  {
+    "paper": "F",
+    "length": "short",
+    "style": "fact",
+    "domain": "Agreement Manager API",
+    "topic": "Custom data from eSignature",
+    "stem": "An integration needs the custom attributes that an agreement carried over from eSignature, such as a sender's envelope custom field. Which property of the Agreement Manager agreement record is documented to hold custom attributes originating from eSignature?",
+    "options": [
+      {
+        "id": "A",
+        "text": "custom_provisions"
+      },
+      {
+        "id": "B",
+        "text": "additional_user_defined_data"
+      },
+      {
+        "id": "C",
+        "text": "additional_custom_esign_data"
+      },
+      {
+        "id": "D",
+        "text": "additional_custom_clm_data"
+      }
+    ],
+    "correct": "C",
+    "answerText": "additional_custom_esign_data",
+    "explanation": "The agreement schema separates custom data by origin: additional_custom_esign_data holds custom attributes originating from eSign.",
+    "whyNotOthers": "C is right because it is the eSign-origin property. The trap is B: user-defined data sounds generic enough to fit, but it holds user-defined attributes added to the agreement, not eSign-origin data. A extends the standard provisions of the agreement type, and D holds attributes that came from CLM.",
+    "optionExplanations": {
+      "A": "custom_provisions holds user-defined provisions that extend the standard provision set for the agreement type.",
+      "B": "additional_user_defined_data holds user-defined attributes included in the agreement, not data that came from eSignature.",
+      "C": "Correct. additional_custom_esign_data is documented as custom attributes originating from eSign.",
+      "D": "additional_custom_clm_data holds custom attributes that originated in CLM."
+    },
+    "trapOption": "B",
+    "importance": "LOW",
+    "concept": {
+      "title": "Custom data properties by origin",
+      "line": "Agreement records keep custom data in separate properties by origin: eSign, CLM, user-defined data, and custom provisions."
+    }
+  },
+  {
+    "paper": "F",
+    "length": "long",
+    "style": "design",
+    "domain": "Agreement Manager API",
+    "topic": "Agreements classified as Other",
+    "stem": "Merrow Shipping's ERP pulls agreement data from Agreement Manager every night. Hundreds of vessel charter contracts arrive with the agreement type Other and without the vessel name or cargo type the chartering desk needs, because no standard agreement type covers charter contracts. The chartering manager wants charters classified correctly and both values captured by AI rather than typed in by clerks. The ERP vendor has offered to add a free-text notes field for the clerks if needed. Which two configuration steps address the need? (Select two)",
+    "options": [
+      {
+        "id": "A",
+        "text": "Create a custom Charter Contract agreement type, then set up, activate and test its AI detection so that charters stop landing in Other."
+      },
+      {
+        "id": "B",
+        "text": "Have the nightly job change the type of each Other agreement to Charter Contract through the Agreement Manager API once a clerk confirms it."
+      },
+      {
+        "id": "C",
+        "text": "Call CreateAgreementSummary for each Other agreement and let the ERP parse the vessel name and cargo type out of the AI summary text."
+      },
+      {
+        "id": "D",
+        "text": "Add Vessel Name and Cargo Type as custom fields on that agreement type and enable AI so their values are detected and surfaced."
+      },
+      {
+        "id": "E",
+        "text": "Delete the Other agreements with DeleteAgreement and import them again, so the AI re-runs and places them in a standard type."
+      }
+    ],
+    "correct": "A,D",
+    "correctAnswers": [
+      "A",
+      "D"
+    ],
+    "answerText": "Create a custom Charter Contract agreement type, then set up, activate and test its AI detection so that charters stop landing in Other.; Add Vessel Name and Cargo Type as custom fields on that agreement type and enable AI so their values are detected and surfaced.",
+    "explanation": "Agreements whose type cannot be determined are typed Other; custom agreement types with AI detection reduce that, and custom fields with AI enabled capture organization-specific values. That matches 'classified correctly' and 'captured by AI rather than typed in'.",
+    "whyNotOthers": "A and D are right because a custom type fixes classification and AI-enabled custom fields capture the extra values. The trap is B: writing the type back sounds efficient, but the API has no update operation. C turns structured needs into parsing AI prose, and E only re-runs the same classification, which still has no matching standard type.",
+    "optionExplanations": {
+      "A": "Correct. A custom agreement type with activated, tested AI detection is the documented way to reduce agreements classified as Other.",
+      "B": "The Agreement Manager API cannot update agreements; it offers only list, get, delete and create summary.",
+      "C": "Summary text is unstructured and not a substitute for extracted fields that the ERP can map.",
+      "D": "Correct. Custom fields added to an agreement type, with AI enabled, surface organization-specific values such as vessel name.",
+      "E": "Re-importing repeats the same classification; with no standard charter type, the contracts would land in Other again."
+    },
+    "trapOption": "B",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "Configure custom extractions (custom agreement type plus AI-enabled custom fields) in Agreement Manager.",
+      "clues": [
+        "type Other -> AI could not determine a standard type",
+        "no standard agreement type covers charters -> custom agreement type",
+        "captured by AI rather than typed in -> enable AI detection on custom fields",
+        "free-text notes field -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "Custom types and fields reduce Other",
+      "line": "Create custom agreement types with AI detection and add AI-enabled custom fields to capture data that standard types do not cover."
+    }
+  },
+  {
+    "paper": "F",
+    "length": "long",
+    "style": "design",
+    "domain": "Agreement Manager API",
+    "topic": "Review missing extracted values",
+    "stem": "Rowan Foods requires an expiration date on every supplier contract before its ERP will release a purchase order. After the legal team imported a batch of old scanned contracts into Agreement Manager, the nightly sync finds that some records come back without a usable expiration_date, because the date is not stated clearly or the scan is poor. Purchasing complains that orders are blocked, and a developer proposes deriving the date from effective_date plus term_length inside the ERP. The controller wants every date in the ERP to be traceable to a reviewed value in Agreement Manager. Which review step fits?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Queue the agreements that lack a usable expiration_date for a contract analyst, who enters the date in Agreement Manager before the next sync."
+      },
+      {
+        "id": "B",
+        "text": "Compute each missing date in the ERP from effective_date plus term_length, and flag the ERP record as reviewed so purchase orders are released at once."
+      },
+      {
+        "id": "C",
+        "text": "Call CreateAgreementSummary for each agreement without a date, and store the expiration date the summary mentions as the reviewed value in the ERP."
+      },
+      {
+        "id": "D",
+        "text": "Delete each agreement without a date with DeleteAgreement and import it again, so the AI extraction runs a second time and fills in the date."
+      }
+    ],
+    "correct": "A",
+    "answerText": "Queue the agreements that lack a usable expiration_date for a contract analyst, who enters the date in Agreement Manager before the next sync.",
+    "explanation": "When AI finds no value, a business user reviews the agreement and enters it in Agreement Manager; later GET responses return the user-entered value. That keeps every ERP date 'traceable to a reviewed value in Agreement Manager'.",
+    "whyNotOthers": "A is right because the correction is made at the source and flows to the ERP on the next sync. The trap is B: the derived date may be correct, but it exists only in the ERP and nobody reviewed it in Agreement Manager. C relies on unreviewed AI prose, and D repeats the same extraction on the same poor scan.",
+    "optionExplanations": {
+      "A": "Correct. An external queue finds the gaps and an analyst fills them in Agreement Manager, whose user-entered values the next GET returns.",
+      "B": "The derived value lives only in the ERP and was never reviewed in Agreement Manager, which breaks the controller's traceability rule.",
+      "C": "An AI summary is not a reviewed value and may omit or misstate the date.",
+      "D": "Re-importing the same poor scan re-runs the same extraction and still leaves no reviewed value."
+    },
+    "trapOption": "B",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "An external review queue for missing values, with the fix made in Agreement Manager so the API returns it.",
+      "clues": [
+        "records come back without a usable expiration_date -> AI found no value to extract",
+        "traceable to a reviewed value in Agreement Manager -> the correction must be made in Agreement Manager, not the ERP",
+        "derive from effective_date plus term_length -> tempting shortcut that bypasses review"
+      ]
+    },
+    "concept": {
+      "title": "Fill extraction gaps at the source",
+      "line": "When AI extraction leaves a value empty, route it to a reviewer who enters it in Agreement Manager; later API reads return the user value."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "long",
+    "style": "design",
+    "domain": "Agreement Manager API",
+    "topic": "Select imported agreements by language",
+    "stem": "After acquiring a Sao Paulo distributor, Kerrigan Tools imported 2,500 of the distributor's contracts into Agreement Manager. Its Brazilian legal team, which reads only Portuguese, will review the AI-extracted terms of every contract written in Portuguese. Several Portuguese-language contracts are governed by New York law, and some Brazilian-law contracts were drafted in English. The review queue is fed by a script that runs from a laptop in the Lisbon office. How should the script select the contracts for the Brazilian team?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Call GetAgreementsList and keep the records whose governing_law provision is Brazil, since a contract's governing law shows its language."
+      },
+      {
+        "id": "B",
+        "text": "Call GetAgreementsList with the languages filter set to a BCP-47 Portuguese tag such as pt-BR, and page through the results with ctoken."
+      },
+      {
+        "id": "C",
+        "text": "Call GetAgreementsList with the title filter set to Contrato, since Portuguese-language contracts are expected to carry Portuguese titles."
+      },
+      {
+        "id": "D",
+        "text": "Call GetAgreementsList with source_name set to the distributor's company name, since imported contracts record the company they came from."
+      }
+    ],
+    "correct": "B",
+    "answerText": "Call GetAgreementsList with the languages filter set to a BCP-47 Portuguese tag such as pt-BR, and page through the results with ctoken.",
+    "explanation": "Each agreement lists its languages as BCP-47 codes, and GetAgreementsList filters on languages. The deciding clue is that law and language do not line up ('Portuguese-language contracts governed by New York law').",
+    "whyNotOthers": "B is right because the languages property records what the document is written in. The trap is A: governing law sounds like a proxy for language, but the stem says the two diverge. C assumes a naming convention nobody guaranteed, and D misreads source_name, which names the originating system, not a company.",
+    "optionExplanations": {
+      "A": "Governing law and language diverge in this repository, so this misses Portuguese contracts under New York law and includes English ones.",
+      "B": "Correct. The languages filter takes BCP-47 tags and selects contracts by the language they are written in.",
+      "C": "Titles are not guaranteed to be in Portuguese, so a title filter is unreliable.",
+      "D": "source_name is the originating system (for example eSign or CLM), not the company that held the contract."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "Filter imported agreements by the languages property (BCP-47).",
+      "clues": [
+        "reads only Portuguese -> select by document language",
+        "Portuguese contracts under New York law, Brazilian-law contracts in English -> governing law is not a proxy",
+        "laptop in the Lisbon office -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "Filter by languages, not law",
+      "line": "Agreement records list document languages as BCP-47 codes; filter on languages rather than inferring language from governing law or titles."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "short",
+    "style": "fact",
+    "domain": "Agreement Manager API",
+    "topic": "AI extraction on import",
+    "stem": "A records team imports a batch of legacy contracts into Agreement Manager. What happens to AI extraction for these contracts?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Nothing until the integration calls CreateAgreementSummary for each contract"
+      },
+      {
+        "id": "B",
+        "text": "Nothing, because AI extraction runs only on completed eSignature envelopes"
+      },
+      {
+        "id": "C",
+        "text": "It runs only after an administrator approves each contract for analysis"
+      },
+      {
+        "id": "D",
+        "text": "It runs automatically, filling in type, parties and provisions"
+      }
+    ],
+    "correct": "D",
+    "answerText": "It runs automatically, filling in type, parties and provisions",
+    "explanation": "Whenever documents are uploaded to Agreement Manager or an envelope completes, AI analyzes them and populates type, parties and provisions automatically.",
+    "whyNotOthers": "D is right because extraction is automatic for imported and envelope-sourced agreements. The trap is A: CreateAgreementSummary sounds like the trigger, but it only returns an AI overview. B ignores imported documents, and C invents an approval gate; review happens after extraction, not before.",
+    "optionExplanations": {
+      "A": "CreateAgreementSummary produces an AI-written overview; it does not start extraction.",
+      "B": "Uploaded documents are analyzed too, not only completed envelopes.",
+      "C": "There is no approval gate before analysis; reviewers confirm or correct values after extraction.",
+      "D": "Correct. Imported agreements are analyzed automatically and their AI insights are attached to the agreement."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "concept": {
+      "title": "Extraction runs automatically",
+      "line": "Agreement Manager runs AI extraction automatically on imported documents and completed envelopes; no API call starts it."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "short",
+    "style": "fact",
+    "domain": "Agreement Manager API",
+    "topic": "Status filter",
+    "stem": "A compliance report must include only agreements whose status is COMPLETE. Which GetAgreementsList query parameter does this?",
+    "options": [
+      {
+        "id": "A",
+        "text": "status=COMPLETE"
+      },
+      {
+        "id": "B",
+        "text": "metadata.status=COMPLETE"
+      },
+      {
+        "id": "C",
+        "text": "provisions.status=COMPLETE"
+      },
+      {
+        "id": "D",
+        "text": "state=COMPLETE"
+      }
+    ],
+    "correct": "A",
+    "answerText": "status=COMPLETE",
+    "explanation": "GetAgreementsList has a top-level status query parameter; agreement status values include PENDING, COMPLETE and INACTIVE.",
+    "whyNotOthers": "A is right because status is a top-level agreement property and filter. The trap is B: metadata holds record history such as created_at and created_by, not status. C and D name parameters that do not exist.",
+    "optionExplanations": {
+      "A": "Correct. status is a top-level filter on GetAgreementsList.",
+      "B": "metadata carries record history (created_at, created_by), not the agreement status.",
+      "C": "provisions hold contract terms such as dates and values, not the agreement status.",
+      "D": "There is no state parameter on GetAgreementsList."
+    },
+    "trapOption": "B",
+    "importance": "LOW",
+    "concept": {
+      "title": "Top-level status filter",
+      "line": "Agreement status (for example PENDING, COMPLETE, INACTIVE) is a top-level property and GetAgreementsList filter."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "long",
+    "style": "design",
+    "domain": "Agreement Manager API",
+    "topic": "Authentication for Agreement Manager",
+    "stem": "Fairholm Bank is building a browser-based contract lookup for its relationship managers. Each manager must sign in with their own Docusign credentials so the lookup acts as that person, never through a shared service account. The lookup reads agreements, parties and provisions from Agreement Manager and also shows envelope status from eSignature. The bank's identity team already runs single sign-on for Docusign, and the pilot will use the developer environment. Which two choices are correct? (Select two)",
+    "options": [
+      {
+        "id": "A",
+        "text": "Use JWT Grant with an impersonated service user, because the Agreement Manager API accepts only JWT access tokens."
+      },
+      {
+        "id": "B",
+        "text": "Use Authorization Code Grant so each manager signs in and consents, as Agreement Manager accepts eSignature tokens."
+      },
+      {
+        "id": "C",
+        "text": "Request a separate Agreement Manager API key, because Agreement Manager calls are authorized apart from eSignature OAuth."
+      },
+      {
+        "id": "D",
+        "text": "Request only the signature scope, because a token with that scope already covers reads from Agreement Manager as well."
+      },
+      {
+        "id": "E",
+        "text": "Request adm_store_unified_repo_read alongside signature, because reading agreements needs a Navigator scope on the token."
+      }
+    ],
+    "correct": "B,E",
+    "correctAnswers": [
+      "B",
+      "E"
+    ],
+    "answerText": "Use Authorization Code Grant so each manager signs in and consents, as Agreement Manager accepts eSignature tokens.; Request adm_store_unified_repo_read alongside signature, because reading agreements needs a Navigator scope on the token.",
+    "explanation": "Agreement Manager uses the same OAuth access tokens as eSignature (Authorization Code, Implicit or JWT Grant), but the token must include a Navigator scope such as adm_store_unified_repo_read. 'Sign in with their own credentials' points to Authorization Code Grant.",
+    "whyNotOthers": "B and E are right: a per-user grant plus the Navigator read scope on one token. The trap is D: the shared token idea is correct, but the signature scope alone does not authorize Agreement Manager. A contradicts both the per-user rule and the docs (all three grant types work), and C invents a separate key scheme.",
+    "optionExplanations": {
+      "A": "All three grant types are accepted, and an impersonated service user breaks the 'never a shared service account' rule.",
+      "B": "Correct. Authorization Code Grant has each manager sign in, and the resulting token works for Agreement Manager as well as eSignature.",
+      "C": "There is no separate API key; Agreement Manager uses the same OAuth access tokens as eSignature.",
+      "D": "The signature scope does not include Agreement Manager; a Navigator scope must be requested too.",
+      "E": "Correct. GetAgreementsList and GetAgreement require adm_store_unified_repo_read on the access token."
+    },
+    "trapOption": "D",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "Authorization Code Grant per user, with signature plus adm_store_unified_repo_read scopes.",
+      "clues": [
+        "sign in with their own credentials, never a shared service account -> Authorization Code Grant, not JWT impersonation",
+        "reads agreements, parties and provisions -> adm_store_unified_repo_read scope",
+        "also shows envelope status -> the same token also carries the signature scope",
+        "single sign-on, developer environment -> red herrings"
+      ]
+    },
+    "concept": {
+      "title": "Same token, extra Navigator scope",
+      "line": "Agreement Manager accepts eSignature OAuth tokens from any grant type, but the token must carry a Navigator scope such as adm_store_unified_repo_read."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "long",
+    "style": "design",
+    "domain": "Agreement Manager API",
+    "topic": "Fresh values in a RAG pipeline",
+    "stem": "Telmar Energy's contract copilot answers engineers' questions over Agreement Manager data. A vector index of agreement records keyed by agreementId finds the relevant agreements for each question. Contract analysts regularly correct AI-extracted values such as renewal_notice_period in Agreement Manager, and answers have started quoting values that analysts already fixed. Rebuilding the full index takes about four hours, the index runs on the company's own GPU cluster, and the hourly API limit is shared with other integrations. Which change keeps the answers accurate with the fewest extra calls?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Rebuild the whole index every hour with GetAgreementsList so that the values analysts correct reach the copilot much sooner."
+      },
+      {
+        "id": "B",
+        "text": "Keep the indexed values as they are, because AI-extracted values are fixed once extraction completes and corrections stay in the UI."
+      },
+      {
+        "id": "C",
+        "text": "After the index returns candidate agreementIds, fetch their current records with one GetAgreementsList call using the id filter."
+      },
+      {
+        "id": "D",
+        "text": "After the index returns candidate agreementIds, call CreateAgreementSummary on each of them and answer from the summaries."
+      }
+    ],
+    "correct": "C",
+    "answerText": "After the index returns candidate agreementIds, fetch their current records with one GetAgreementsList call using the id filter.",
+    "explanation": "Later GET responses return user-updated values, and GetAgreementsList accepts an id filter with several IDs, so one call per question refreshes exactly the agreements the answer will cite.",
+    "whyNotOthers": "C is right because it keeps retrieval in the index but takes values from a live, batched read. The trap is A: re-indexing sounds thorough, but a four-hour rebuild cannot run hourly and would drain the shared limit. B is false because UI corrections replace the AI values in API responses, and D returns prose with one call per agreement.",
+    "optionExplanations": {
+      "A": "A four-hour rebuild cannot run every hour, and full re-reads waste the shared hourly limit.",
+      "B": "User corrections made in Agreement Manager replace the AI values that later GET requests return, so the index goes stale.",
+      "C": "Correct. One id-filtered GetAgreementsList call returns the current, user-corrected provisions for the candidates.",
+      "D": "Summaries are AI narrative, not the corrected structured values, and need one call per agreement."
+    },
+    "trapOption": "A",
+    "importance": "HIGH",
+    "decode": {
+      "needs": "Hybrid RAG: index keyed by agreementId for retrieval, then an id-filtered GetAgreementsList for current values.",
+      "clues": [
+        "quoting values analysts already fixed -> user-updated values are not in the index snapshot",
+        "fewest extra calls -> batch the candidates with the id filter",
+        "rebuild takes four hours -> hourly rebuild is impossible",
+        "own GPU cluster -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "Retrieve from index, values live",
+      "line": "In RAG over agreements, keep the index for retrieval but fetch current values by agreementId at answer time, since reviewers can change them."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "short",
+    "style": "fact",
+    "domain": "Agreement Manager API",
+    "topic": "Operation for RAG data",
+    "stem": "Which Agreement Manager operation is documented as a data source for RAG applications and copilots that answer questions across many agreements?",
+    "options": [
+      {
+        "id": "A",
+        "text": "CreateAgreementSummary"
+      },
+      {
+        "id": "B",
+        "text": "GetAgreementsList"
+      },
+      {
+        "id": "C",
+        "text": "DeleteAgreement"
+      },
+      {
+        "id": "D",
+        "text": "getAgreementSummary"
+      }
+    ],
+    "correct": "B",
+    "answerText": "GetAgreementsList",
+    "explanation": "The GetAgreementsList reference lists 'providing data for RAG applications or Copilots' as a use case, because it returns agreements with parties, provisions and metadata.",
+    "whyNotOthers": "B is right because the list operation supplies structured data across agreements. The trap is A: it is an AI feature, but it writes an overview of a single agreement rather than serving as the data source. C removes agreements, and D does not exist.",
+    "optionExplanations": {
+      "A": "CreateAgreementSummary creates an AI overview of one agreement; it is not the documented RAG data source.",
+      "B": "Correct. GetAgreementsList returns agreements with parties, provisions and metadata and is documented for RAG and copilots.",
+      "C": "DeleteAgreement removes an agreement; it supplies no data.",
+      "D": "There is no getAgreementSummary operation; summaries come from the POST CreateAgreementSummary."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "concept": {
+      "title": "List operation feeds RAG",
+      "line": "GetAgreementsList is the documented data source for RAG apps and copilots over Agreement Manager data."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "short",
+    "style": "fact",
+    "domain": "Agreement Manager API",
+    "topic": "Spotting unconfirmed AI values",
+    "stem": "In Agreement Manager, how does a reviewer recognize a value that AI populated and no user has confirmed yet?",
+    "options": [
+      {
+        "id": "A",
+        "text": "A yellow warning triangle next to the field name"
+      },
+      {
+        "id": "B",
+        "text": "The value is shown in italics until approved"
+      },
+      {
+        "id": "C",
+        "text": "A Needs review banner across the agreement"
+      },
+      {
+        "id": "D",
+        "text": "A purple star to the left of the value"
+      }
+    ],
+    "correct": "D",
+    "answerText": "A purple star to the left of the value",
+    "explanation": "Metadata populated by AI and not yet confirmed by a user is marked with a purple star to the left of its value; reviewing or updating the field removes the flag.",
+    "whyNotOthers": "D is right per the Navigator concepts documentation. The trap is C: a review banner sounds plausible for a review process, but the marker is per value. A and B describe markers that do not exist.",
+    "optionExplanations": {
+      "A": "No warning triangle is used for AI-populated values.",
+      "B": "Values are not shown in italics to indicate AI origin.",
+      "C": "The flag is per value, not a banner across the agreement.",
+      "D": "Correct. A purple star marks AI-populated values that no user has confirmed; confirming removes it."
+    },
+    "trapOption": "C",
+    "importance": "LOW",
+    "concept": {
+      "title": "Purple star flags AI values",
+      "line": "AI-populated values not yet confirmed by a user carry a purple star; reviewing or updating the value removes the flag."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "long",
+    "style": "design",
+    "domain": "Agreement Manager API",
+    "topic": "Remove duplicate imports",
+    "stem": "During a migration, Lindqvist Retail imported contracts from two regional file shares, and some supplier contracts existed on both shares, so they now appear twice in Agreement Manager. The finance ERP shows doubled contract values for those suppliers. Compliance requires that a person confirms each duplicate before anything is removed, and one copy of every contract must stay in the repository. The migration vendor charges per file imported. Which two steps fit? (Select two)",
+    "options": [
+      {
+        "id": "A",
+        "text": "Delete automatically every record whose party and execution date match another record, because such a match proves it is a duplicate."
+      },
+      {
+        "id": "B",
+        "text": "Merge each pair with a PUT on the agreement that combines both records into one, then resync the ERP from the merged record."
+      },
+      {
+        "id": "C",
+        "text": "Find candidate pairs with GetAgreementsList filtered on parties.name_in_agreement and provisions.execution_date for review."
+      },
+      {
+        "id": "D",
+        "text": "Delete both records of each pair and import the contract once more, so that a single clean record remains in the repository."
+      },
+      {
+        "id": "E",
+        "text": "After the reviewer confirms a pair, call DeleteAgreement on the duplicate's agreementId only, and drop that record from the ERP."
+      }
+    ],
+    "correct": "C,E",
+    "correctAnswers": [
+      "C",
+      "E"
+    ],
+    "answerText": "Find candidate pairs with GetAgreementsList filtered on parties.name_in_agreement and provisions.execution_date for review.; After the reviewer confirms a pair, call DeleteAgreement on the duplicate's agreementId only, and drop that record from the ERP.",
+    "explanation": "GetAgreementsList filters on party name and execution date to surface likely pairs, and DeleteAgreement (DELETE .../agreements/{agreementId}) removes the confirmed copy. The clue 'a person confirms each duplicate before anything is removed' requires review between the two steps.",
+    "whyNotOthers": "C and E are right: detect with filtered list calls, then delete only the confirmed duplicate. The trap is A: matching on party and date is the right detection idea, but deleting without review breaks the compliance rule. B invents an update operation, and D deletes the original and pays for a needless re-import.",
+    "optionExplanations": {
+      "A": "Deleting without human confirmation violates the compliance rule, and two genuine contracts can share a party and date.",
+      "B": "The API has no update or merge operation; only list, get, delete and create summary exist.",
+      "C": "Correct. Party and execution_date filters surface likely duplicate pairs for a reviewer.",
+      "D": "This removes the copy that must stay and costs another import fee for no benefit.",
+      "E": "Correct. DeleteAgreement removes only the confirmed duplicate, leaving one copy in the repository."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "List-based detection, human confirmation, then DeleteAgreement on the confirmed duplicate.",
+      "clues": [
+        "appear twice after import from two shares -> duplicate agreement records",
+        "a person confirms before anything is removed -> review step before DeleteAgreement",
+        "one copy must stay -> delete only the duplicate's agreementId",
+        "vendor charges per file -> red herring that also argues against re-importing"
+      ]
+    },
+    "concept": {
+      "title": "Review, then DeleteAgreement duplicates",
+      "line": "Detect duplicate imports with filtered list calls, have a person confirm, then remove only the duplicate with DeleteAgreement."
+    }
+  }
+]

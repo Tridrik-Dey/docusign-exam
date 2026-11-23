@@ -1,0 +1,1756 @@
+[
+  {
+    "paper": "E",
+    "length": "long",
+    "style": "design",
+    "domain": "Docusign Connect",
+    "topic": "Account-level configuration limited to selected users",
+    "stem": "Kestrel Brokerage has one Docusign account with about 120 users. Its 14 commercial underwriters send policy binders from the Docusign web app using shared templates, and operations wants the ERP updated within minutes whenever one of those binders is fully signed. Envelopes sent by HR, marketing and the claims team must never reach the ERP's listener, which is hosted in Azure. There is no custom sending application, and the IT team holds Docusign administrator rights. Which approach meets the requirement?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Add an eventNotification object to each binder envelope so that only the underwriters' envelopes report to the ERP listener and other teams are unaffected"
+      },
+      {
+        "id": "B",
+        "text": "Create an account-level custom configuration that lists only the underwriters' user IDs instead of all users, so binders they send from the web app are reported automatically"
+      },
+      {
+        "id": "C",
+        "text": "Create an organization-level configuration limited to the brokerage's single account, so one configuration managed in Org Admin captures the underwriters' binders"
+      },
+      {
+        "id": "D",
+        "text": "Create an account-level custom configuration for all users and have the ERP listener return 200 and discard messages for envelopes sent by other teams"
+      },
+      {
+        "id": "E",
+        "text": "Create a Recipient Connect configuration for the underwriters' users, so events on envelopes in which they take part are reported to the ERP listener"
+      }
+    ],
+    "correct": "B",
+    "answerText": "Create an account-level custom configuration that lists only the underwriters' user IDs instead of all users, so binders they send from the web app are reported automatically",
+    "explanation": "The binders are sent from the web app (\"no custom sending application\"), so the webhook must come from a standing configuration, and an account-level configuration can be scoped to selected users so other teams' envelopes \"never reach\" the listener.",
+    "whyNotOthers": "B is right because an account-level configuration can list specific users, which captures web-app sending and excludes other teams. The trap is D: returning 200 and discarding is correct listener behaviour, but the stem says other teams' envelopes must never reach the listener. A fails because eventNotification is API-only and cannot be added from the web app; C fails because organization-level scope is chosen by account, not by user, so HR envelopes would be included; E fails because the underwriters are senders, not recipients.",
+    "optionExplanations": {
+      "A": "eventNotification can only be set through Envelopes:create in the API; the underwriters send from the web app, so there is nowhere to add it.",
+      "B": "Correct. Account-level configurations cover all users or selected users (allUsers false plus userIds), and they work for envelopes sent from the web app.",
+      "C": "Organization-level configurations select all or selected accounts, not individual users, so every user in the brokerage's one account would be reported.",
+      "D": "Discarding after a 200 is the right way to handle unneeded events, but HR and marketing envelopes would still be delivered to the ERP listener, which the stem forbids.",
+      "E": "Recipient Connect reports envelopes that domain users receive as signers or carbon copies; the underwriters are the senders here."
+    },
+    "trapOption": "D",
+    "importance": "HIGH",
+    "decode": {
+      "needs": "Account-level custom configuration with selected users (userIds), not envelope-level or organization-level",
+      "clues": [
+        "send from the Docusign web app, no custom sending application -> envelope-level eventNotification is impossible",
+        "only the 14 underwriters, other teams must never reach the listener -> scope by user, not by account",
+        "listener hosted in Azure -> red herring, does not change the configuration level"
+      ]
+    },
+    "concept": {
+      "title": "Scope account Connect to users",
+      "line": "Account-level Connect can cover all users or a selected list of users and works for web-app sending, unlike envelope-level webhooks."
+    }
+  },
+  {
+    "paper": "E",
+    "length": "long",
+    "style": "design",
+    "domain": "Docusign Connect",
+    "topic": "Integrator-managed HMAC for client accounts",
+    "stem": "Ledgerline, a payroll software vendor, onboards about 300 client companies, each with its own Docusign account. During onboarding, Ledgerline's service creates a Connect configuration in each client account that points to Ledgerline's multi-tenant listener running on Kubernetes. Ledgerline's security team wants every client's messages signed with Ledgerline's own HMAC secrets, managed in one place, and does not want any client administrator to generate keys or handle secrets. Clients are spread across three time zones. How should Ledgerline create the client configurations?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Ask each client administrator to enable HMAC on their Connect page and send the generated secret to Ledgerline's support team through a secure vault"
+      },
+      {
+        "id": "B",
+        "text": "Enable OAuth for Connect in each client account with Ledgerline's identity provider, because a bearer token on each call proves that messages come from Docusign"
+      },
+      {
+        "id": "C",
+        "text": "Create each client configuration on the client's Connect page in eSignature Admin with HMAC and the integrator-managed option selected, reusing the main account's keys"
+      },
+      {
+        "id": "D",
+        "text": "Create each configuration with ConnectConfigurations:create, setting includeHMAC and integratorManaged to true, using a token for Ledgerline's main account so its HMAC keys sign the messages"
+      },
+      {
+        "id": "E",
+        "text": "Create each configuration through the API with includeHMAC set to true using the client administrator's token, so the client account's own HMAC keys are applied automatically"
+      }
+    ],
+    "correct": "D",
+    "answerText": "Create each configuration with ConnectConfigurations:create, setting includeHMAC and integratorManaged to true, using a token for Ledgerline's main account so its HMAC keys sign the messages",
+    "explanation": "Integrator-managed HMAC lets a partner use its main account's HMAC keys for client configurations: set includeHMAC and integratorManaged to true in ConnectConfigurations:create, and the access token identifies the main account whose keys are used. This meets \"Ledgerline's own HMAC secrets, managed in one place\".",
+    "whyNotOthers": "D is right because integratorManaged with includeHMAC signs client messages with the main account's keys, and the token identifies that main account. The trap is C: the integrator-managed option exists, but it can currently be configured only through the API, not the Connect page. A and E use the clients' own keys, which the stem rules out; B swaps HMAC for OAuth, which does not meet the requirement for HMAC signatures.",
+    "optionExplanations": {
+      "A": "This makes every client generate and hand over secrets, which the security team explicitly does not want.",
+      "B": "OAuth for Connect is a different mechanism; the requirement is HMAC signatures with Ledgerline's own secrets.",
+      "C": "Integrator-managed configurations can currently be set up only with the API, so this UI path is not available.",
+      "D": "Correct. includeHMAC plus integratorManaged set to true, called with a token from the main account, makes Connect sign client events with the main account's HMAC keys.",
+      "E": "With the client administrator's token and no integratorManaged flag, the client account's own keys would be used, and clients would have to create them."
+    },
+    "trapOption": "C",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "ConnectConfigurations:create with includeHMAC and integratorManaged set to true, using the main account's token",
+      "clues": [
+        "Ledgerline's own HMAC secrets, managed in one place -> integrator-managed HMAC",
+        "no client administrator handles keys -> not per-client HMAC keys",
+        "service creates the configuration during onboarding -> API route, which integrator-managed requires",
+        "Kubernetes, three time zones -> red herrings"
+      ]
+    },
+    "concept": {
+      "title": "Integrator-managed HMAC",
+      "line": "A partner can create client Connect configurations through the API with includeHMAC and integratorManaged true so its main account's HMAC keys sign them."
+    }
+  },
+  {
+    "paper": "E",
+    "length": "short",
+    "style": "fact",
+    "domain": "Docusign Connect",
+    "topic": "Deprecated Connect data model",
+    "stem": "A Connect configuration can deliver JSON or XML, and send events individually (SIM) or in aggregate. Which of these four data models is deprecated and meant for legacy apps only?",
+    "options": [
+      {
+        "id": "A",
+        "text": "XML SIM"
+      },
+      {
+        "id": "B",
+        "text": "XML aggregate"
+      },
+      {
+        "id": "C",
+        "text": "JSON aggregate"
+      },
+      {
+        "id": "D",
+        "text": "JSON SIM"
+      }
+    ],
+    "correct": "A",
+    "answerText": "XML SIM",
+    "explanation": "The ConnectConfigurations:create reference lists four data models and marks XML SIM as deprecated (legacy apps only); JSON SIM is the recommended model.",
+    "whyNotOthers": "A is right because XML SIM is the one model flagged as deprecated. The trap is B: aggregate mode is a legacy option too, but XML aggregate is still a supported data model, not the deprecated one. C is a supported JSON variant, and D is the model Docusign recommends for all apps.",
+    "optionExplanations": {
+      "A": "Correct. The API reference states that the XML SIM model is deprecated and should be used by legacy apps only.",
+      "B": "XML aggregate is a legacy option that combines similar events into one message, but it is still listed as a supported data model.",
+      "C": "JSON aggregate is supported (deliveryMode aggregate with eventData.version restv2.1); it is not the deprecated model.",
+      "D": "JSON SIM (Connect 2.0) is the recommended model for all apps."
+    },
+    "trapOption": "B",
+    "importance": "LOW",
+    "concept": {
+      "title": "Four Connect data models",
+      "line": "Connect supports JSON SIM (recommended), JSON aggregate, XML aggregate and XML SIM, which is deprecated."
+    }
+  },
+  {
+    "paper": "E",
+    "length": "long",
+    "style": "design",
+    "domain": "Docusign Connect",
+    "topic": "Mutual TLS at the load balancer",
+    "stem": "Halvorsen Bank's network standard says every inbound partner connection to the DMZ must be authenticated by the F5 load balancer during the TLS handshake, using a client certificate that chains to an approved certificate authority; a caller that cannot present one must be dropped before any HTTP request reaches an application. The Connect listener is written in Java and receives JSON SIM messages, and the application team has no budget to change listener code this quarter. Which approach satisfies the standard?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Enable HMAC and have the load balancer hash each body with the secret and compare it with X-DocuSign-Signature-1, so unauthenticated calls are dropped early"
+      },
+      {
+        "id": "B",
+        "text": "Enable mutual TLS on the Connect configuration and have the Java listener read and validate Docusign's client certificate in its request handler, updating trust on renewal"
+      },
+      {
+        "id": "C",
+        "text": "Enable mutual TLS on the Connect configuration and have the F5 request and validate Docusign's client certificate in the handshake, updating trust when Docusign renews it"
+      },
+      {
+        "id": "D",
+        "text": "Enable OAuth for Connect, so Docusign obtains a token from the bank's authorization server and the load balancer validates it before forwarding the request"
+      },
+      {
+        "id": "E",
+        "text": "Restrict the DMZ firewall to Docusign's published IP ranges, so that only Docusign can open a TLS connection to the listener and others are refused"
+      }
+    ],
+    "correct": "C",
+    "answerText": "Enable mutual TLS on the Connect configuration and have the F5 request and validate Docusign's client certificate in the handshake, updating trust when Docusign renews it",
+    "explanation": "Only mutual TLS authenticates the caller \"during the TLS handshake\" with a client certificate: the listener's server sends a certificate request and validates Docusign's certificate, with no listener code change.",
+    "whyNotOthers": "C is right because mutual TLS validated by the F5 authenticates Docusign with a certificate inside the handshake, with no listener code change. The trap is B: it uses mutual TLS too, but the certificate is checked in the Java listener's request handler, after the request reaches the application and only by changing listener code. A (HMAC) and D (OAuth) are HTTP-level checks after the handshake, and E filters by IP address rather than authenticating a certificate.",
+    "optionExplanations": {
+      "A": "HMAC is checked on the HTTP body after the TLS session is set up and uses a shared secret, so it cannot meet a certificate-in-the-handshake rule.",
+      "B": "Mutual TLS is the right mechanism, but validating the certificate in the Java request handler happens after the request reaches the application and needs a listener code change, which the standard and the budget rule out.",
+      "C": "Correct. With mutual TLS the server requests Docusign's certificate during the handshake and validates it; the trust setup must be maintained when Docusign renews its certificate, roughly yearly.",
+      "D": "OAuth for Connect puts a bearer token in the Authorization header, again an HTTP-level check after the handshake.",
+      "E": "IP allowlisting restricts sources but does not authenticate a client certificate, which the standard requires."
+    },
+    "trapOption": "B",
+    "importance": "HIGH",
+    "decode": {
+      "needs": "Mutual TLS on the Connect configuration, validated by the F5",
+      "clues": [
+        "authenticated during the TLS handshake with a client certificate -> mutual TLS",
+        "dropped before any HTTP request reaches an application -> header-based checks (Basic, OAuth, HMAC) are too late",
+        "no budget to change listener code -> the F5 validates the certificate, not the Java listener",
+        "written in Java, JSON SIM -> red herrings"
+      ]
+    },
+    "concept": {
+      "title": "Mutual TLS authenticates at handshake",
+      "line": "Mutual TLS lets the listener's server request and validate Docusign's client certificate during the TLS handshake, before any HTTP request is processed."
+    }
+  },
+  {
+    "paper": "E",
+    "length": "long",
+    "style": "design",
+    "domain": "Docusign Connect",
+    "topic": "Back-filling a new listener with historical envelopes",
+    "stem": "Corvid Energy launched a contract analytics listener today. Analysts also need data for about 2,000 envelopes that were completed during the last quarter, before the listener existed, delivered to the same listener in the same JSON format as live events. The account already has an XML configuration that feeds an old archive system, and the archive team will not allow any change to it. A new JSON SIM configuration for the analytics listener was created this morning. What is the best way to deliver the historical envelopes?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Use the Connect failure log and ConnectEvents:retryForEnvelopes to republish the quarter's envelopes so they are posted to the analytics listener"
+      },
+      {
+        "id": "B",
+        "text": "Temporarily point the existing XML configuration at the analytics listener and republish the quarter's envelopes from the Connect logs, then restore it"
+      },
+      {
+        "id": "C",
+        "text": "Run a job that calls Envelopes:get for each of the 2,000 envelopes and posts each response body to the analytics listener as if it were a Connect event"
+      },
+      {
+        "id": "D",
+        "text": "Rely on the new JSON SIM configuration, which automatically sends completion events for envelopes completed before it was created within the 15-day window"
+      },
+      {
+        "id": "E",
+        "text": "Submit the envelope IDs to the historical envelope publish endpoint with an ad hoc JSON configuration naming the analytics URL, and track progress in the Bulk Actions Log"
+      }
+    ],
+    "correct": "E",
+    "answerText": "Submit the envelope IDs to the historical envelope publish endpoint with an ad hoc JSON configuration naming the analytics URL, and track progress in the Bulk Actions Log",
+    "explanation": "The historical envelope publish endpoint (POST /connect/envelopes/publish/historical) submits a batch of existing envelopes to a URL using an ad hoc configuration, always in JSON, without touching existing configurations; progress appears in the Bulk Actions Log.",
+    "whyNotOthers": "E is right because historical publish is built for sending existing envelopes to a webhook without changing any configuration. The trap is A: retryForEnvelopes republishes failed deliveries, but these envelopes never failed and the analytics listener did not exist. B changes the protected XML configuration, and Connect logs keep only recent entries; C produces API responses rather than Connect messages and wastes calls; D is false because a new configuration only reports events that happen after it exists.",
+    "optionExplanations": {
+      "A": "Retry republishes failures from a configuration's failure log; these envelopes were never sent to the analytics listener, so there is nothing to retry.",
+      "B": "This changes the archive team's protected configuration, and the Connect logs hold only the most recent 100 entries for 15 days.",
+      "C": "Envelopes:get returns the REST envelope resource, not a Connect JSON SIM message, and makes 2,000 extra API calls.",
+      "D": "A configuration reports only events that occur after it is created; it does not replay older completions.",
+      "E": "Correct. Historical publish sends existing envelopes to the urlToPublishTo in an ad hoc JSON configuration and reports status in the Bulk Actions Log."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "Historical envelope publish (POST /connect/envelopes/publish/historical) with an ad hoc JSON configuration",
+      "clues": [
+        "completed before the listener existed -> nothing failed, so no retry",
+        "same JSON format as live events -> historical publish always sends JSON",
+        "archive team will not allow any change to the XML configuration -> ad hoc configuration, not editing the existing one"
+      ]
+    },
+    "concept": {
+      "title": "Historical envelope republish",
+      "line": "To send existing envelopes to a webhook, use the historical publish endpoint with an ad hoc JSON configuration instead of changing a live configuration."
+    }
+  },
+  {
+    "paper": "E",
+    "length": "short",
+    "style": "fact",
+    "domain": "Docusign Connect",
+    "topic": "Advantages of JSON SIM over legacy formats",
+    "stem": "Which two are advantages of the JSON SIM (Connect 2.0) message format over the legacy Connect formats? (Select two)",
+    "options": [
+      {
+        "id": "A",
+        "text": "Messages are event-focused and smaller, carrying data about the triggering event rather than a full envelope summary by default"
+      },
+      {
+        "id": "B",
+        "text": "Every message carries the complete envelope summary by default, so the listener never needs a follow-up API call"
+      },
+      {
+        "id": "C",
+        "text": "The payload follows the eSignature SOAP object model, so existing SOAP-based parsers can be reused unchanged"
+      },
+      {
+        "id": "D",
+        "text": "More event types can be subscribed to, and each notification is sent at the time its event occurs"
+      },
+      {
+        "id": "E",
+        "text": "Similar events are combined into a single delivery, reducing the number of messages the listener must handle"
+      }
+    ],
+    "correct": "A,D",
+    "correctAnswers": [
+      "A",
+      "D"
+    ],
+    "answerText": "Messages are event-focused and smaller, carrying data about the triggering event rather than a full envelope summary by default; More event types can be subscribed to, and each notification is sent at the time its event occurs",
+    "explanation": "Docusign lists three JSON SIM benefits: smaller event-focused messages (envelope summary optional), more event types, and notification at the time each event occurs.",
+    "whyNotOthers": "A and D are right because they are the documented JSON SIM benefits. The trap is B: JSON SIM can include an envelope summary, but only if you choose it, and it is not sent by default because it slows delivery. C describes the legacy XML format, and E describes aggregate mode, which is the opposite of sending individual messages.",
+    "optionExplanations": {
+      "A": "Correct. By default a JSON SIM message carries data about the triggering event, so it is smaller and easier to process.",
+      "B": "The envelope summary is optional in JSON SIM and not returned by default; adding it increases payload size and delivery time.",
+      "C": "Reusing the SOAP object model is a reason to choose the legacy XML format, not a JSON SIM advantage.",
+      "D": "Correct. JSON SIM supports more event types and sends each notification when the event happens.",
+      "E": "Combining similar events into one delivery is the legacy aggregate option, not JSON SIM."
+    },
+    "trapOption": "B",
+    "importance": "HIGH",
+    "concept": {
+      "title": "JSON SIM benefits",
+      "line": "JSON SIM sends smaller event-focused messages, supports more event types and notifies at the time each event occurs; the envelope summary is optional."
+    }
+  },
+  {
+    "paper": "E",
+    "length": "long",
+    "style": "design",
+    "domain": "Docusign Connect",
+    "topic": "Retries after a long pause",
+    "stem": "Tidewater Logistics' listener went down on 1 March after a failed deployment, so deliveries from its account-level JSON SIM configuration (requiresAcknowledgement enabled) began failing and retrying. On 5 March the operations lead paused the configuration while the team rebuilt the listener across its three warehouses' environments. The configuration was unpaused on 18 March, 13 days later, and the new listener is healthy. Some events first failed on 1 and 2 March; others first failed on 4 March. What should the team expect, and what must it do?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Events still inside their 15-day window continue at their next scheduled retry, while events whose window ended during the pause have expired and must be republished manually"
+      },
+      {
+        "id": "B",
+        "text": "Every skipped event is retried immediately on unpause, because pausing holds events in a queue and releases them all as soon as processing resumes"
+      },
+      {
+        "id": "C",
+        "text": "Because the configuration stayed paused for more than ten days, Docusign disabled it, so every event must be republished after re-enabling it"
+      },
+      {
+        "id": "D",
+        "text": "Unpausing restarts each event's schedule from the first five-minute retry, so all events, including the oldest, are delivered within a few hours"
+      },
+      {
+        "id": "E",
+        "text": "Events skipped during the pause were discarded, so the team must send every March envelope again through the historical envelope publish endpoint"
+      }
+    ],
+    "correct": "A",
+    "answerText": "Events still inside their 15-day window continue at their next scheduled retry, while events whose window ended during the pause have expired and must be republished manually",
+    "explanation": "Pausing skips retries without losing them or resetting the schedule; after unpause, events resume at their next scheduled retry. Events that reached the end of their 15-day window while paused (first failed on 1 and 2 March) expire and must be republished manually.",
+    "whyNotOthers": "A is right because unpaused events resume at the next scheduled retry and only those past the 15-day window need manual republishing. The trap is B: skipped events are not lost, but they wait for the next scheduled retry rather than being sent at once. C uses the wrong threshold (auto-disable happens after 14 consecutive paused days, and this pause was 13); D is false because pausing does not reset retry schedules; E is false because skipped events are not discarded.",
+    "optionExplanations": {
+      "A": "Correct. Events from 4 March are still within 15 days and resume at their next scheduled (daily) retry; events from 1 and 2 March passed day 15 during the pause and must be republished.",
+      "B": "Skipped events are kept, but processing resumes at the next scheduled retry interval, not immediately.",
+      "C": "A paused configuration is disabled automatically only after 14 consecutive days; 13 days does not trigger it.",
+      "D": "Pausing does not reset retry schedules, so there is no restart from the five-minute step.",
+      "E": "Skipped events are bypassed, not discarded; most of them continue retrying on their own."
+    },
+    "trapOption": "B",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "Know the pause rules: skipped not lost, next scheduled retry, 15-day expiry, 14-day auto-disable",
+      "clues": [
+        "paused 13 days -> below the 14-day automatic disable",
+        "first failed on 1 and 2 March, unpaused 18 March -> beyond the 15-day retry window, manual republish",
+        "first failed on 4 March -> still in window, resumes on schedule",
+        "three warehouses, failed deployment -> red herrings"
+      ]
+    },
+    "concept": {
+      "title": "Pause skips, never resets",
+      "line": "Pausing skips scheduled retries without losing events; after unpause they resume at the next scheduled retry, but events past 15 days must be republished."
+    }
+  },
+  {
+    "paper": "F",
+    "length": "long",
+    "style": "design",
+    "domain": "Docusign Connect",
+    "topic": "Configuration-level OAuth for a second identity provider",
+    "stem": "Meridian Health's Docusign account has two custom Connect configurations: one sends claims events to a platform protected by Okta, and the other sends HR events to a platform behind Microsoft Entra ID. Account-level OAuth for Connect is currently set up with Okta. The HR security team now requires that the HR listener only accept bearer tokens issued by Entra ID, and the claims team will not give up Okta. The HR configuration subscribes to four events and the claims configuration includes documents. What should the developer do?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Replace the account-level OAuth settings with the Entra ID values, because an account can only use one identity provider for all of its Connect configurations"
+      },
+      {
+        "id": "B",
+        "text": "Add Basic authentication to the HR configuration alongside the account-level OAuth, so the HR listener receives both a password and the Okta token"
+      },
+      {
+        "id": "C",
+        "text": "Move HR envelopes to envelope-level webhooks and supply the Entra ID credentials in each envelope's eventNotification, keeping Okta at the account level"
+      },
+      {
+        "id": "D",
+        "text": "Enable HMAC on the HR configuration only and have the HR listener ignore the Okta token, since a valid signature already proves the message came from Docusign"
+      },
+      {
+        "id": "E",
+        "text": "Enable configuration-level OAuth on the HR configuration with the Entra ID token URL, client ID and secret, which overrides the account-level Okta settings for it"
+      }
+    ],
+    "correct": "E",
+    "answerText": "Enable configuration-level OAuth on the HR configuration with the Entra ID token URL, client ID and secret, which overrides the account-level Okta settings for it",
+    "explanation": "Configuration-level OAuth (Include Configuration Level OAuth in the UI, or enableOAuthPerConfiguration in the API) gives one configuration its own credentials, overriding the account-level OAuth, so each configuration can use a different identity provider.",
+    "whyNotOthers": "E is right because per-configuration OAuth lets the HR configuration use Entra ID while the claims configuration keeps the account-level Okta setup. The trap is A: it reflects how account-level OAuth works on its own, but configuration-level OAuth removes the one-provider limit, and replacing Okta breaks the claims team. C fails because configuration-level OAuth is not available for envelope-level Connect; B fails because Basic authentication cannot be combined with OAuth; D ignores the requirement for Entra ID tokens.",
+    "optionExplanations": {
+      "A": "Configuration-level OAuth lets different configurations in one account use different identity providers, and replacing Okta would break the claims integration.",
+      "B": "Basic authentication cannot be used together with OAuth for Connect, and it would still not deliver an Entra ID token.",
+      "C": "Configuration-level OAuth is available for organization- and account-level configurations but not for envelope-level Connect.",
+      "D": "HMAC proves origin and integrity, but the HR team specifically requires Entra ID bearer tokens.",
+      "E": "Correct. Credentials set at configuration level override the account-level OAuth settings for that configuration only."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "Configuration-level OAuth (enableOAuthPerConfiguration) on the HR configuration",
+      "clues": [
+        "HR listener only accepts Entra ID tokens, claims keeps Okta -> two identity providers in one account",
+        "account-level OAuth already set up with Okta -> override it for one configuration only",
+        "four events, includes documents -> red herrings"
+      ]
+    },
+    "concept": {
+      "title": "Per-configuration OAuth credentials",
+      "line": "A Connect configuration can carry its own OAuth credentials that override account-level OAuth, so one account can use several identity providers."
+    }
+  },
+  {
+    "paper": "F",
+    "length": "short",
+    "style": "fact",
+    "domain": "Docusign Connect",
+    "topic": "Envelope status polling limit",
+    "stem": "Without Connect, an integration checks envelope status by polling. What polling frequency does the eSignature REST API allow for an envelope?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Once per envelope every 5 minutes"
+      },
+      {
+        "id": "B",
+        "text": "Once per envelope every hour"
+      },
+      {
+        "id": "C",
+        "text": "Once per envelope every 15 minutes"
+      },
+      {
+        "id": "D",
+        "text": "Once per account every 15 minutes, across all envelopes"
+      }
+    ],
+    "correct": "C",
+    "answerText": "Once per envelope every 15 minutes",
+    "explanation": "Docusign limits status GET requests to one per envelope every 15 minutes, and an application that violates the polling rules will not be approved at go-live.",
+    "whyNotOthers": "C is right because the limit is one status check per envelope every 15 minutes. The trap is D: it uses the right interval but the wrong scope, because the limit applies per envelope (or other API object), not per account. A is too frequent and B is stricter than the rule.",
+    "optionExplanations": {
+      "A": "Five minutes is three times more frequent than the rule allows.",
+      "B": "The rule allows once every 15 minutes; once per hour is stricter than required.",
+      "C": "Correct. Polling is limited to one GET per envelope every 15 minutes, which is why Connect is preferred.",
+      "D": "The 15-minute interval is right, but it applies to each envelope or API object, not to the account as a whole."
+    },
+    "trapOption": "D",
+    "importance": "HIGH",
+    "concept": {
+      "title": "Polling limit per envelope",
+      "line": "Status polling is limited to one request per envelope every 15 minutes; violating it blocks go-live approval."
+    }
+  },
+  {
+    "paper": "F",
+    "length": "long",
+    "style": "design",
+    "domain": "Docusign Connect",
+    "topic": "Replacing on-demand polling in a mobile app",
+    "stem": "Arbor Solar's field reps use a phone app, built in React Native, that lists customer proposals awaiting signature. Each time a rep opens the list, the app calls Envelopes:get for every one of that rep's 40 or so open envelopes, and reps open the list dozens of times a day. The go-live reviewer flagged the pattern, and sales management wants a proposal to show as signed within a minute of the customer signing. Proposals are sent by API from templates. What is the best redesign?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Keep the per-envelope calls but cache each result on the phone for five minutes, so that each rep's device sends fewer status requests per hour"
+      },
+      {
+        "id": "B",
+        "text": "Have Connect push signing events to a backend listener that updates the proposal database, and let the phone app read status from that database"
+      },
+      {
+        "id": "C",
+        "text": "Replace the per-envelope calls with one Envelopes:listStatusChanges call each time the list opens, covering the rep's envelopes since the start of the day"
+      },
+      {
+        "id": "D",
+        "text": "Add an eventNotification to each proposal that points at the rep's phone, so status reaches the device directly without any server in between"
+      },
+      {
+        "id": "E",
+        "text": "Have the app poll each open envelope every 15 minutes in the background, whether or not the rep opens the list, so the limit is never exceeded"
+      }
+    ],
+    "correct": "B",
+    "answerText": "Have Connect push signing events to a backend listener that updates the proposal database, and let the phone app read status from that database",
+    "explanation": "Connect pushes events only when something changes, does not count against API limits and arrives in near real time, so a backend listener feeding the app's database meets both the review and the \"within a minute\" goal.",
+    "whyNotOthers": "B is right because push events give near real-time status with no polling. The trap is C: listStatusChanges is the right call for occasional catch-up, but calling it on every app open is still frequent polling of the same envelopes. A still polls far more often than once per 15 minutes; D fails because a listener must be a public HTTPS endpoint, not a phone; E respects the limit but can leave a status up to 15 minutes old, missing the one-minute goal.",
+    "optionExplanations": {
+      "A": "A five-minute cache still checks each envelope up to three times as often as the 15-minute rule allows.",
+      "B": "Correct. Connect messages are pushed when status changes, do not count against API limits and remove the polling logic.",
+      "C": "listStatusChanges suits periodic reconciliation, but running it dozens of times a day per rep is still polling and does not fix the review finding.",
+      "D": "Connect posts to a listener available on the public internet over HTTPS; a rep's phone cannot act as that endpoint.",
+      "E": "Polling every 15 minutes is allowed but wasteful, and a signature could take up to 15 minutes to appear."
+    },
+    "trapOption": "C",
+    "importance": "HIGH",
+    "decode": {
+      "needs": "Connect to a backend listener that stores status; the app reads its own database",
+      "clues": [
+        "go-live reviewer flagged the pattern -> polling rule violation",
+        "signed within a minute -> push, not 15-minute polling",
+        "phone app -> cannot be the webhook endpoint",
+        "React Native, templates -> red herrings"
+      ]
+    },
+    "concept": {
+      "title": "Push status instead of polling",
+      "line": "Use Connect to push status into your own data store and have clients read that store, instead of polling Docusign on demand."
+    }
+  },
+  {
+    "paper": "F",
+    "length": "short",
+    "style": "fact",
+    "domain": "Docusign Connect",
+    "topic": "Recipient Connect prerequisites",
+    "stem": "Which two are prerequisites for using Recipient Connect? (Select two)",
+    "options": [
+      {
+        "id": "A",
+        "text": "Each envelope must be sent with an eventNotification object that names the recipient organization's listener URL"
+      },
+      {
+        "id": "B",
+        "text": "The organization must have claimed the email domain of the users who will be monitored as recipients"
+      },
+      {
+        "id": "C",
+        "text": "The configuration must use the legacy XML format, because Recipient Connect reuses the SOAP envelope model"
+      },
+      {
+        "id": "D",
+        "text": "The accounts that send the envelopes must be linked to the receiving organization in Docusign Admin"
+      },
+      {
+        "id": "E",
+        "text": "The accounts that will receive the envelopes must be linked to an organization in Docusign Admin"
+      }
+    ],
+    "correct": "B,E",
+    "correctAnswers": [
+      "B",
+      "E"
+    ],
+    "answerText": "The organization must have claimed the email domain of the users who will be monitored as recipients; The accounts that will receive the envelopes must be linked to an organization in Docusign Admin",
+    "explanation": "Recipient Connect needs an organization in Docusign Admin, a claimed domain for the monitored users, and the receiving accounts linked to that organization.",
+    "whyNotOthers": "B and E are right because Recipient Connect works for domain users of your own organization whose accounts are linked to it. The trap is D: linking accounts is a prerequisite, but it is the receiving accounts, not the outside senders' accounts, that must be linked. A fails because the sender controls the envelope and no eventNotification is needed; C fails because Recipient Connect messages are always JSON.",
+    "optionExplanations": {
+      "A": "Recipient Connect is a standing configuration on the receiving side; the outside sender does not add anything to the envelope.",
+      "B": "Correct. Monitored users must belong to a domain claimed by the organization (Access Management with SSO).",
+      "C": "Recipient Connect messages are always sent in JSON, never XML.",
+      "D": "Senders are often outside companies that cannot be linked to your organization; only the receiving accounts need linking.",
+      "E": "Correct. The accounts that receive envelopes and trigger the notifications must be linked to the organization."
+    },
+    "trapOption": "D",
+    "importance": "MEDIUM",
+    "concept": {
+      "title": "Recipient Connect prerequisites",
+      "line": "Recipient Connect needs an organization, a claimed domain for monitored users, and the receiving accounts linked to the organization."
+    }
+  },
+  {
+    "paper": "F",
+    "length": "long",
+    "style": "design",
+    "domain": "Docusign Connect",
+    "topic": "When the legacy XML format is justified",
+    "stem": "Granite Mutual's claims mainframe team built a parser eight years ago against the eSignature SOAP object model, and its vendor contract requires that the inbound payload never change. The mainframe only needs envelope completion events for one account, whose adjusters send claim forms from the Docusign web app. No workflow or extension events are needed. An architect proposes managing everything from the organization level, as the company does for its other two accounts. Which configuration should the developer create for the mainframe?",
+    "options": [
+      {
+        "id": "A",
+        "text": "An organization-level configuration in XML format, so the mainframe feed is managed centrally alongside the configurations for the other accounts"
+      },
+      {
+        "id": "B",
+        "text": "An account-level JSON SIM configuration, with the mainframe team rewriting the parser, since JSON SIM is mandatory for every new configuration"
+      },
+      {
+        "id": "C",
+        "text": "A Recipient Connect configuration in XML for the adjusters' users, so that the SOAP object model reaches the mainframe for each completed claim"
+      },
+      {
+        "id": "D",
+        "text": "An account-level configuration in the legacy XML format, since a stable SOAP-model payload is a documented reason to choose it and only envelope events are needed"
+      },
+      {
+        "id": "E",
+        "text": "An envelope-level eventNotification in XML on each claim form, since envelope-level webhooks are the only level where the XML format remains available"
+      }
+    ],
+    "correct": "D",
+    "answerText": "An account-level configuration in the legacy XML format, since a stable SOAP-model payload is a documented reason to choose it and only envelope events are needed",
+    "explanation": "Docusign recommends JSON SIM for all apps but documents the legacy XML format for teams that want the SOAP object model or a payload that never changes; legacy formats are available only at account and envelope level.",
+    "whyNotOthers": "D is right because the stem gives the documented reasons for the legacy format, and account level supports it while covering web-app sending. The trap is A: central management sounds sensible, but organization-level configurations always use JSON SIM. B overstates the guidance (JSON SIM is recommended, not mandatory); C fails because Recipient Connect is JSON-only and adjusters are senders; E fails because envelope-level webhooks need the API, and the adjusters use the web app.",
+    "optionExplanations": {
+      "A": "Organization-level configurations always use the JSON SIM model, so XML is not possible there.",
+      "B": "JSON SIM is recommended for all apps but not mandatory; legacy XML is still supported at account and envelope level.",
+      "C": "Recipient Connect always sends JSON and reports envelopes that users receive, not ones they send.",
+      "D": "Correct. Wanting the SOAP object model and a payload that never changes are the documented reasons for legacy XML, which account-level configurations support.",
+      "E": "Envelope-level webhooks need Envelopes:create in the API, and XML is also available at account level."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "Account-level configuration in legacy XML format",
+      "clues": [
+        "parser built against the SOAP object model, payload must never change -> documented reasons for legacy XML",
+        "send from the Docusign web app -> envelope-level eventNotification is impossible",
+        "manage from the organization level -> organization configurations are JSON SIM only"
+      ]
+    },
+    "concept": {
+      "title": "Legacy XML only at account/envelope",
+      "line": "Legacy XML suits SOAP-model parsers or a never-changing payload, and exists only at account and envelope level; organization level is always JSON SIM."
+    }
+  },
+  {
+    "paper": "F",
+    "length": "short",
+    "style": "fact",
+    "domain": "Docusign Connect",
+    "topic": "Connect log retention",
+    "stem": "Logging is enabled on a Connect configuration. According to the ConnectEvents reference, how many Connect log entries are kept, and for how long?",
+    "options": [
+      {
+        "id": "A",
+        "text": "The most recent 100 entries, deleted after 15 days"
+      },
+      {
+        "id": "B",
+        "text": "The most recent 50 entries, deleted after 30 days"
+      },
+      {
+        "id": "C",
+        "text": "The most recent 100 entries, kept until an administrator deletes them"
+      },
+      {
+        "id": "D",
+        "text": "The most recent 1,000 entries, deleted after 15 days"
+      }
+    ],
+    "correct": "A",
+    "answerText": "The most recent 100 entries, deleted after 15 days",
+    "explanation": "The ConnectEvents resource stores the most recent 100 Connect logs and deletes them after 15 days, so logs suit recent troubleshooting, not long-term audit.",
+    "whyNotOthers": "A is right because the reference states 100 logs kept and deleted after 15 days. The trap is B: 50 is the limit of the eSignature API request log (Clear # of 50 Logs), a different feature. C ignores the 15-day deletion, and D has the wrong count.",
+    "optionExplanations": {
+      "A": "Correct. The most recent 100 Connect logs are stored and are deleted after 15 days.",
+      "B": "50 entries belongs to the API request logging feature in eSignature settings, not to Connect logs.",
+      "C": "Connect logs are deleted automatically after 15 days; they are not kept indefinitely.",
+      "D": "The documented count is 100, not 1,000."
+    },
+    "trapOption": "B",
+    "importance": "LOW",
+    "concept": {
+      "title": "Connect logs are short-lived",
+      "line": "Connect keeps only the latest 100 log entries for 15 days, so they help with recent troubleshooting rather than long-term records."
+    }
+  },
+  {
+    "paper": "F",
+    "length": "long",
+    "style": "design",
+    "domain": "Docusign Connect",
+    "topic": "Legacy event values in the wrong case",
+    "stem": "A developer at Pellham Freight keeps an existing XML parser and creates an account-level configuration with POST /v2.1/accounts/{accountId}/connect. The body sets configurationType to custom, allUsers to true, allowEnvelopePublish to true, enableLog to true and deliveryMode to aggregate, with no eventData version, and lists envelopeEvents as completed and declined. The call returns 201, but no messages arrive when test envelopes are completed, even though the listener answers webhook test tools correctly. What should the developer change?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Set allowEnvelopePublish to true, because configurations created through the API are disabled until it is set"
+      },
+      {
+        "id": "B",
+        "text": "Replace envelopeEvents with an events array of lowercase names such as envelope-completed while keeping the aggregate XML model"
+      },
+      {
+        "id": "C",
+        "text": "Write the envelopeEvents values in sentence case, such as Completed and Declined, because lowercase values in that property do not match"
+      },
+      {
+        "id": "D",
+        "text": "Set allUsers to false and list the shipping clerks' user IDs, because allUsers applies only to organization-level configurations"
+      },
+      {
+        "id": "E",
+        "text": "Enable requiresAcknowledgement, because Connect does not deliver legacy XML messages to a listener unless acknowledgement is required"
+      }
+    ],
+    "correct": "C",
+    "answerText": "Write the envelopeEvents values in sentence case, such as Completed and Declined, because lowercase values in that property do not match",
+    "explanation": "The create reference's troubleshooting list says that when you use envelopeEvents or recipientEvents, the values must be sentence case, not lowercase; the body already enables publishing and covers all users.",
+    "whyNotOthers": "C is right because legacy envelopeEvents values must be sentence case. The trap is B: lowercase hyphenated names are correct, but in the events property used by JSON SIM, not in a legacy XML aggregate configuration. A is already set in the body, D is false because allUsers applies to account-level configurations, and E is false because acknowledgement controls retries, not first delivery.",
+    "optionExplanations": {
+      "A": "The body already sets allowEnvelopePublish to true, so the configuration is enabled.",
+      "B": "The events array with names such as envelope-completed belongs to the JSON SIM model; legacy XML uses envelopeEvents or recipientEvents.",
+      "C": "Correct. The troubleshooting guidance says envelopeEvents and recipientEvents values must be sentence case, not lowercase.",
+      "D": "allUsers true (or a non-empty userIds list) is exactly what an account-level configuration needs.",
+      "E": "requiresAcknowledgement governs retries of failed deliveries; it is not a precondition for sending messages."
+    },
+    "trapOption": "B",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "Fix the case of the legacy envelopeEvents values",
+      "clues": [
+        "deliveryMode aggregate, no eventData version -> legacy XML model, so envelopeEvents applies",
+        "envelopeEvents completed and declined in lowercase -> must be sentence case",
+        "allowEnvelopePublish true, allUsers true -> already correct, ruling out the usual suspects",
+        "listener answers test tools -> red herring, the listener is fine"
+      ]
+    },
+    "concept": {
+      "title": "Legacy events need sentence case",
+      "line": "Legacy configurations use envelopeEvents or recipientEvents in sentence case; JSON SIM uses an events array of lowercase hyphenated names."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "short",
+    "style": "fact",
+    "domain": "Docusign Connect",
+    "topic": "Events available to Recipient Connect",
+    "stem": "A Recipient Connect configuration is being set up for the claims staff. Which of these events can it subscribe to?",
+    "options": [
+      {
+        "id": "A",
+        "text": "envelope-sent"
+      },
+      {
+        "id": "B",
+        "text": "envelope-voided"
+      },
+      {
+        "id": "C",
+        "text": "envelope-corrected"
+      },
+      {
+        "id": "D",
+        "text": "recipient-delivered"
+      },
+      {
+        "id": "E",
+        "text": "envelope-created"
+      }
+    ],
+    "correct": "D",
+    "answerText": "recipient-delivered",
+    "explanation": "Recipient Connect supports envelope-completed and the recipient events authenticationfailed, completed, declined, delivered, deliveryfailed and sent; recipient-delivered is on that list.",
+    "whyNotOthers": "D is right because recipient-delivered is one of the supported Recipient Connect events. The trap is A: envelope-sent is a common account-level event, but the recipient side uses recipient-sent instead. B, C and E are sender-side envelope events that Recipient Connect does not offer.",
+    "optionExplanations": {
+      "A": "envelope-sent is not on the Recipient Connect list; the receiving side uses recipient-sent.",
+      "B": "envelope-voided is not among the events Recipient Connect can subscribe to.",
+      "C": "envelope-corrected is a sender-side envelope event that Recipient Connect does not offer.",
+      "D": "Correct. recipient-delivered is one of the supported Recipient Connect events.",
+      "E": "envelope-created describes a draft in the sender's account, which Recipient Connect does not report."
+    },
+    "trapOption": "A",
+    "importance": "LOW",
+    "concept": {
+      "title": "Recipient Connect event list",
+      "line": "Recipient Connect supports envelope-completed plus recipient events such as sent, delivered, completed, declined, authenticationfailed and deliveryfailed."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "short",
+    "style": "fact",
+    "domain": "Docusign Connect",
+    "topic": "Pre-built Connect integration for vaulting",
+    "stem": "Which pre-built Connect integration notifies an external platform that a completed transaction is ready to be vaulted?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Connect for Box"
+      },
+      {
+        "id": "B",
+        "text": "Connect for eOriginal"
+      },
+      {
+        "id": "C",
+        "text": "Connect for OneDrive"
+      },
+      {
+        "id": "D",
+        "text": "Connect for Salesforce"
+      }
+    ],
+    "correct": "B",
+    "answerText": "Connect for eOriginal",
+    "explanation": "Connect for eOriginal pushes an event telling eOriginal that a transaction that needs to be vaulted is complete.",
+    "whyNotOthers": "B is right because eOriginal is the vaulting integration. The trap is A: Box, like OneDrive, receives completed documents, which sounds like storage, but it does not vault transactions. D pushes data updates to the Docusign for Salesforce application.",
+    "optionExplanations": {
+      "A": "Connect for Box pushes completed documents to a Box folder; it does not signal vaulting.",
+      "B": "Correct. Connect for eOriginal informs eOriginal that a transaction that needs to be vaulted is complete.",
+      "C": "Connect for OneDrive pushes completed documents to a OneDrive folder.",
+      "D": "Connect for Salesforce pushes data updates to the Docusign for Salesforce application."
+    },
+    "trapOption": "A",
+    "importance": "LOW",
+    "concept": {
+      "title": "Four pre-built Connect solutions",
+      "line": "Box and OneDrive receive completed documents, Salesforce receives data updates, and eOriginal is told a transaction is ready for vaulting."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "long",
+    "style": "design",
+    "domain": "Docusign Connect",
+    "topic": "Choosing the trigger for fulfilment",
+    "stem": "Fenwick Machinery's equipment contracts are signed in order by the customer's buyer, the customer's CFO (often on a phone) and finally Fenwick's sales director. The warehouse must schedule a shipment only when a contract is fully executed, and logistics will not accept false starts. Sales operations sometimes adds a legal reviewer after the sales director by correcting the envelope. A listener already receives messages from an account-level JSON SIM configuration, and each contract has three documents. Which trigger should start shipment scheduling?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Subscribe to recipient-completed and schedule shipment when the buyer's event arrives, because the buyer is the party that places the order"
+      },
+      {
+        "id": "B",
+        "text": "Subscribe to envelope-sent and schedule shipment right away, then cancel the shipment if the contract is later declined or voided"
+      },
+      {
+        "id": "C",
+        "text": "Subscribe to recipient-completed and schedule shipment when the sales director's event arrives, because the director is the last signer in the routing order"
+      },
+      {
+        "id": "D",
+        "text": "Poll Envelopes:get for each open contract every 15 minutes and schedule shipment when the returned status is completed"
+      },
+      {
+        "id": "E",
+        "text": "Subscribe to envelope-completed and start shipment scheduling when that event arrives, because it is sent only after every recipient in the final routing has finished"
+      }
+    ],
+    "correct": "E",
+    "answerText": "Subscribe to envelope-completed and start shipment scheduling when that event arrives, because it is sent only after every recipient in the final routing has finished",
+    "explanation": "\"Fully executed\" means the envelope is complete, and envelope-completed is pushed only when every recipient has finished, even if the routing changes through a correction.",
+    "whyNotOthers": "E is right because envelope-completed is the definitive signal that every recipient is done. The trap is C: the director is normally last, but the stem says a legal reviewer is sometimes added after the director, so the director's recipient-completed can arrive before the contract is complete. A and B start too early, and D works but polls when a push event is already available.",
+    "optionExplanations": {
+      "A": "The buyer signs first; shipping on that event ignores the CFO and the director.",
+      "B": "Starting at envelope-sent creates exactly the false starts logistics rejects.",
+      "C": "The director is not always last, because a legal reviewer is sometimes added afterwards by correction.",
+      "D": "Polling every 15 minutes is allowed but adds API calls and delay when the listener already receives pushed events.",
+      "E": "Correct. envelope-completed fires once every recipient has completed, whatever the final routing."
+    },
+    "trapOption": "C",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "Subscribe to envelope-completed",
+      "clues": [
+        "only when fully executed, no false starts -> envelope-level completion, not a recipient event",
+        "a legal reviewer is sometimes added after the director -> the last signer can change",
+        "CFO signs on a phone, three documents -> red herrings"
+      ]
+    },
+    "concept": {
+      "title": "Envelope-completed means fully executed",
+      "line": "Use envelope-completed for actions that need every recipient done; recipient-completed suits steps tied to one signer."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "long",
+    "style": "design",
+    "domain": "Docusign Connect",
+    "topic": "Organization-level configuration for selected accounts",
+    "stem": "Vireo Group's Docusign organization contains seven accounts. Only the three accounts of its EU subsidiaries must send signing events to a new EU-hosted listener for a GDPR records project; data from the other four accounts must not reach that listener. Central IT wants a single configuration that it manages in one place. The EU accounts send envelopes both from the Docusign web app and from a Workday integration. Which approach fits best?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Create one organization-level configuration that selects only the three EU accounts and points it at the EU listener"
+      },
+      {
+        "id": "B",
+        "text": "Create one organization-level configuration for all seven accounts and have the EU listener return 200 and discard messages from the other accounts"
+      },
+      {
+        "id": "C",
+        "text": "Create an account-level configuration in each EU account, because organization-level configurations always cover every account in the organization"
+      },
+      {
+        "id": "D",
+        "text": "Add an eventNotification object to the envelopes created by the Workday integration so that they report to the EU listener"
+      },
+      {
+        "id": "E",
+        "text": "Create a Recipient Connect configuration for the EU subsidiaries' domain users so their envelope events reach the EU listener"
+      }
+    ],
+    "correct": "A",
+    "answerText": "Create one organization-level configuration that selects only the three EU accounts and points it at the EU listener",
+    "explanation": "An organization-level configuration can cover all accounts or selected accounts, so one centrally managed configuration can include just the three EU accounts and capture both web-app and integration sending.",
+    "whyNotOthers": "A is right because organization-level Connect supports selected accounts in one configuration. The trap is B: returning 200 and discarding is good listener practice, but the stem says other accounts' data must not reach the listener at all. C is based on a false claim (selected accounts are allowed) and creates three configurations; D misses web-app envelopes; E covers envelopes the users receive, not the ones they send.",
+    "optionExplanations": {
+      "A": "Correct. Organization-level configurations can listen to all accounts or only selected accounts.",
+      "B": "Data from the four non-EU accounts would still be delivered to the EU listener, which the stem forbids.",
+      "C": "Organization-level configurations can select accounts, and three account-level configurations break the single-configuration goal.",
+      "D": "eventNotification covers only API-created envelopes, so web-app envelopes would be missed.",
+      "E": "Recipient Connect reports envelopes the users receive, not envelopes their accounts send."
+    },
+    "trapOption": "B",
+    "importance": "HIGH",
+    "decode": {
+      "needs": "Organization-level configuration with selected accounts",
+      "clues": [
+        "three of seven accounts, others must not reach the listener -> scope by selected accounts",
+        "single configuration managed in one place -> organization level",
+        "web app and Workday -> envelope-level is not enough",
+        "GDPR records project -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "Org Connect can select accounts",
+      "line": "An organization-level configuration can cover all accounts or only selected accounts, managed centrally in one place."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "long",
+    "style": "design",
+    "domain": "Docusign Connect",
+    "topic": "Duplicate messages from Recipient Connect",
+    "stem": "Ashgrove Partners, a law firm, uses Recipient Connect for its partners so the matter system logs when engagement letters sent by clients are completed. A client recently sent one letter with two Ashgrove partners as signers, and the matter system logged envelope-completed twice for the same envelope within a second. The listener answered both calls with 200 in about 40 milliseconds, and only one configuration exists. A clerk suspects a Docusign fault. What explains this and what should the team do?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Connect retried the message because the first response was too slow, so the team should add capacity so the listener answers faster"
+      },
+      {
+        "id": "B",
+        "text": "A second Connect configuration must be posting to the same URL, so the team should list the configurations and delete the duplicate"
+      },
+      {
+        "id": "C",
+        "text": "Recipient Connect generates a message for each subscribed recipient for each event, so the listener should deduplicate on envelope ID and event"
+      },
+      {
+        "id": "D",
+        "text": "envelope-completed is sent once per document in the envelope, so the team should subscribe to recipient-completed instead"
+      },
+      {
+        "id": "E",
+        "text": "The client's own account-level configuration also posts to the firm's listener, so the client should be asked to remove it"
+      }
+    ],
+    "correct": "C",
+    "answerText": "Recipient Connect generates a message for each subscribed recipient for each event, so the listener should deduplicate on envelope ID and event",
+    "explanation": "When several subscribed recipients are on the same envelope, Recipient Connect generates one message per recipient per event, so two subscribed partners produce two envelope-completed messages.",
+    "whyNotOthers": "C is right because the duplicate comes from two subscribed recipients, which the listener should handle by deduplicating. The trap is A: retries are a common cause of duplicates, but the stem says both calls got a 200 in about 40 milliseconds, so nothing failed. B contradicts \"only one configuration exists\", D is false because events are per envelope, not per document, and E has no basis since a client's configuration would send to the client's own URL.",
+    "optionExplanations": {
+      "A": "Retries happen only after a failure or timeout; a 200 in 40 milliseconds is a success.",
+      "B": "The stem states that only one configuration exists.",
+      "C": "Correct. With multiple subscribed recipients, Recipient Connect sends a message for each recipient for each event.",
+      "D": "envelope-completed is one event per envelope, not per document.",
+      "E": "A sender's configuration sends to the sender's own listener, not to the firm's."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "Expect one message per subscribed recipient; deduplicate in the listener",
+      "clues": [
+        "two Ashgrove partners as signers -> two subscribed recipients on one envelope",
+        "answered with 200 in about 40 ms -> not a retry",
+        "only one configuration exists -> not a duplicate configuration"
+      ]
+    },
+    "concept": {
+      "title": "Recipient Connect sends per recipient",
+      "line": "Recipient Connect generates one message per subscribed recipient per event, so listeners should deduplicate by envelope and event."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "short",
+    "style": "fact",
+    "domain": "Docusign Connect",
+    "topic": "JSON SIM for envelope-level webhooks",
+    "stem": "An app adds a webhook to individual envelopes it creates and wants JSON SIM messages. Where is the JSON SIM format specified?",
+    "options": [
+      {
+        "id": "A",
+        "text": "In the account's Connect settings in eSignature Admin, which then apply to every envelope's webhook"
+      },
+      {
+        "id": "B",
+        "text": "On the Connect page of Organization Admin, which controls the format for all levels"
+      },
+      {
+        "id": "C",
+        "text": "In a ConnectConfigurations:create call with configurationType set to envelope"
+      },
+      {
+        "id": "D",
+        "text": "Nowhere, because envelope-level webhooks always send the legacy XML format"
+      },
+      {
+        "id": "E",
+        "text": "In the envelope's eventNotification object, alongside its URL and events"
+      }
+    ],
+    "correct": "E",
+    "answerText": "In the envelope's eventNotification object, alongside its URL and events",
+    "explanation": "For envelope-level Connect, the JSON SIM settings are defined inside the envelope's eventNotification object together with the other envelope-level Connect values.",
+    "whyNotOthers": "E is right because everything about an envelope-level webhook, including its format, is set in eventNotification. The trap is A: account settings define account-level configurations, but they do not set the format of per-envelope webhooks. B and C name configuration routes that do not apply to envelope-level webhooks, and D is false because JSON SIM is supported at envelope level.",
+    "optionExplanations": {
+      "A": "Account-level settings create account-level configurations; per-envelope webhooks carry their own settings.",
+      "B": "Organization Admin manages organization-level configurations, not the format of individual envelope webhooks.",
+      "C": "ConnectConfigurations:create takes configurationType custom or customrecipient; envelope-level webhooks use eventNotification instead.",
+      "D": "JSON SIM is supported for organization-, account- and envelope-level Connect.",
+      "E": "Correct. The JSON SIM syntax for envelope-level configurations is defined in the envelope's eventNotification object."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "concept": {
+      "title": "Envelope webhook settings live in eventNotification",
+      "line": "An envelope-level webhook's URL, events and JSON SIM format are all set in the envelope's eventNotification object."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "long",
+    "style": "design",
+    "domain": "Docusign Connect",
+    "topic": "Reconciliation safety net alongside Connect",
+    "stem": "Halcyon Travel updates its booking system of record from Connect events. After a three-hour cloud region outage last month, the auditors asked for a nightly safety net that finds any envelope status changes the system missed, and the check must not depend on Connect delivery. The team must not break Docusign's polling rules, and about 6,000 envelopes are open at any time, and the check should use as few API calls as possible. Which approach should the team add?",
+    "options": [
+      {
+        "id": "A",
+        "text": "A nightly job that calls Envelopes:get for every envelope sent in the last 30 days and updates any record whose status differs"
+      },
+      {
+        "id": "B",
+        "text": "A scheduled job that calls Envelopes:listStatusChanges with time windows that overlap the previous run, and reconciles any envelope whose status differs"
+      },
+      {
+        "id": "C",
+        "text": "Turning off Connect and calling Envelopes:listStatusChanges every 15 minutes instead, because polling cannot miss an event"
+      },
+      {
+        "id": "D",
+        "text": "Relying only on Connect's automatic retries, because the 15-day retry window means every missed event is eventually delivered"
+      },
+      {
+        "id": "E",
+        "text": "A second Connect configuration that posts the same events to the same listener, so that each event is delivered twice"
+      }
+    ],
+    "correct": "B",
+    "answerText": "A scheduled job that calls Envelopes:listStatusChanges with time windows that overlap the previous run, and reconciles any envelope whose status differs",
+    "explanation": "Docusign's guidance for catch-up is Envelopes:listStatusChanges with overlapping time spans; it is an independent check that does not depend on Connect and avoids per-envelope polling.",
+    "whyNotOthers": "B is right because overlapping listStatusChanges windows are the recommended catch-up method alongside Connect. The trap is D: retries do recover most outage gaps, but the auditors require a check that does not depend on Connect delivery. A makes thousands of per-envelope calls, C throws away push delivery for frequent polling, and E still depends entirely on Connect.",
+    "optionExplanations": {
+      "A": "One Envelopes:get per envelope means thousands of calls a night; the stem asks for as few API calls as possible, and per-envelope status polling is what Docusign's guidance steers away from.",
+      "B": "Correct. listStatusChanges over overlapping windows catches anything missed without per-envelope polling and without depending on Connect.",
+      "C": "Replacing Connect with frequent polling loses real-time push and adds API load.",
+      "D": "Retries help, but the auditors want an independent check that does not depend on Connect.",
+      "E": "A second configuration still depends on Connect and only doubles the traffic."
+    },
+    "trapOption": "D",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "Envelopes:listStatusChanges with overlapping windows as a catch-up job",
+      "clues": [
+        "must not depend on Connect delivery -> retries and extra configurations do not count",
+        "must not break polling rules, as few API calls as possible -> no per-envelope GET loop",
+        "6,000 open envelopes, three-hour outage -> red herrings about scale"
+      ]
+    },
+    "concept": {
+      "title": "Catch up with listStatusChanges",
+      "line": "Pair Connect with a periodic Envelopes:listStatusChanges job using overlapping time windows as an independent catch-up check."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "short",
+    "style": "fact",
+    "domain": "Docusign Connect",
+    "topic": "Listener response time",
+    "stem": "According to Docusign's webhook listener guidance, how quickly should a listener respond to each Connect request?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Within 500 milliseconds"
+      },
+      {
+        "id": "B",
+        "text": "Within 2 seconds"
+      },
+      {
+        "id": "C",
+        "text": "Within 30 seconds"
+      },
+      {
+        "id": "D",
+        "text": "Within 5 seconds"
+      }
+    ],
+    "correct": "D",
+    "answerText": "Within 5 seconds",
+    "explanation": "Docusign's listener guidance says to respond to each request from Docusign within five seconds, which is why the listener should queue the message and return 200 before processing it.",
+    "whyNotOthers": "D is right because the documented guidance is five seconds. The trap is C: 30 seconds sounds like a generous HTTP timeout, but it is far longer than the guidance. A and B are stricter values that are not in the guidance.",
+    "optionExplanations": {
+      "A": "500 milliseconds is not the documented figure.",
+      "B": "Two seconds is not the documented figure.",
+      "C": "30 seconds is much longer than the guidance allows.",
+      "D": "Correct. Respond to each request within five seconds, ideally by queueing the message and returning 200 at once."
+    },
+    "trapOption": "C",
+    "importance": "MEDIUM",
+    "concept": {
+      "title": "Answer Connect within five seconds",
+      "line": "A listener should respond to each Connect request within five seconds, so it should queue the message and process it later."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "long",
+    "style": "design",
+    "domain": "Docusign Connect",
+    "topic": "Listener availability during maintenance",
+    "stem": "Cobalt Credit Union's three-person IT team runs its Connect listener on a single on-premises server that is patched every Sunday night for about two hours. The compliance officer requires that every signing event be accepted at the moment Docusign sends it, including during patching, and will not accept a design that depends on Docusign retrying later. Members sign loan documents at all hours, and the configuration includes documents. What should the team do?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Put a small serverless function in front that writes each message to a cloud queue and returns 200, and let the on-premises app drain the queue after patching"
+      },
+      {
+        "id": "B",
+        "text": "Rely on Connect's retry schedule to redeliver messages missed during the patch window, since retries continue for up to 15 days"
+      },
+      {
+        "id": "C",
+        "text": "Pause the Connect configuration every Sunday during patching, so that no events are generated while the server is offline"
+      },
+      {
+        "id": "D",
+        "text": "Switch to calling Envelopes:listStatusChanges after each patch window to collect the status changes missed while the server was down"
+      },
+      {
+        "id": "E",
+        "text": "Switch the configuration to aggregate mode, so that fewer messages are generated while the listener is unavailable"
+      }
+    ],
+    "correct": "A",
+    "answerText": "Put a small serverless function in front that writes each message to a cloud queue and returns 200, and let the on-premises app drain the queue after patching",
+    "explanation": "Docusign advises 99% or better listener availability and, where that is hard, a cloud queuing system that receives and buffers messages; this accepts every event \"at the moment Docusign sends it\" even while the server is patched.",
+    "whyNotOthers": "A is right because a cloud queue accepts every message on time while the back end is offline. The trap is B: retries would eventually deliver the events, but the officer will not accept a design that depends on retries. C relies on skipped retries too (pausing does not stop events, it skips deliveries), D replaces push with polling, and E only changes message grouping.",
+    "optionExplanations": {
+      "A": "Correct. A cloud listener and queue buffer messages so the on-premises app can process them when it is back, without missed deliveries.",
+      "B": "Retries do resend failed messages, but the stem explicitly rejects relying on them.",
+      "C": "Pausing skips deliveries and retries during the pause, so events are still not accepted when sent.",
+      "D": "Polling after the fact is a catch-up method, not a way to accept events at the time they are sent.",
+      "E": "Aggregate mode only combines similar events; it does nothing for availability."
+    },
+    "trapOption": "B",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "Cloud listener plus queue in front of the on-premises system",
+      "clues": [
+        "accepted at the moment Docusign sends it, including during patching -> needs an always-on receiver",
+        "will not accept a design that depends on retrying -> retries and pause are ruled out",
+        "configuration includes documents, three-person team -> red herrings"
+      ]
+    },
+    "concept": {
+      "title": "Buffer Connect with a cloud queue",
+      "line": "When a listener cannot stay highly available, a cloud function and queue accept messages on time and let the back end process them later."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "long",
+    "style": "design",
+    "domain": "Docusign Connect",
+    "topic": "Telling Recipient Connect messages apart",
+    "stem": "Brindle Insurance points two configurations at the same listener: an account-level configuration for envelopes Brindle sends, and a Recipient Connect configuration for envelopes that partner firms send to Brindle's claims staff. Both deliver JSON SIM messages, and the payloads look the same. The listener must route recipient-side events to a separate queue for the claims team without guessing from the content. Which approach does Docusign suggest?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Check the event name, because Recipient Connect messages use event names that start with recipient- rather than envelope-"
+      },
+      {
+        "id": "B",
+        "text": "Check the userId element, which identifies the envelope's sender in both kinds of message"
+      },
+      {
+        "id": "C",
+        "text": "Switch the Recipient Connect configuration to XML, so the two kinds of message arrive in different formats"
+      },
+      {
+        "id": "D",
+        "text": "Compare the accountId with Brindle's account, because recipient-side messages carry the sending firm's account ID"
+      },
+      {
+        "id": "E",
+        "text": "Give the Recipient Connect configuration its own listener URL, or add a query parameter such as ?customrecipient to its URL"
+      }
+    ],
+    "correct": "E",
+    "answerText": "Give the Recipient Connect configuration its own listener URL, or add a query parameter such as ?customrecipient to its URL",
+    "explanation": "Connect and Recipient Connect deliver the same payloads; Docusign suggests a separate listener for Recipient Connect or a query parameter such as ?customrecipient on its URL to identify those messages.",
+    "whyNotOthers": "E is right because a distinct URL or query parameter identifies the configuration without guessing from the payload. The trap is D: accountId does differ, but for Recipient Connect it identifies the recipient's account, not the sender's, so the stated rule is wrong. A fails because Recipient Connect also sends envelope-completed, B is false because userId identifies the recipient in Recipient Connect, and C fails because Recipient Connect is JSON-only.",
+    "optionExplanations": {
+      "A": "Recipient Connect also supports envelope-completed, so the event prefix is not reliable.",
+      "B": "In Recipient Connect messages, userId identifies the recipient, not the sender.",
+      "C": "Recipient Connect messages are always JSON, so the formats cannot be split this way.",
+      "D": "For Recipient Connect, accountId identifies the recipient's account, so this rule misreads the field.",
+      "E": "Correct. Docusign suggests a dedicated listener or a query parameter such as ?customrecipient to identify Recipient Connect messages."
+    },
+    "trapOption": "D",
+    "importance": "LOW",
+    "decode": {
+      "needs": "Separate listener URL or ?customrecipient query parameter",
+      "clues": [
+        "two configurations, same listener, payloads look the same -> identify by URL",
+        "without guessing from the content -> do not infer from event names or IDs",
+        "partner firms send to claims staff -> Recipient Connect side"
+      ]
+    },
+    "concept": {
+      "title": "Mark Recipient Connect by URL",
+      "line": "Account and Recipient Connect payloads are the same; use a separate URL or a query parameter to tell them apart."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "short",
+    "style": "fact",
+    "domain": "Docusign Connect",
+    "topic": "Identifying the trigger in a JSON SIM message",
+    "stem": "A team migrating to JSON SIM used to start workflows from \"status\": \"sent\". Which JSON SIM element should the listener read instead to know what triggered the message?",
+    "options": [
+      {
+        "id": "A",
+        "text": "data.envelopeSummary.status"
+      },
+      {
+        "id": "B",
+        "text": "configurationId"
+      },
+      {
+        "id": "C",
+        "text": "event"
+      },
+      {
+        "id": "D",
+        "text": "uri"
+      },
+      {
+        "id": "E",
+        "text": "retryCount"
+      }
+    ],
+    "correct": "C",
+    "answerText": "event",
+    "explanation": "Every JSON SIM message has an event element (for example envelope-sent) that identifies what generated the message, and Docusign says workflows that checked status should use it instead.",
+    "whyNotOthers": "C is right because the event element names the trigger. The trap is A: an envelope summary can include status, but it is optional and describes the envelope rather than the triggering event. B identifies the configuration, D is the envelope's REST path, and E counts delivery retries.",
+    "optionExplanations": {
+      "A": "The envelope summary is optional and describes the envelope state, not the event that generated the message.",
+      "B": "configurationId identifies the Connect configuration that sent the message.",
+      "C": "Correct. The event element, such as envelope-sent, identifies the triggering event.",
+      "D": "uri is the REST path of the envelope, not the trigger.",
+      "E": "retryCount shows how many delivery retries occurred."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "concept": {
+      "title": "Read the event element",
+      "line": "In JSON SIM, the event element names what triggered the message; use it instead of checking envelope status."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "long",
+    "style": "design",
+    "domain": "Docusign Connect",
+    "topic": "Including envelope custom fields in messages",
+    "stem": "Quarry Hill Software's sales app sends quotes through the API and stores the CRM opportunity number in an envelope custom field. Finance's listener, fed by an account-level JSON SIM configuration subscribed to envelope-completed, must post each closed deal to the right opportunity without calling the eSignature API back. Today the messages contain only accountId, userId and envelopeId. The configuration must stay JSON SIM because the same listener also handles Maestro workflow events. What change meets the need?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Add recipients to the configuration's includeData, so the opportunity number appears with each signer's details in the envelope summary"
+      },
+      {
+        "id": "B",
+        "text": "Add custom_fields to the configuration's includeData, so the envelope custom field values arrive in the envelope summary of each message"
+      },
+      {
+        "id": "C",
+        "text": "Add tabs to the configuration's includeData, so the opportunity number arrives together with the field values the signers completed"
+      },
+      {
+        "id": "D",
+        "text": "Switch the configuration to XML aggregate, which always sends the full envelope including its custom fields with every message"
+      },
+      {
+        "id": "E",
+        "text": "Have the listener call Envelopes:get after each message to read the envelope's custom fields and find the opportunity number"
+      }
+    ],
+    "correct": "B",
+    "answerText": "Add custom_fields to the configuration's includeData, so the envelope custom field values arrive in the envelope summary of each message",
+    "explanation": "JSON SIM messages are small by default; includeData lets you add parts of the envelope summary, and custom_fields carries the envelope custom fields where the opportunity number is stored.",
+    "whyNotOthers": "B is right because the number is in an envelope custom field, which includeData custom_fields adds. The trap is C: tabs is the right choice for values signers type into document fields, but the opportunity number is an envelope custom field, not a tab. A adds recipient data, D breaks the JSON SIM requirement, and E makes the API call the stem forbids.",
+    "optionExplanations": {
+      "A": "Recipient data does not include envelope custom fields.",
+      "B": "Correct. includeData custom_fields adds envelope custom field values to the envelope summary in each message.",
+      "C": "tabs carries document field values; the opportunity number is an envelope custom field, not a tab.",
+      "D": "The configuration must stay JSON SIM because Maestro workflow events require it.",
+      "E": "Calling the API back is exactly what the stem rules out."
+    },
+    "trapOption": "C",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "includeData custom_fields on the JSON SIM configuration",
+      "clues": [
+        "opportunity number stored in an envelope custom field -> custom_fields, not tabs",
+        "without calling the eSignature API back -> the data must be in the message",
+        "must stay JSON SIM for Maestro events -> no switch to XML"
+      ]
+    },
+    "concept": {
+      "title": "Choose includeData items deliberately",
+      "line": "JSON SIM messages are minimal by default; add only the needed includeData items, such as custom_fields or tabs, to the envelope summary."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "long",
+    "style": "fact",
+    "domain": "Docusign Connect",
+    "topic": "What the OAuth for Connect token is for",
+    "stem": "Sable Logistics enabled OAuth for Connect with its Okta tenant, so each Connect message arrives with a bearer token in the Authorization header. A developer proposes reusing that token to call the eSignature API and download the signed documents, which would save building a JWT Grant flow. The listener runs on AWS Lambda and handles about 2,000 messages a day. Which statement is correct?",
+    "options": [
+      {
+        "id": "A",
+        "text": "The token can call the eSignature API, because Docusign obtained it with the Client Credentials grant, which is a server-to-server flow"
+      },
+      {
+        "id": "B",
+        "text": "The token works for the eSignature API only if the Okta client is also registered as an integration key in the Docusign account"
+      },
+      {
+        "id": "C",
+        "text": "The token is issued by Docusign's account server, so the listener can exchange it for an eSignature access token"
+      },
+      {
+        "id": "D",
+        "text": "The token only proves to the listener that the message came from Docusign; the listener validates it, and API calls still need a Docusign token such as JWT Grant"
+      },
+      {
+        "id": "E",
+        "text": "The token is a signature over the message body, so it replaces HMAC and proves that the content was not changed after sending"
+      }
+    ],
+    "correct": "D",
+    "answerText": "The token only proves to the listener that the message came from Docusign; the listener validates it, and API calls still need a Docusign token such as JWT Grant",
+    "explanation": "OAuth for Connect uses Client Credentials with your own authorization server; unlike other Docusign OAuth grants it is not used to get a token for Docusign API calls, and verifying the token is the listener's responsibility.",
+    "whyNotOthers": "D is right because the token only authenticates Connect messages to your listener. The trap is A: the grant really is Client Credentials, but the token comes from Sable's own Okta and is not valid for the Docusign API. B and C invent links between Okta and Docusign's account server, and E confuses a bearer token with HMAC's body signature.",
+    "optionExplanations": {
+      "A": "The grant is Client Credentials, but the token is issued by Sable's Okta for its own listener, not for Docusign APIs.",
+      "B": "Registering the Okta client in Docusign does not make an Okta token valid for the eSignature API.",
+      "C": "The token comes from Sable's own authorization server, not from Docusign's account server.",
+      "D": "Correct. OAuth for Connect authenticates the messages; the listener must verify the token, and API calls need a normal Docusign access token.",
+      "E": "A bearer token does not sign the body, so it gives no integrity check; HMAC does that."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "Keep a separate Docusign OAuth flow for API calls; the Connect token only authenticates inbound messages",
+      "clues": [
+        "bearer token in the Authorization header -> OAuth for Connect, issued by the company's own IdP",
+        "reuse it to call the eSignature API -> not what the token is for",
+        "AWS Lambda, 2,000 messages a day -> red herrings"
+      ]
+    },
+    "concept": {
+      "title": "Connect OAuth tokens are inbound-only",
+      "line": "The OAuth for Connect token authenticates messages to your listener; it cannot call Docusign APIs, and your listener must validate it."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "long",
+    "style": "design",
+    "domain": "Docusign Connect",
+    "topic": "Rotating an HMAC secret without rejecting messages",
+    "stem": "Pelican Pharmacy's security policy requires its Connect HMAC secret to be rotated every 90 days, and no genuine Connect message may be rejected or lost during a rotation. The account currently has one active HMAC key, the listener validates X-DocuSign-Signature-1, and deployments to the listener take about an hour to reach every region. Which rotation sequence meets the policy?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Delete the current key, create a new one, and deploy the new secret to the listener right afterwards, accepting a short window of rejected messages"
+      },
+      {
+        "id": "B",
+        "text": "Create a new key, then change the listener to validate only X-DocuSign-Signature-1, because Docusign always puts the newest key in the first header"
+      },
+      {
+        "id": "C",
+        "text": "Turn off HMAC during the rotation and rely on Basic authentication until the new key has been deployed to every region"
+      },
+      {
+        "id": "D",
+        "text": "Create a new key and delete the old one at once, because messages already in a retry cycle are re-signed with the new key"
+      },
+      {
+        "id": "E",
+        "text": "Add a second key so messages carry two signature headers, deploy a listener that accepts a match on either, then delete the old key once every region uses the new one"
+      }
+    ],
+    "correct": "E",
+    "answerText": "Add a second key so messages carry two signature headers, deploy a listener that accepts a match on either, then delete the old key once every region uses the new one",
+    "explanation": "Each HMAC key adds its own X-DocuSign-Signature-N header, and a match on any one verifies the message; adding a second key before removing the first lets the listener switch secrets without rejecting genuine messages.",
+    "whyNotOthers": "E is right because overlapping keys keep messages verifiable during the hour-long deployment. The trap is D: it sounds efficient, but deleting the old key at once leaves regions still on the old secret unable to verify messages. A accepts rejected messages, B assumes header order that Docusign does not define that way (headers follow the keys in order), and C drops HMAC protection during rotation.",
+    "optionExplanations": {
+      "A": "The policy does not allow any genuine message to be rejected.",
+      "B": "Header N carries the hash for key N, so the newest key is not moved to header 1.",
+      "C": "Turning off HMAC removes the integrity check during the rotation.",
+      "D": "Regions still on the old secret would fail to verify messages until the deployment finishes.",
+      "E": "Correct. With two keys each message carries two headers, and matching either verifies it, so the old key can be removed safely afterwards."
+    },
+    "trapOption": "D",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "Overlapping HMAC keys during rotation",
+      "clues": [
+        "no genuine message may be rejected -> keep both keys active during the change",
+        "deployments take about an hour -> listeners need to accept either signature for a while",
+        "rotated every 90 days -> red herring about the schedule"
+      ]
+    },
+    "concept": {
+      "title": "Overlap HMAC keys to rotate",
+      "line": "Add a new HMAC key alongside the old one, accept either signature, then remove the old key, so no genuine message is rejected."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "long",
+    "style": "design",
+    "domain": "Docusign Connect",
+    "topic": "Permissions needed to create a Connect configuration",
+    "stem": "Juniper Clinics' onboarding script uses JWT Grant to impersonate a service user, svc-esign, which has sender permissions only. When the script calls POST /v2.1/accounts/{accountId}/connect to create its account-level configuration in production, the call fails with an authorization error. The same request body worked in the demo environment using the developer's own administrator user, and Connect is enabled on the production account. What should the team change?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Have the configuration created by an account administrator, for example by granting svc-esign administrator rights, because Connect endpoints require an account administrator"
+      },
+      {
+        "id": "B",
+        "text": "Request the extended scope in the JWT assertion, because creating Connect configurations needs a long-lived refresh token"
+      },
+      {
+        "id": "C",
+        "text": "Set allowEnvelopePublish to true in the body, because a configuration that is not enabled is rejected for non-administrator users"
+      },
+      {
+        "id": "D",
+        "text": "Switch the script from JWT Grant to Authorization Code Grant, because Connect endpoints do not accept tokens obtained by impersonation"
+      },
+      {
+        "id": "E",
+        "text": "Create the configuration through the Organization Admin API instead, because account-level configurations cannot be created through the eSignature REST API"
+      }
+    ],
+    "correct": "A",
+    "answerText": "Have the configuration created by an account administrator, for example by granting svc-esign administrator rights, because Connect endpoints require an account administrator",
+    "explanation": "The Connect API reference says that to call any Connect endpoint you must be an account administrator, and Connect must be enabled on the account; the stem confirms Connect is enabled, so the missing piece is administrator rights.",
+    "whyNotOthers": "A is right because Connect configuration calls require an account administrator. The trap is C: without allowEnvelopePublish the configuration is created disabled, but it is still created; that does not cause an authorization error. B misuses the extended scope (Authorization Code Grant only), D is false because JWT tokens work with administrator rights, and E is false because account-level configurations are created with ConnectConfigurations:create.",
+    "optionExplanations": {
+      "A": "Correct. Connect endpoints require an account administrator, and Connect must be enabled on the account, which the stem confirms.",
+      "B": "The extended scope gives a reusable refresh token in Authorization Code Grant; it has nothing to do with Connect permissions.",
+      "C": "Omitting allowEnvelopePublish creates a disabled configuration; it does not cause an authorization failure.",
+      "D": "JWT impersonation works if the impersonated user is an administrator; the grant type is not the problem.",
+      "E": "Account-level configurations are created with the eSignature REST API (ConnectConfigurations:create)."
+    },
+    "trapOption": "C",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "The impersonated user must be an account administrator",
+      "clues": [
+        "sender permissions only -> not an administrator",
+        "worked in demo with the developer's administrator user -> same body, different permissions",
+        "Connect is enabled on the production account -> rules out the other prerequisite"
+      ]
+    },
+    "concept": {
+      "title": "Connect APIs need an admin",
+      "line": "Calling Connect endpoints requires an account administrator, and Connect must be enabled on the account."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "long",
+    "style": "design",
+    "domain": "Docusign Connect",
+    "topic": "Reading a paused-configuration message in the dashboard",
+    "stem": "On Monday morning, Osprey Realty's support analyst sees Connect dashboard entries from the weekend that read \"This event was skipped due to the configuration being paused\". The listener's own monitoring shows it was healthy all weekend. A colleague confirms that she paused the account-level configuration during Friday evening maintenance and forgot to unpause it. The configuration uses JSON SIM and includes the certificate of completion. What does the message mean, and what should the analyst do?",
+    "options": [
+      {
+        "id": "A",
+        "text": "The listener rejected those deliveries with an error, so the analyst should fix the listener and then republish the events from the failure log"
+      },
+      {
+        "id": "B",
+        "text": "The events were discarded because the configuration was paused, so the analyst must send the envelopes again with the historical publish endpoint"
+      },
+      {
+        "id": "C",
+        "text": "Deliveries due while the configuration was paused were skipped but kept, so unpausing lets them continue at their next scheduled retry"
+      },
+      {
+        "id": "D",
+        "text": "The configuration was disabled after being paused, so the analyst must recreate it with allowEnvelopePublish set to true and republish everything"
+      },
+      {
+        "id": "E",
+        "text": "The events were filtered out because they were not in the configuration's events list, so the analyst should add those events to the configuration"
+      }
+    ],
+    "correct": "C",
+    "answerText": "Deliveries due while the configuration was paused were skipped but kept, so unpausing lets them continue at their next scheduled retry",
+    "explanation": "The dashboard message marks events skipped because the configuration was paused; skipped events are not lost, and after unpausing they resume at the next scheduled retry. A weekend pause is far from the 15-day window and the 14-day auto-disable.",
+    "whyNotOthers": "C is right because paused events are skipped but kept, and unpausing resumes them on schedule. The trap is B: the word skipped suggests loss, but skipped events are not discarded. A contradicts the healthy listener, D applies only after 14 consecutive paused days, and E describes a different cause than the one the message states.",
+    "optionExplanations": {
+      "A": "The message names the pause as the cause, and the listener was healthy all weekend.",
+      "B": "Skipped events are not discarded; they continue at the next scheduled retry after unpausing.",
+      "C": "Correct. Pausing skips scheduled deliveries without losing them; once unpaused, processing resumes at the next scheduled retry.",
+      "D": "Automatic disabling happens only after 14 consecutive paused days, not after a weekend.",
+      "E": "Unsubscribed events are never generated; the message clearly says they were skipped because of the pause."
+    },
+    "trapOption": "B",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "Unpause the configuration; skipped events resume on their retry schedule",
+      "clues": [
+        "This event was skipped due to the configuration being paused -> paused, not failed",
+        "listener healthy all weekend -> not a listener error",
+        "weekend only -> well under the 14-day auto-disable and the 15-day window",
+        "includes the certificate of completion -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "Skipped while paused is not lost",
+      "line": "Events skipped while a configuration is paused stay in their retry cycle and resume at the next scheduled retry after unpausing."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "short",
+    "style": "fact",
+    "domain": "Docusign Connect",
+    "topic": "Maximum number of HMAC keys",
+    "stem": "Each HMAC key defined for Connect adds its own X-DocuSign-Signature-N header to messages. Up to how many HMAC keys can be defined?",
+    "options": [
+      {
+        "id": "A",
+        "text": "2"
+      },
+      {
+        "id": "B",
+        "text": "10"
+      },
+      {
+        "id": "C",
+        "text": "Unlimited"
+      },
+      {
+        "id": "D",
+        "text": "100"
+      }
+    ],
+    "correct": "D",
+    "answerText": "100",
+    "explanation": "Connect adds one header for each HMAC key you define, up to one hundred, each containing the body hashed with that key using HMAC-SHA256.",
+    "whyNotOthers": "D is right because the documented limit is one hundred keys. The trap is A: examples usually show two keys during rotation, but two is not the limit. B is too low and C is wrong because there is a limit.",
+    "optionExplanations": {
+      "A": "Two keys is the common rotation example, not the limit.",
+      "B": "Ten is below the documented limit.",
+      "C": "There is a documented maximum, so the number is not unlimited.",
+      "D": "Correct. Each message includes one signature header per defined key, up to one hundred."
+    },
+    "trapOption": "A",
+    "importance": "LOW",
+    "concept": {
+      "title": "One header per HMAC key",
+      "line": "Connect adds one X-DocuSign-Signature-N header per defined HMAC key, up to one hundred keys."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "short",
+    "style": "fact",
+    "domain": "Docusign Connect",
+    "topic": "Connect retry back-off sequence",
+    "stem": "When delivery of a Connect message fails, Docusign retries with exponential back-off. Which sequence describes the retries?",
+    "options": [
+      {
+        "id": "A",
+        "text": "After 1, 2, 4 and 8 minutes, then every hour until the listener responds or 24 hours have passed"
+      },
+      {
+        "id": "B",
+        "text": "After 5, 10, 20 and 40 minutes, then 1 hour, 2 hours and 1 day, then once a day for a 15-day span"
+      },
+      {
+        "id": "C",
+        "text": "Every 15 minutes for the first day, then once a day for a 15-day span"
+      },
+      {
+        "id": "D",
+        "text": "After 5 minutes, then every hour for 15 days until the listener responds with a 2xx"
+      }
+    ],
+    "correct": "B",
+    "answerText": "After 5, 10, 20 and 40 minutes, then 1 hour, 2 hours and 1 day, then once a day for a 15-day span",
+    "explanation": "The documented retry sequence is 5, 10, 20 and 40 minutes, then one hour, two hours and one day, then once per day for a 15-day span.",
+    "whyNotOthers": "B is right because it matches the documented back-off. The trap is D: it has the right first step and the right 15-day limit, but not the doubling intervals in between. A doubles but ends far too early, and C mixes up the 15-minute polling rule with retries.",
+    "optionExplanations": {
+      "A": "The steps and the 24-hour limit do not match the documented schedule.",
+      "B": "Correct. 5, 10, 20, 40 minutes, 1 hour, 2 hours, 1 day, then daily for a 15-day span.",
+      "C": "This mixes up the 15-minute polling limit with the retry schedule.",
+      "D": "The first step and 15-day span are right, but the retries back off exponentially rather than running hourly."
+    },
+    "trapOption": "D",
+    "importance": "MEDIUM",
+    "concept": {
+      "title": "Connect retry back-off",
+      "line": "Failed deliveries retry at 5, 10, 20, 40 minutes, 1 hour, 2 hours, 1 day, then daily for a 15-day span."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "long",
+    "style": "design",
+    "domain": "Docusign Connect",
+    "topic": "Custom configuration versus pre-built solutions",
+    "stem": "Thornbury Group's account administrator collects five automation requests from business units that want something to happen after agreements are signed. IT will build a listener only for requests that a pre-built Connect solution cannot handle. Which two requests need a custom Connect configuration with Thornbury's own listener? (Select two)",
+    "options": [
+      {
+        "id": "A",
+        "text": "Copy every completed lease into the property team's Box folder so the agents can find it without logging in to Docusign"
+      },
+      {
+        "id": "B",
+        "text": "Start provisioning the customer's broadband line in the in-house order system as soon as the service contract is completed"
+      },
+      {
+        "id": "C",
+        "text": "Keep the Docusign for Salesforce app updated with envelope status so sales reps see progress on their opportunities"
+      },
+      {
+        "id": "D",
+        "text": "Store each signed document in the group's homegrown records management system, which exposes its own REST API"
+      },
+      {
+        "id": "E",
+        "text": "Tell the eOriginal platform that a completed loan transaction is ready to be vaulted as a transferable record"
+      }
+    ],
+    "correct": "B,D",
+    "correctAnswers": [
+      "B",
+      "D"
+    ],
+    "answerText": "Start provisioning the customer's broadband line in the in-house order system as soon as the service contract is completed; Store each signed document in the group's homegrown records management system, which exposes its own REST API",
+    "explanation": "Docusign recommends custom configurations for internal systems, such as triggering provisioning after completion or storing documents in a custom storage system; Box, Salesforce and eOriginal have pre-built Connect solutions.",
+    "whyNotOthers": "B and D are right because both target in-house systems with no pre-built integration. The trap is E: notifying an external platform after completion sounds like custom integration work, but Connect for eOriginal is a pre-built solution that does exactly this. A uses the pre-built Box integration, and C uses the pre-built Salesforce integration.",
+    "optionExplanations": {
+      "A": "Connect for Box is a pre-built solution that pushes completed documents to a Box folder.",
+      "B": "Correct. Starting provisioning in an internal system after completion is a typical custom Connect use case.",
+      "C": "Connect for Salesforce is pre-built and pushes data updates to the Docusign for Salesforce app.",
+      "D": "Correct. Storing signed documents in an organization's own storage system calls for a custom configuration.",
+      "E": "Connect for eOriginal is pre-built and informs eOriginal that a transaction to be vaulted is complete."
+    },
+    "trapOption": "E",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "Custom configurations for in-house targets; pre-built for Box, Salesforce and eOriginal",
+      "clues": [
+        "in-house order system, homegrown records system -> custom listener",
+        "Box folder, Docusign for Salesforce, eOriginal vaulting -> pre-built solutions exist",
+        "IT builds a listener only when nothing pre-built fits -> separate the two groups"
+      ]
+    },
+    "concept": {
+      "title": "Custom versus pre-built Connect",
+      "line": "Use pre-built Connect for Box, OneDrive, Salesforce and eOriginal; use custom configurations for internal systems and follow-on business actions."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "short",
+    "style": "fact",
+    "domain": "Docusign Connect",
+    "topic": "Mutual TLS for Connect",
+    "stem": "Which two statements about mutual TLS for Docusign Connect are correct? (Select two)",
+    "options": [
+      {
+        "id": "A",
+        "text": "Docusign starts mutual TLS by sending a certificate request to the listener during the TLS handshake"
+      },
+      {
+        "id": "B",
+        "text": "Mutual TLS proves message integrity end to end, even after a proxy has terminated the TLS session"
+      },
+      {
+        "id": "C",
+        "text": "The listener's server requests Docusign's certificate during the TLS handshake and then validates it"
+      },
+      {
+        "id": "D",
+        "text": "Mutual TLS cannot be combined with OAuth for Connect on the same configuration"
+      },
+      {
+        "id": "E",
+        "text": "The listener's trust settings must be kept up to date when Docusign renews its certificate, roughly yearly"
+      }
+    ],
+    "correct": "C,E",
+    "correctAnswers": [
+      "C",
+      "E"
+    ],
+    "answerText": "The listener's server requests Docusign's certificate during the TLS handshake and then validates it; The listener's trust settings must be kept up to date when Docusign renews its certificate, roughly yearly",
+    "explanation": "Mutual TLS is initiated and controlled by the listener, which requests and validates Docusign's certificate in the handshake, and it must be updated when the Docusign certificate is renewed about every year.",
+    "whyNotOthers": "C and E are right because the server side requests the client certificate and must track Docusign's certificate renewals. The trap is A: it describes the same certificate request, but the roles are reversed; Docusign is the client and the listener sends the request. B describes HMAC, not mutual TLS, and D is false because OAuth for Connect can be combined with mutual TLS.",
+    "optionExplanations": {
+      "A": "Docusign is the client in a Connect delivery; the listener's server sends the certificate request.",
+      "B": "Mutual TLS only protects the hop where TLS ends; end-to-end integrity is what HMAC provides.",
+      "C": "Correct. The server sends a Certificate Request in the handshake, and Docusign responds with its certificate for the server to validate.",
+      "D": "Docusign documents combining OAuth for Connect with mutual TLS.",
+      "E": "Correct. Mutual TLS must be updated when the Docusign certificate is renewed, about every year."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "concept": {
+      "title": "Listener drives mutual TLS",
+      "line": "In Connect mutual TLS the listener requests and validates Docusign's certificate during the handshake and must track yearly certificate renewals."
+    }
+  }
+]

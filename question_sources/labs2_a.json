@@ -1,0 +1,531 @@
+{
+  "auth": {
+    "title": "Lab 4: API Authentication",
+    "weeks": "Keep-alive slots (10-15 min each); one optional 30-45 min exercise",
+    "goal": "Make every OAuth decision the exam turns into a scenario concrete: JWT consent and impersonation, Confidential vs Public Authorization Code (PKCE), state, refresh tokens and the extended scope, and individual vs admin consent. You already score 70-80% here, so each exercise targets a trap rather than the basics.",
+    "setup": [
+      "Use your developer (demo) account only. All auth hosts in this lab are account-d.docusign.com; production uses account.docusign.com.",
+      "In Apps and Keys create (or reuse) a dedicated lab integration key {integrationKey}. Add redirect URI http://localhost:3000/ds/callback (or another local URI you control) and generate an RSA key pair for JWT. Keep the private key in a local file outside any repo.",
+      "Note your own {userId} (API Username GUID) and {accountId} from Apps and Keys. Use placeholders in notes; never paste real IDs, secrets or keys into shared files.",
+      "Tools: a browser, Postman (or curl) and https://jwt.io only for DECODING a token you created (never paste the private key into a website). The Node quickstart files app/lib/DSJwtAuth.js, app/lib/DSAuthCodeGrant.js and app/jwt_console_project/jwtConsole.js show the same flows in code; read them, do not copy any key or ID from them.",
+      "Have a scratch text file open to record what each response contains (expires_in, presence of refresh_token, scopes)."
+    ],
+    "exercises": [
+      {
+        "title": "JWT consent URL: signature impersonation",
+        "minutes": 10,
+        "steps": [
+          "Build the individual consent URL for your lab key (see api).",
+          "Open it in a browser while logged in as your demo user and grant consent; note where the browser is redirected and that a ?code= is appended (you do not use it for JWT).",
+          "Open the URL a second time and observe that no consent screen is shown (consent is remembered).",
+          "Remove impersonation from the scope list and open it again; note that the scopes on the consent screen change.",
+          "Optional: revoke the app under Manage Profile > Connected Apps, then repeat to see the consent screen return."
+        ],
+        "api": "GET https://account-d.docusign.com/oauth/auth?response_type=code&scope=signature%20impersonation&client_id={integrationKey}&redirect_uri={redirectUri}\n(For Maestro / Navigator add their scopes here too, e.g. signature impersonation aow_manage)",
+        "observe": [
+          "The consent screen lists the scopes requested; impersonation is what allows the app to act as the user without them present.",
+          "The redirect URI must exactly match one registered on the key, otherwise an error page appears before any consent.",
+          "Consent is per user per integration key and is remembered until revoked."
+        ],
+        "examTraps": [
+          "JWT always needs consent first, and the consent must include impersonation; a JWT token request without prior consent returns consent_required.",
+          "Adding a new scope (e.g. aow_manage) later means consent must be granted again for that scope.",
+          "Consent is a one-time browser step; it is not repeated per token request."
+        ]
+      },
+      {
+        "title": "Build and sign the JWT assertion, request a token",
+        "minutes": 15,
+        "steps": [
+          "Write down the header and payload you will sign (see api). Set iat to now and exp to at most one hour later.",
+          "Sign it with RS256 using your private key (quickstart DSJwtAuth.js uses the SDK method requestJWTUserToken; any JWT library works).",
+          "POST the assertion to the token endpoint.",
+          "Record the response fields; check whether a refresh_token is present.",
+          "Decode your assertion (not the access token) locally and confirm iss, sub, aud."
+        ],
+        "api": "Header: {\"alg\": \"RS256\", \"typ\": \"JWT\"}\nPayload: {\"iss\": \"{integrationKey}\", \"sub\": \"{userId}\", \"aud\": \"account-d.docusign.com\", \"iat\": {now}, \"exp\": {now+3600}, \"scope\": \"signature impersonation\"}\nPOST https://account-d.docusign.com/oauth/token\nContent-Type: application/x-www-form-urlencoded\ngrant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&assertion={signedJwt}",
+        "observe": [
+          "Response has access_token, token_type Bearer and expires_in of about 3600 seconds; there is NO refresh_token.",
+          "aud is the host name only (no https://); a wrong aud or a clock skewed iat/exp gives an error.",
+          "sub is the user GUID, not the email address."
+        ],
+        "examTraps": [
+          "JWT grant has no refresh token: when the token nears expiry, create a new assertion and request a new token.",
+          "aud differs between demo (account-d.docusign.com) and production (account.docusign.com); it is a Go Live change.",
+          "JWT is for system/back-end integrations acting as a user; it needs an RSA key pair, not a client secret."
+        ]
+      },
+      {
+        "title": "/oauth/userinfo and the base_uri",
+        "minutes": 10,
+        "steps": [
+          "Call userinfo with the token from the previous exercise.",
+          "Find the accounts array, the is_default flag and base_uri.",
+          "Build the eSignature base path {base_uri}/restapi/v2.1/accounts/{accountId} and make one cheap call (GET .../envelopes?from_date={recentDate}) to prove it works.",
+          "Note that Navigator and Maestro use a different host (api-d.docusign.com) rather than base_uri."
+        ],
+        "api": "GET https://account-d.docusign.com/oauth/userinfo\nAuthorization: Bearer {accessToken}",
+        "observe": [
+          "base_uri is per account (e.g. a demo host) and must be read, not hard-coded.",
+          "A user may belong to several accounts; choose by account_id or is_default.",
+          "userinfo is called on the auth host, not on base_uri."
+        ],
+        "examTraps": [
+          "Hard-coding base_uri breaks in production or when an account moves; always derive it from /oauth/userinfo and cache it.",
+          "accountId comes from userinfo (or Apps and Keys), not from the token itself.",
+          "Calling userinfo on every API request wastes quota: call once per token/session."
+        ]
+      },
+      {
+        "title": "Confidential Authorization Code Grant with state",
+        "minutes": 15,
+        "steps": [
+          "Add a secret to your lab key (Apps and Keys > Add Secret). Copy it to a local file only.",
+          "Generate a random state value and save it in your scratch file.",
+          "Open the authorization URL (see api), log in and consent; copy code and state from the redirect.",
+          "Compare the returned state with your saved value; then exchange the code within a few minutes.",
+          "Try exchanging the same code twice and note the error the second time."
+        ],
+        "api": "GET https://account-d.docusign.com/oauth/auth?response_type=code&scope=signature%20extended&client_id={integrationKey}&redirect_uri={redirectUri}&state={randomState}\nPOST https://account-d.docusign.com/oauth/token\nAuthorization: Basic base64({integrationKey}:{secretKey})\nContent-Type: application/x-www-form-urlencoded\ngrant_type=authorization_code&code={code}",
+        "observe": [
+          "The token response contains access_token (expires_in about 8 hours) AND refresh_token.",
+          "The authorization code is single use and short lived.",
+          "state comes back unchanged; your app must reject a callback whose state it did not issue (CSRF protection)."
+        ],
+        "examTraps": [
+          "Confidential Auth Code is for apps with a back end that can keep the secret; the secret is sent only server-to-server in the Basic header.",
+          "state is for CSRF protection, not for authentication of the user.",
+          "Auth Code Grant is for a user present in the browser; it is the wrong answer for an unattended nightly job (that is JWT)."
+        ]
+      },
+      {
+        "title": "Public Authorization Code Grant with PKCE (S256)",
+        "minutes": 15,
+        "steps": [
+          "Create a second lab key (or change a test key) whose authentication method is Public (no secret). Public keys cannot have a secret.",
+          "Generate a code_verifier (43-128 random URL-safe characters) and compute code_challenge = BASE64URL(SHA256(code_verifier)) without padding (e.g. node -e with crypto, or an offline PKCE generator).",
+          "Open the authorization URL with code_challenge and code_challenge_method=S256.",
+          "Exchange the code sending code_verifier and client_id in the body and NO Authorization header.",
+          "Repeat the exchange with a wrong code_verifier and record the error."
+        ],
+        "api": "GET https://account-d.docusign.com/oauth/auth?response_type=code&scope=signature&client_id={integrationKey}&redirect_uri={redirectUri}&state={randomState}&code_challenge={codeChallenge}&code_challenge_method=S256\nPOST https://account-d.docusign.com/oauth/token\nContent-Type: application/x-www-form-urlencoded\ngrant_type=authorization_code&code={code}&client_id={integrationKey}&code_verifier={codeVerifier}",
+        "observe": [
+          "Token exchange succeeds only when SHA256 of the verifier matches the challenge sent earlier.",
+          "No secret is used anywhere: the verifier proves that the same client that started the flow finishes it.",
+          "For a browser SPA calling eSignature directly, the key also needs CORS configured and the cors scope (read-only note; not required for this exercise)."
+        ],
+        "examTraps": [
+          "SPA or native/mobile app that cannot hide a secret: Public Authorization Code Grant + PKCE, not Implicit and not Confidential.",
+          "code_challenge goes in the authorization request; code_verifier goes in the token request. Swapping them is a classic distractor.",
+          "Docusign recommends Public Auth Code over Implicit Grant for SPAs; moving from Implicit requires a new integration key."
+        ]
+      },
+      {
+        "title": "Refresh tokens and the extended scope",
+        "minutes": 10,
+        "steps": [
+          "Using the refresh_token from the Confidential exercise, call the token endpoint with grant_type=refresh_token.",
+          "Compare the new refresh_token with the old one and note the expires_in on the new access token.",
+          "Write in your scratch file what changes when the original authorization did or did not include extended."
+        ],
+        "api": "POST https://account-d.docusign.com/oauth/token\nAuthorization: Basic base64({integrationKey}:{secretKey})\nContent-Type: application/x-www-form-urlencoded\ngrant_type=refresh_token&refresh_token={refreshToken}",
+        "observe": [
+          "A new access token is issued without the user logging in again.",
+          "Store the refresh token returned by each refresh (treat it as rotating).",
+          "Refresh tokens exist only for Authorization Code flows, never for JWT."
+        ],
+        "examTraps": [
+          "Without extended the refresh token expires 30 days after original issue; with extended the 30 days are counted from the last refresh (rolling).",
+          "Need for long-lived user access without re-login: Auth Code + extended + refresh, not 'request a longer access token'.",
+          "Revoking consent invalidates refresh tokens; existing access tokens live until they expire."
+        ]
+      },
+      {
+        "title": "Optional (30-45 min): individual vs admin consent decision drill",
+        "minutes": 35,
+        "steps": [
+          "Read (inspection only; a demo account normally lacks Docusign Admin with a claimed domain) the Docusign pages 'Obtain and revoke consent', 'How to obtain admin consent for internal applications' and '... for external applications'.",
+          "In Docusign Admin of your demo org (if visible), look for Domains and Connected Apps / applications pages and note what is missing without a claimed domain.",
+          "Write the external-app admin consent URL shape: scope=openid plus admin_consent_scope listing the API scopes, and note who must log in (an org admin).",
+          "For five scenarios decide individual vs admin consent: (1) internal HR system using JWT for 2,000 employees; (2) ISV app installed by many customers; (3) one service user for a nightly job; (4) customer org forbids users granting consent themselves; (5) user on a claimed domain tries to revoke consent individually.",
+          "Write one fallback rule: always handle consent_required by sending the user to individual consent."
+        ],
+        "api": "Inspection only. Individual: GET https://account-d.docusign.com/oauth/auth?response_type=code&scope=signature%20impersonation&client_id={integrationKey}&redirect_uri={redirectUri}\nAdmin consent (external app): same endpoint with scope=openid and admin_consent_scope={space-separated API scopes} (verify exact parameters on the 'admin consent for external applications' page before relying on them).",
+        "observe": [
+          "Admin consent needs Docusign Admin (Access Management) and a claimed domain; it grants consent for all users of that domain at once.",
+          "Users on a reserved/claimed domain cannot revoke admin-granted consent individually; it is revoked in Docusign Admin.",
+          "Internal apps (key owned by your org) are consented in Docusign Admin; external apps use the special-scope URL."
+        ],
+        "examTraps": [
+          "Many users impersonated by one JWT app: admin consent is the scalable answer; a single service user only needs individual consent once.",
+          "Admin consent is not available without a claimed domain; the correct design keeps an individual-consent fallback.",
+          "Consent is not the same as account permissions: a consented user still needs the account rights for the API action."
+        ]
+      }
+    ],
+    "cleanup": [
+      "Delete the lab secret from the integration key if you no longer need it, and delete the test RSA key pair or keep it only locally.",
+      "Revoke the lab app under Manage Profile > Connected Apps if you want to re-run the consent exercises from scratch.",
+      "Delete any scratch file that contains tokens, secrets or codes."
+    ],
+    "takeaways": [
+      "Unattended back-end job acting as a user: JWT Grant, consent first with signature impersonation, no refresh token.",
+      "Web app with a server and a user present: Confidential Authorization Code Grant with a secret sent only server-side.",
+      "SPA or mobile app: Public Authorization Code Grant with PKCE (S256), no secret; CORS needs the cors scope.",
+      "Always send and verify state on the authorization redirect.",
+      "Need long-lived access without re-login: refresh tokens plus the extended scope (rolling 30 days).",
+      "Derive base_uri and accountId from /oauth/userinfo once per session; never hard-code them.",
+      "Request only the scopes the calls need (signature, aow_manage, adm_store_unified_repo_read, webforms_*); adding a scope means new consent.",
+      "Admin consent requires Docusign Admin and a claimed domain; keep individual consent as a fallback for consent_required."
+    ]
+  },
+  "agreement_manager": {
+    "title": "Lab 7: Agreement Manager API",
+    "weeks": "Keep-alive slots (10-15 min each); one optional 30-45 min exercise",
+    "goal": "Use the Agreement Manager (Navigator) API exactly as the exam frames it: list and filter AI-extracted agreements, read one agreement's provisions, request an AI summary, and design how extracted values flow into an external system. Remember the API surface is small: GetAgreementsList, GetAgreement, DeleteAgreement and CreateAgreementSummary only.",
+    "setup": [
+      "Demo account only. The account must have Agreement Manager / Navigator enabled with some agreements in the repository (the Navigator beta seeded demo accounts with test data; if the Agreements screen is empty, upload 2-3 sample PDFs through the web app UI, because the API has no upload operation).",
+      "Base path: https://api-d.docusign.com/v1 (demo) and https://api.docusign.com/v1 (production). This is NOT the eSignature base_uri.",
+      "Get a token (JWT or Auth Code from Lab 4) with scope signature adm_store_unified_repo_read; re-consent if the key was consented without it.",
+      "Postman with the Docusign Navigator collection or plain curl works; the project folder navigator-integration/server.js and the quickstart app/lib/navigator/examples/listAgreements.js and getSingleAgreement.js show the same calls. Do not copy any key or ID from them.",
+      "Variables: {accountId}, {accessToken}, {agreementId}."
+    ],
+    "exercises": [
+      {
+        "title": "First call: GetAgreementsList and the scope trap",
+        "minutes": 10,
+        "steps": [
+          "Call GetAgreementsList with limit=5.",
+          "Repeat with a token that has only signature (no adm_store_unified_repo_read) and record the status code.",
+          "In the successful response, note for one entry: id, type, category, status, parties, provisions, source_name, metadata.created_at."
+        ],
+        "api": "GET https://api-d.docusign.com/v1/accounts/{accountId}/agreements?limit=5\nAuthorization: Bearer {accessToken}\nAccept: application/json",
+        "observe": [
+          "Agreements come back under a data array with AI-extracted provisions already included in each entry.",
+          "Without the Navigator scope the call is rejected (401/403); adding the scope requires new consent before JWT tokens work again.",
+          "The host is api-d.docusign.com, not your account's eSignature base_uri."
+        ],
+        "examTraps": [
+          "Agreement Manager API uses its own base path (api-d / api .docusign.com/v1) and the adm_store_unified_repo_read scope.",
+          "Adding a scope to the JWT payload without re-consenting gives consent_required.",
+          "Agreement data is read with Agreement Manager, not with eSignature Envelopes:get (an envelope is not an extracted agreement)."
+        ]
+      },
+      {
+        "title": "Filters and paging",
+        "minutes": 15,
+        "steps": [
+          "Filter agreements expiring in the next year: provisions.expiration_date with gte and lte operators.",
+          "Filter by party name with parties.name_in_agreement and by status.",
+          "Add sort and direction (asc/desc).",
+          "Call with limit=2, find the continuation token in the response and call again passing it as ctoken until no more pages."
+        ],
+        "api": "GET https://api-d.docusign.com/v1/accounts/{accountId}/agreements?limit=2&provisions.expiration_date[gte]={YYYY-MM-DD}&provisions.expiration_date[lte]={YYYY-MM-DD}\nGET .../agreements?parties.name_in_agreement={partyName}&status={status}&sort={field}&direction=desc\nGET .../agreements?limit=2&ctoken={continuationTokenFromPreviousResponse}\n(Operator syntax for date filters: check the API Explorer example for the exact encoding of gte/lte on your first try.)",
+        "observe": [
+          "Supported filters include id, status, title, parties.name_in_agreement, metadata.created_at, provisions.effective_date / expiration_date / execution_date / term_length, languages, source_name, source_id.",
+          "term_length uses ISO 8601 durations (P1Y), dates use ISO 8601 dates.",
+          "Paging is token based (limit + ctoken), not start_position/count as in eSignature lists."
+        ],
+        "examTraps": [
+          "'Find contracts renewing in the next 90 days' is a GetAgreementsList filter on provision dates, not a loop of GetAgreement calls.",
+          "Do not assume eSignature paging parameters on this API; use limit and ctoken.",
+          "Filter server-side instead of downloading everything and filtering in your app."
+        ]
+      },
+      {
+        "title": "GetAgreement for one ID",
+        "minutes": 10,
+        "steps": [
+          "Pick an id from the list and call GetAgreement.",
+          "Compare its provisions with the same entry in the list response.",
+          "Note fields useful for an external system: provisions.renewal_type, renewal_notice_date, total_agreement_value + currency code, governing_law, related_agreement_documents.parent_agreement_document_id, source_id."
+        ],
+        "api": "GET https://api-d.docusign.com/v1/accounts/{accountId}/agreements/{agreementId}\nAuthorization: Bearer {accessToken}",
+        "observe": [
+          "Durations (term_length, renewal_notice_period) are ISO 8601 strings like P3Y or P90D; values may be SILENT when the document does not say.",
+          "source_name / source_id tell you where the agreement came from (e.g. Docusign eSign) so you can link back.",
+          "related_agreement_documents links an amendment to its parent agreement."
+        ],
+        "examTraps": [
+          "Use GetAgreement for one known ID; use GetAgreementsList for searching.",
+          "There is no getAgreementSummary operation; a summary is created with POST .../ai/actions/summarize.",
+          "Provision values are AI-extracted and can be corrected by a human in the UI, so do not treat them as legally binding."
+        ]
+      },
+      {
+        "title": "CreateAgreementSummary (AI summarize action)",
+        "minutes": 10,
+        "steps": [
+          "POST to the summarize action for the same agreement (no body needed beyond headers).",
+          "Read the summary and check it against two provision values you saw in GetAgreement.",
+          "Note the method (POST) and that invoking it accepts the Docusign AI terms."
+        ],
+        "api": "POST https://api-d.docusign.com/v1/accounts/{accountId}/agreements/{agreementId}/ai/actions/summarize\nAuthorization: Bearer {accessToken}\nContent-Type: application/json",
+        "observe": [
+          "200 returns a JSON object containing the AI-generated summary.",
+          "The summary is a concise overview that may miss details or legal nuance; the original document stays the binding source.",
+          "If you get 403, check plan/feature availability and the scopes on the token (see 'Navigator Authentication' in the docs for the full scope list)."
+        ],
+        "examTraps": [
+          "Summary = POST .../ai/actions/summarize (CreateAgreementSummary); a GET of a summary does not exist.",
+          "Do not store an AI summary as the contract of record; link to the agreement and keep human review.",
+          "Summaries are on demand per agreement, not returned by the list call."
+        ]
+      },
+      {
+        "title": "Map extracted provisions to an external system",
+        "minutes": 15,
+        "steps": [
+          "Design (on paper) a CRM/ERP sync: which fields from GetAgreementsList map to which CRM fields (id -> external key, parties -> account, expiration_date / renewal_notice_date -> renewal task, total_agreement_value + currency -> opportunity value).",
+          "Decide the trigger: a scheduled job using a metadata.created_at filter since the last run, or an event from your own system; write down why you would not poll every agreement by ID.",
+          "Decide how to store the Agreement Manager id and source_id so you can re-read later.",
+          "Decide which fields need human review before they drive money or legal actions."
+        ],
+        "api": "GET https://api-d.docusign.com/v1/accounts/{accountId}/agreements?metadata.created_at[gte]={lastRunDate}&limit=50\nthen for paging: &ctoken={ctoken}",
+        "observe": [
+          "Incremental sync is possible with created_at / date filters plus paging.",
+          "Values corrected by a user in the UI are returned instead of the original AI values on the next GET, so a re-sync picks up corrections.",
+          "The API currently reads data; updates of extracted values are done in the UI."
+        ],
+        "examTraps": [
+          "Sync to CRM/ERP: list with filters + paging, store the agreement id, re-read; do not scrape documents yourself.",
+          "Feeding a copilot/LLM with agreement data is a documented use case of the list operation.",
+          "Least privilege: a read-only sync needs only the read scope, not write/admin scopes."
+        ]
+      },
+      {
+        "title": "Review AI-extracted values in the UI",
+        "minutes": 10,
+        "steps": [
+          "Open the agreement in the Agreements screen of the web app and find its extracted fields.",
+          "Correct one value (e.g. renewal notice period) if your account allows edits.",
+          "Call GetAgreement again and compare.",
+          "Note which role in your organization should own this review."
+        ],
+        "api": "GET https://api-d.docusign.com/v1/accounts/{accountId}/agreements/{agreementId} (before and after the UI edit)",
+        "observe": [
+          "After a user edit, the API returns the user-updated value instead of the AI-extracted value.",
+          "Custom agreement types reduce agreements classified as Other; fields on a type can be AI-detected.",
+          "Legacy (non-Docusign) agreements uploaded into the repository are extracted the same way."
+        ],
+        "examTraps": [
+          "AI extraction needs human review for high-impact fields; the exam favours 'review then act' over fully automatic action.",
+          "Corrections are made by users (UI) and then visible through the API.",
+          "Misclassified agreements: create a custom agreement type rather than post-processing in code."
+        ]
+      },
+      {
+        "title": "Optional (30-45 min): small sync script plus DeleteAgreement decision",
+        "minutes": 40,
+        "steps": [
+          "Run navigator-integration/server.js locally (fill your own local .env, never commit it) or adapt the quickstart listAgreements example to print id, type, expiration_date and renewal_notice_date for all pages.",
+          "Write the output as CSV to simulate an import into a CRM.",
+          "Read the DeleteAgreement reference (DELETE /v1/accounts/{accountId}/agreements/{agreementId}) and decide when, if ever, your integration should call it; do NOT delete seeded data you still need.",
+          "List three failure cases (401 expired token, 403 missing scope/feature, 429 rate limit) and the handling for each."
+        ],
+        "api": "GET https://api-d.docusign.com/v1/accounts/{accountId}/agreements?limit=50[&ctoken=...]\nDELETE https://api-d.docusign.com/v1/accounts/{accountId}/agreements/{agreementId} (read only; do not run on data you need)",
+        "observe": [
+          "All pages are fetched by following ctoken until none is returned.",
+          "Only four operations exist; anything else in an exam option (update provisions, upload document, get summary) is a distractor for this API.",
+          "Token refresh/renewal from Lab 4 applies unchanged."
+        ],
+        "examTraps": [
+          "There is no upload or update endpoint in this API version; uploads and corrections happen in the UI.",
+          "Deleting an agreement is destructive and rarely the answer to a sync scenario.",
+          "Handle 401 by getting a new token, 403 by checking scope/consent/plan, 429 by backing off."
+        ]
+      }
+    ],
+    "cleanup": [
+      "Delete local CSV exports and any .env file with credentials when done.",
+      "Revert any UI edits to extracted values if you want the original AI values for future labs.",
+      "Do not delete seeded agreements."
+    ],
+    "takeaways": [
+      "Agreement Manager API base path is api-d.docusign.com/v1 (demo) / api.docusign.com/v1 (prod), separate from the eSignature base_uri.",
+      "Scope adm_store_unified_repo_read is required to read agreements; adding it means new consent.",
+      "Search = GetAgreementsList with filters (dates, parties, status, type, source) and limit + ctoken paging.",
+      "One agreement = GetAgreement by id; AI summary = POST .../ai/actions/summarize (CreateAgreementSummary).",
+      "Only GetAgreementsList, GetAgreement, DeleteAgreement and CreateAgreementSummary exist; there is no getAgreementSummary.",
+      "AI-extracted values and summaries need human review; user corrections in the UI replace AI values in API responses.",
+      "Sync to CRM/ERP by filtered, paged reads keyed on the agreement id, not by parsing documents yourself."
+    ]
+  },
+  "embedding": {
+    "title": "Lab 8: Embedding - redirect vs iframe vs Docusign JS",
+    "weeks": "Keep-alive slots (10-15 min each); one optional 30-45 min exercise",
+    "goal": "Use the quiz app's Embedding lab page (http://127.0.0.1:5173) to show the same Docusign URL as a full-page redirect, a plain iframe and Docusign JS, and learn what each requires. Covers embedded signing classic vs focused view, embedded sending, web form instances, workflow instance URLs, returnUrl events vs sessionEnd, the 5-minute single-use URL and why Connect, not the browser, confirms completion.",
+    "setup": [
+      "Demo account only. Start the quiz app (npm run dev in quiz-app) and open the Embedding lab page at http://127.0.0.1:5173.",
+      "Have a token with signature (and webforms_read webforms_instance_read webforms_instance_write for web forms, aow_manage for Maestro) from Lab 4, plus {accountId} and {base_uri} from /oauth/userinfo.",
+      "Enter your {integrationKey} in the Embedding lab page (Docusign JS needs it for loadDocuSign).",
+      "Origins: frameAncestors must list your page origin AND https://apps-d.docusign.com; messageOrigins must be https://apps-d.docusign.com (the Docusign origin, not yours). The page shows http://127.0.0.1:5173 as your origin. The docs only exempt http://localhost from the HTTPS requirement, so if 127.0.0.1 is refused, open the page as http://localhost:5173 and use that origin instead.",
+      "Reference code: quickstart app/lib/eSignature/examples/focusedView.js (eg044), eg001EmbeddedSigning.js, eg011EmbeddedSending.js, app/lib/webforms/examples/createInstance.js, app/lib/maestro/examples/triggerWorkflow.js. Do not copy any key or ID from them.",
+      "Every view URL expires 5 minutes after creation and works once: create it, paste it into the page immediately, and create a new one for each display mode."
+    ],
+    "exercises": [
+      {
+        "title": "Embedded signer envelope + classic view by redirect",
+        "minutes": 15,
+        "steps": [
+          "Create and send an envelope (status sent) with one signer that has clientUserId set (any value unique in the envelope, e.g. 1001).",
+          "Call createRecipient with the SAME email, userName and clientUserId plus a returnUrl that points to your page (e.g. http://127.0.0.1:5173/?view=return).",
+          "Paste the url into the Embedding lab and choose full-page redirect; sign.",
+          "Read the event query parameter appended to the returnUrl.",
+          "Create a second URL and decline or cancel instead; compare the event values."
+        ],
+        "api": "POST {base_uri}/restapi/v2.1/accounts/{accountId}/envelopes\n{\"emailSubject\":\"Embed lab\",\"status\":\"sent\",\"documents\":[{\"documentId\":\"1\",\"name\":\"doc.pdf\",\"documentBase64\":\"{base64}\"}],\"recipients\":{\"signers\":[{\"email\":\"{you}\",\"name\":\"{name}\",\"recipientId\":\"1\",\"clientUserId\":\"1001\",\"tabs\":{\"signHereTabs\":[{\"documentId\":\"1\",\"pageNumber\":\"1\",\"xPosition\":\"100\",\"yPosition\":\"100\"}]}}]}}\nPOST {base_uri}/restapi/v2.1/accounts/{accountId}/envelopes/{envelopeId}/views/recipient\n{\"returnUrl\":\"http://127.0.0.1:5173/?view=return\",\"authenticationMethod\":\"none\",\"email\":\"{you}\",\"userName\":\"{name}\",\"clientUserId\":\"1001\"}",
+        "observe": [
+          "The signer receives no email from Docusign because clientUserId marks them as embedded.",
+          "After signing the browser lands on returnUrl?event=signing_complete; other values include cancel, decline, session_timeout, ttl_expired, viewing_complete, access_code_failed.",
+          "createRecipient fails if email/userName/clientUserId do not match the recipient, or if the envelope is not in sent status."
+        ],
+        "examTraps": [
+          "Embedded signing needs clientUserId on the recipient at send time; without it you cannot generate a recipient view.",
+          "Recipient view URLs are only for sent envelopes; a draft uses createSender (embedded sending).",
+          "returnUrl event values are hints for the UI, not proof of completion."
+        ]
+      },
+      {
+        "title": "5-minute single-use URL",
+        "minutes": 10,
+        "steps": [
+          "Create a recipient view URL and paste it into the page in redirect mode; then paste the SAME URL again.",
+          "Create another URL and wait more than 5 minutes before opening it.",
+          "Record what you see in both cases and the event reported."
+        ],
+        "api": "POST {base_uri}/restapi/v2.1/accounts/{accountId}/envelopes/{envelopeId}/views/recipient (same body as before)",
+        "observe": [
+          "Observe whether the reused or expired URL shows an error page or returns to returnUrl with event=ttl_expired (documented meaning: token not used within the timeout or already accessed).",
+          "A new URL must be generated each time the user (re)opens signing.",
+          "The signing session itself has a separate inactivity timeout (session_timeout)."
+        ],
+        "examTraps": [
+          "Never email or store a recipient view URL; generate it on demand right before redirecting the user.",
+          "'Signer clicks the link tomorrow' is not possible with an embedded URL: generate a fresh one when they return to your app.",
+          "ttl_expired (URL not used in time or reused) is different from session_timeout (inactive in the session)."
+        ]
+      },
+      {
+        "title": "Plain iframe vs focused view with Docusign JS",
+        "minutes": 15,
+        "steps": [
+          "Create a recipient view with frameAncestors and messageOrigins (see api) and open it in mode 2, plain iframe; note what happens.",
+          "Create a new URL with the same body and open it in mode 3, Docusign JS (signing with displayFormat focused); sign and watch the event log.",
+          "Create a URL WITHOUT frameAncestors/messageOrigins and try mode 3 again; record the failure.",
+          "Create a URL with frameAncestors missing your origin (only https://apps-d.docusign.com) and try mode 3 again."
+        ],
+        "api": "POST {base_uri}/restapi/v2.1/accounts/{accountId}/envelopes/{envelopeId}/views/recipient\n{\"returnUrl\":\"http://127.0.0.1:5173/?view=return\",\"authenticationMethod\":\"none\",\"email\":\"{you}\",\"userName\":\"{name}\",\"clientUserId\":\"1001\",\"frameAncestors\":[\"http://127.0.0.1:5173\",\"https://apps-d.docusign.com\"],\"messageOrigins\":[\"https://apps-d.docusign.com\"]}\nBrowser: const ds = await window.DocuSign.loadDocuSign('{integrationKey}'); const s = ds.signing({url, displayFormat:'focused'}); s.on('ready', ...); s.on('sessionEnd', e => log(e.sessionEndType)); s.mount('#container');",
+        "observe": [
+          "With correct origins, Docusign JS creates the iframe itself, raises ready when displayed and sessionEnd (sessionEndType signing_complete, cancel, decline, ttl_expired, ...) at the end, then removes the iframe; no browser redirect happens.",
+          "With origins missing, observe whether the frame is blocked (browser console shows a frame-ancestors/CSP refusal) or the session never becomes ready.",
+          "In the plain iframe, observe whether the classic session loads and whether, at the end, the returnUrl opens inside the frame (your page nested in itself)."
+        ],
+        "examTraps": [
+          "Focused view requires Docusign JS plus frameAncestors (your origin + apps-d/apps.docusign.com) and messageOrigins (apps-d/apps.docusign.com).",
+          "Focused view only works inside an iframe that Docusign JS builds; it ends with DOM events, not a redirect.",
+          "Production uses https://apps.docusign.com and HTTPS-only origins; demo values do not carry over."
+        ]
+      },
+      {
+        "title": "Which features force classic view",
+        "minutes": 10,
+        "steps": [
+          "Create an envelope whose embedded signer needs ID verification (or a payment tab) if your demo account allows it; otherwise do this as a reading exercise in 'Embedded signing' concepts.",
+          "Try to open it in focused view; then open a new URL in classic view by redirect.",
+          "Write a decision table: requirement -> classic redirect / classic with Docusign JS / focused view."
+        ],
+        "api": "Same createRecipient call; envelope signer with identityVerification {\"workflowId\":\"{idvWorkflowId}\"} or a payment tab (only if enabled in your demo account).",
+        "observe": [
+          "Documented: focused view does not yet support payment tabs, ID verification, or some SBS pen providers; classic view supports the most authentication options (access code, KBA, IDV).",
+          "Classic in an iframe is not supported for all authentication options or SBS pen types; mobile signers need full-screen iframes.",
+          "Classic view can also be rendered through Docusign JS to get DOM events."
+        ],
+        "examTraps": [
+          "IDV, payments or SBS in an embedded flow: choose classic view (redirect), not focused view.",
+          "Want minimal UI inside your page and none of those features: focused view with Docusign JS.",
+          "Click to Agree (focused view with no tabs) needs Document Visibility off on the account."
+        ]
+      },
+      {
+        "title": "Embedded sending with createSender",
+        "minutes": 10,
+        "steps": [
+          "Create an envelope with status created (draft) and one remote signer.",
+          "Call createSender with a returnUrl and open the URL in redirect mode.",
+          "Change a tab or recipient in the sender view and send.",
+          "Try createSender on an already sent envelope and record the result."
+        ],
+        "api": "POST {base_uri}/restapi/v2.1/accounts/{accountId}/envelopes  (same body, \"status\":\"created\")\nPOST {base_uri}/restapi/v2.1/accounts/{accountId}/envelopes/{envelopeId}/views/sender\n{\"returnUrl\":\"http://127.0.0.1:5173/?view=sender-return\"}",
+        "observe": [
+          "The sender view lets your user prepare and send inside your app; the return lands on returnUrl with an event value (e.g. Send or Save).",
+          "The envelope status moves from created to sent only when the user sends.",
+          "Sender view URLs also expire quickly; create on demand."
+        ],
+        "examTraps": [
+          "Let a user review/tag before sending inside your app: draft envelope (status created) + createSender, not createRecipient.",
+          "createRecipient = signer experience; createSender = sender/prepare experience.",
+          "Embedded sending does not make the recipients embedded; that still depends on clientUserId."
+        ]
+      },
+      {
+        "title": "Web form instance: embedded vs remote, and a workflow instance URL",
+        "minutes": 15,
+        "steps": [
+          "Pick an active template-based web form ({formId}) and create an embedded instance with clientUserId and formValues.",
+          "Paste formUrl and instanceToken into the page; open in mode 3 (webforms with options.instanceToken) and in redirect mode (formUrl#instanceToken=...) using new instances.",
+          "Create a remote instance (sendOption now + recipients with roleName) and note that there is no URL to embed; the recipient gets email.",
+          "If you have a published Maestro workflow started From an API call, call TriggerWorkflow and paste instance_url into redirect and iframe modes."
+        ],
+        "api": "POST {webformsBasePath}/accounts/{accountId}/forms/{formId}/instances\nEmbedded: {\"clientUserId\":\"1001\",\"formValues\":{\"{fieldName}\":\"value\"},\"expirationOffset\":24}\nRemote: {\"sendOption\":\"now\",\"recipients\":[{\"roleName\":\"signer1\",\"name\":\"{name}\",\"email\":\"{you}\"}]}\n(Take {webformsBasePath} from the Web Forms API reference / API Explorer for demo before your first call.)\nMaestro: Workflows:triggerWorkflow (POST under {maestroBasePath}/accounts/{accountId}/workflows/{workflowId}/...; copy the exact path from the API reference) with instance_name and trigger_inputs -> response instance_url",
+        "observe": [
+          "instanceToken expires 5 minutes after creation even though the instance itself lives until tokenExpirationDateTime / expirationOffset; an expired one shows 'Unable to load form'.",
+          "Docusign JS webforms(...) raises ready, userActivity and sessionEnd events; redirecting leaves your app.",
+          "Workflow instance_url: redirect leaves the user on Docusign after completion; iframe keeps your app around it. Embedded workflows support From a Link / From an API call starts, do not support Collect Data from an ID, and do not support focused view for the signature step."
+        ],
+        "examTraps": [
+          "Remote web form delivery needs sendOption + recipient/roleName values and does not work with standalone forms or attachment fields.",
+          "Embedded web form: clientUserId + Docusign JS (recommended) using formUrl and instanceToken.",
+          "Embedded Maestro instance: iframe the instance_url, choose From an API call when passing starting variables."
+        ]
+      },
+      {
+        "title": "Optional (30-45 min): never trust the browser - confirm with Connect",
+        "minutes": 35,
+        "steps": [
+          "Set up a webhook.site URL and add an envelope-level eventNotification (or use your Lab 3 account-level Connect configuration) for recipient-completed and envelope-completed.",
+          "Run one embedded signing in focused view; record when sessionEnd fires and when the Connect message arrives.",
+          "Run another and close the browser tab right after clicking Finish; check that Connect still reports completion.",
+          "Manually open your returnUrl with ?event=signing_complete on an unsigned envelope and note that your app would be fooled if it trusted that value.",
+          "Write the rule your back end follows: update business state only from Connect (or a GET of envelope status), use returnUrl/sessionEnd only to change the UI."
+        ],
+        "api": "In the envelope body: \"eventNotification\":{\"url\":\"{webhookSiteUrl}\",\"requireAcknowledgment\":\"true\",\"includeHMAC\":\"true\",\"eventData\":{\"version\":\"restv2.1\",\"format\":\"json\"},\"events\":[\"recipient-completed\",\"envelope-completed\"]}\n(Verify field names against your Lab 3 notes or API Explorer.)",
+        "observe": [
+          "Connect delivers completion even when the browser never returns to your app.",
+          "returnUrl parameters can be cancelled, closed or spoofed; the docs explicitly say not to rely on them.",
+          "sessionEnd is a DOM event in the user's browser and has the same weakness."
+        ],
+        "examTraps": [
+          "Completion must be confirmed server-side (Connect or GET envelope), never from returnUrl or sessionEnd alone.",
+          "Do not poll per envelope more than once every 15 minutes; Connect is the scalable answer.",
+          "Verify HMAC on Connect messages before trusting them."
+        ]
+      }
+    ],
+    "cleanup": [
+      "Void or let expire any in-flight test envelopes; delete draft envelopes from the sender exercise.",
+      "Remove the envelope-level webhook URL from your notes and delete the webhook.site bin.",
+      "Stop the quiz app dev server; do not commit any token or integration key entered in the page."
+    ],
+    "takeaways": [
+      "Embedded signer = clientUserId at send time + createRecipient with the same identity; the envelope must be sent.",
+      "Embedded sending = draft envelope (status created) + createSender.",
+      "View URLs expire in 5 minutes and are single use: generate on demand, never store or email them.",
+      "Focused view = Docusign JS + frameAncestors (your origin + apps-d/apps.docusign.com) + messageOrigins (apps-d/apps.docusign.com); ends with sessionEnd events, not a redirect.",
+      "Need IDV, payments or some SBS: use classic view (redirect is the safest).",
+      "Embedded web form = clientUserId + formUrl + instanceToken via Docusign JS; remote = sendOption + recipients with roleName.",
+      "Workflow instance_url can be redirected or iframed; embedded workflows cannot use Collect Data from an ID or focused view signing.",
+      "returnUrl events and sessionEnd drive the UI only; confirm completion with Connect or the API."
+    ]
+  }
+}

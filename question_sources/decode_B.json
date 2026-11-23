@@ -1,0 +1,1414 @@
+[
+  {
+    "id": 20001,
+    "decode": {
+      "prompt": "Which requirement decides the fix here?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Send the client credentials in the exact Basic format a confidential client must use for the code exchange"
+        },
+        {
+          "id": "B",
+          "text": "Prove possession of a PKCE verifier because the client cannot hold a secret"
+        },
+        {
+          "id": "C",
+          "text": "Exchange the authorization code faster, before it expires"
+        },
+        {
+          "id": "D",
+          "text": "Identify the caller with a user token instead of client credentials"
+        }
+      ],
+      "correct": "A",
+      "explanation": "The code is fresh, exchanged within ten seconds, and the app is confirmed to hold a secret without PKCE, so the only defect left is the malformed key:secret string in the Basic header.",
+      "clues": [
+        "a colon, a space, and the secret key -> the Basic credential string is malformed",
+        "app can store a secret and PKCE was not used -> confidential client, no code_verifier needed",
+        "within ten seconds -> code expiry is not the problem"
+      ],
+      "needs": "A correctly formatted Basic base64(integrationKey:secretKey) credential on the token request."
+    }
+  },
+  {
+    "id": 20003,
+    "decode": {
+      "prompt": "What does this scenario really require?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Verify a field value against the system of record while a signer fills in an eSignature envelope"
+        },
+        {
+          "id": "B",
+          "text": "Read from and write back to a proprietary system of record as steps inside a Maestro workflow"
+        },
+        {
+          "id": "C",
+          "text": "Verify a standard data type against an authoritative third-party provider"
+        },
+        {
+          "id": "D",
+          "text": "Archive the completed document as a file in external storage"
+        }
+      ],
+      "correct": "B",
+      "explanation": "The lookup before the form and the write-back after signing both happen inside a Maestro workflow against Aster's own platform, which is structured read/write, not tab verification.",
+      "clues": [
+        "Maestro patient intake workflow -> the extension point is Maestro, not eSignature tabs",
+        "look up the patient ... write the updated insurance details back -> structured read and write to a system of record",
+        "connected fields ... autofill values -> red herring; connected fields are not supported in Maestro"
+      ],
+      "needs": "Structured read/write against a custom system of record from Maestro steps."
+    }
+  },
+  {
+    "id": 20005,
+    "decode": {
+      "prompt": "What does this scenario really require?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Let the automatic retry mechanism finish redelivering the whole backlog"
+        },
+        {
+          "id": "B",
+          "text": "Regenerate the events by creating the envelopes again"
+        },
+        {
+          "id": "C",
+          "text": "Recover events that have aged out of Connect's automatic retry window, using the recorded failures"
+        },
+        {
+          "id": "D",
+          "text": "Poll envelope status continuously from now on"
+        }
+      ],
+      "correct": "C",
+      "explanation": "The outage lasted 20 days, longer than the 15-day automatic retry span, so the oldest failures will never be retried and must be found in the failure log and republished.",
+      "clues": [
+        "broken for 20 days -> longer than Connect's 15-day retry span",
+        "events from the first days of the outage never arrive -> automatic retries expired for them",
+        "requireAcknowledgement and logging enabled -> failures are recorded and can be republished"
+      ],
+      "needs": "Find failed envelopes in the Connect failure log and republish them manually."
+    }
+  },
+  {
+    "id": 20006,
+    "decode": {
+      "prompt": "What does this scenario really require?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Apply a brand to the envelope generated after the form is submitted"
+        },
+        {
+          "id": "B",
+          "text": "Pass brand information as data when each instance is created"
+        },
+        {
+          "id": "C",
+          "text": "Change account-wide signing resource files"
+        },
+        {
+          "id": "D",
+          "text": "Apply a brand to standalone web form instances, where a brand cannot be applied through the API request"
+        }
+      ],
+      "correct": "D",
+      "explanation": "The forms are standalone with no envelope, and API brandId only works for template-based configurations, so the brand must be set on the web form configuration itself.",
+      "clues": [
+        "standalone web form configuration ... no envelope is involved -> envelope or API branding does not apply",
+        "template-based ... sees its brand applied -> API brandId works only for template-based",
+        "logo and colors on these forms -> brand chosen in the configuration's own Branding settings"
+      ],
+      "needs": "Configuration-level branding selected in the web form editor."
+    }
+  },
+  {
+    "id": 20007,
+    "decode": {
+      "prompt": "What does this scenario really require?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Let each user sign in individually from an app that cannot keep any secret"
+        },
+        {
+          "id": "B",
+          "text": "Authenticate one service identity with no user interaction"
+        },
+        {
+          "id": "C",
+          "text": "Protect a client secret in secure storage on the device"
+        },
+        {
+          "id": "D",
+          "text": "Return tokens straight to the app without a code exchange"
+        }
+      ],
+      "correct": "A",
+      "explanation": "Each agent signs in with their own account, and anything compiled into the native app can be extracted, so it is a public client needing a user sign-in flow without a secret.",
+      "clues": [
+        "each agent must sign in with their own Docusign account -> interactive user authorization",
+        "native binary ... anything compiled into it can be extracted -> public client, no secret or private key",
+        "backend never handles Docusign traffic -> no server to hold a secret"
+      ],
+      "needs": "A public-client user sign-in flow where PKCE replaces the secret."
+    }
+  },
+  {
+    "id": 20010,
+    "decode": {
+      "prompt": "Which rule decides the outcome here?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Count every document defined anywhere in the request"
+        },
+        {
+          "id": "B",
+          "text": "Know which single document each composite template object contributes and how objects are ordered"
+        },
+        {
+          "id": "C",
+          "text": "Order documents by the template sequence numbers across the whole array"
+        },
+        {
+          "id": "D",
+          "text": "Determine which template supplies the signer"
+        }
+      ],
+      "correct": "B",
+      "explanation": "Each composite object yields at most one document, a document property overrides template documents in that object, and documents follow array order.",
+      "clues": [
+        "Object 1 contains a document property ... and a server template MSA -> the document property wins for that object",
+        "Object 2 contains a server template NDA -> the second object contributes the NDA",
+        "expected three documents -> misreading; one document per object"
+      ],
+      "needs": "One document per composite object, document property first, ordered by array position."
+    }
+  },
+  {
+    "id": 20012,
+    "decode": {
+      "prompt": "What does this scenario really require?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Generate agreement summaries to work out their dates"
+        },
+        {
+          "id": "B",
+          "text": "Collect form data to begin each renewal"
+        },
+        {
+          "id": "C",
+          "text": "Find agreements by an extracted expiration date, then start an already-published multi-step orchestration for each"
+        },
+        {
+          "id": "D",
+          "text": "Validate a field value during signing to kick off the renewal"
+        }
+      ],
+      "correct": "C",
+      "explanation": "The job needs a date-based query over agreement data and a way to start the renewal workflow that is already published with the API start method.",
+      "clues": [
+        "agreements expiring in the next 60 days -> Agreement Manager query on the expiration provision",
+        "published in Workflow Builder with the API call start method -> trigger it through the Maestro API",
+        "prefills, routes for internal approval, and collects signatures -> the orchestration lives in the workflow"
+      ],
+      "needs": "Agreement list filtered by expiration date plus a Maestro workflow trigger."
+    }
+  },
+  {
+    "id": 20013,
+    "decode": {
+      "prompt": "What does this scenario really require?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Identify the embedded signer consistently across attempts"
+        },
+        {
+          "id": "B",
+          "text": "Update an envelope whose ID is already known"
+        },
+        {
+          "id": "C",
+          "text": "Detect duplicate envelopes by their document content"
+        },
+        {
+          "id": "D",
+          "text": "Make envelope creation safe to retry when the caller never learned whether the first attempt succeeded"
+        }
+      ],
+      "correct": "D",
+      "explanation": "No envelopeId came back from the timed-out calls, so the service needs a sender-generated key that lets Docusign recognise a repeated create.",
+      "clues": [
+        "never received an envelopeId -> nothing to reference; need a sender-generated key",
+        "the first call had actually succeeded -> duplicates come from blind retries",
+        "envelopeIdStamping and clientUserId -> red herrings unrelated to deduplication"
+      ],
+      "needs": "An idempotency value (transactionId) sent on create and reused on retry."
+    }
+  },
+  {
+    "id": 20014,
+    "decode": {
+      "prompt": "What does this scenario really require?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Set the after-signing redirect for a template-based web form with embedded signing, per instance, without brands"
+        },
+        {
+          "id": "B",
+          "text": "Set the redirect on a signing session the app creates itself"
+        },
+        {
+          "id": "C",
+          "text": "Configure an account-wide redirect after signing"
+        },
+        {
+          "id": "D",
+          "text": "Change the thank you page of a standalone form"
+        }
+      ],
+      "correct": "A",
+      "explanation": "Embedded signing is launched by the web form itself and brands are off the table, so the redirect must come from the instance creation request.",
+      "clues": [
+        "'Initiate signing session from email' setting is off -> embedded signing launched by the web form",
+        "never calls EnvelopeViews -> no recipient view returnUrl to set",
+        "will not create or edit brands -> brand destination URLs are ruled out"
+      ],
+      "needs": "A returnUrl supplied when creating the web form instance."
+    }
+  },
+  {
+    "id": 20015,
+    "decode": {
+      "prompt": "What does this scenario really require?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Write data to a system of record from a Maestro workflow step"
+        },
+        {
+          "id": "B",
+          "text": "Push completed-envelope tab data to an internal non-Salesforce system within seconds, without polling"
+        },
+        {
+          "id": "C",
+          "text": "Use a prebuilt CRM connector"
+        },
+        {
+          "id": "D",
+          "text": "Periodically pull tab values from completed envelopes"
+        }
+      ],
+      "correct": "B",
+      "explanation": "Plain eSignature sending with no Maestro, an internal CRM, near-real-time updates and no extra API traffic all point to a push-based custom listener.",
+      "clues": [
+        "eSignature REST API; no Maestro workflows -> not a Data IO step",
+        "within seconds ... avoid adding API traffic -> push, not polling",
+        "internal, not Salesforce -> custom listener rather than a prebuilt connector"
+      ],
+      "needs": "Custom Connect configuration including tab data, posting to a listener."
+    }
+  },
+  {
+    "id": 20018,
+    "decode": {
+      "prompt": "What does this scenario really require?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Obtain broader token permissions for the user"
+        },
+        {
+          "id": "B",
+          "text": "Allow Docusign content to be framed inside the dashboard"
+        },
+        {
+          "id": "C",
+          "text": "Allow a specific browser origin to call the eSignature API directly, without a proxy"
+        },
+        {
+          "id": "D",
+          "text": "Have the browser client declare its own origin as trusted"
+        }
+      ],
+      "correct": "C",
+      "explanation": "The token works from Postman but the browser blocks the call, so the gap is cross-origin permission, which must be granted on Docusign's side.",
+      "clues": [
+        "blocked with cross-origin errors -> CORS",
+        "work from Postman -> token and scopes are fine; only browser origin checks fail",
+        "does not want to build or host a back-end proxy -> CORS on the integration key",
+        "Focused view is not used -> framing settings are irrelevant"
+      ],
+      "needs": "The dashboard origin listed in the integration key's CORS settings."
+    }
+  },
+  {
+    "id": 20019,
+    "decode": {
+      "prompt": "What does this scenario really require?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Know when the document is fully signed"
+        },
+        {
+          "id": "B",
+          "text": "Know when each individual signer finishes"
+        },
+        {
+          "id": "C",
+          "text": "Know when the workflow has started"
+        },
+        {
+          "id": "D",
+          "text": "Know when every workflow step, including post-signing steps, has finished"
+        }
+      ],
+      "correct": "D",
+      "explanation": "The portal status depends on the archive and writeback steps that run after signing, so only a workflow-level completion signal is late enough.",
+      "clues": [
+        "only when everything, including the archive and the writeback, has finished -> workflow-level completion",
+        "Store Files and Writeback after signing -> envelope completion fires too early",
+        "teammate proposes envelope-completed -> red herring"
+      ],
+      "needs": "Subscribe to the workflow-completed event."
+    }
+  },
+  {
+    "id": 20020,
+    "decode": {
+      "prompt": "What does this scenario really require?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Classify a key that the customer must supply to a partner's product it did not build"
+        },
+        {
+          "id": "B",
+          "text": "Classify an integration used only by the organization's own staff"
+        },
+        {
+          "id": "C",
+          "text": "Classify an integration offered to many Docusign customers"
+        },
+        {
+          "id": "D",
+          "text": "Classify the integration by how signing is displayed to users"
+        }
+      ],
+      "correct": "A",
+      "explanation": "The vendor requires each customer to create and supply its own key, and Northwind wrote none of the code, which matches the third-party key row of the classification table.",
+      "clues": [
+        "each customer must create its own integration key -> partner integration that requires the customer's key",
+        "Northwind wrote none of the application code -> not a custom integration",
+        "shows Docusign signing inside its own screens -> red herring"
+      ],
+      "needs": "Third-party integration key classification."
+    }
+  },
+  {
+    "id": 20021,
+    "decode": {
+      "prompt": "What does this scenario really require?",
+      "options": [
+        {
+          "id": "A",
+          "text": "List the accounts a single user can access"
+        },
+        {
+          "id": "B",
+          "text": "Obtain the list of customer organizations that granted admin consent"
+        },
+        {
+          "id": "C",
+          "text": "Identify which user each token impersonates"
+        },
+        {
+          "id": "D",
+          "text": "View the apps connected inside the vendor's own organization"
+        }
+      ],
+      "correct": "B",
+      "explanation": "The question is about organization-level consent across customers, and the openid request returns an ID token that carries exactly that list.",
+      "clues": [
+        "which customer organizations have granted this admin consent -> organization-level consent record",
+        "scope=openid -> an ID token is returned",
+        "userinfo only lists accounts for one user -> userinfo is the wrong level"
+      ],
+      "needs": "The coid claim of the ID token."
+    }
+  },
+  {
+    "id": 20022,
+    "decode": {
+      "prompt": "What does this scenario really require?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Let the signer sign inside the app"
+        },
+        {
+          "id": "B",
+          "text": "Let the app user act as an embedded signing recipient"
+        },
+        {
+          "id": "C",
+          "text": "Let an app user prepare, tag and send an envelope from inside the app while signers sign remotely"
+        },
+        {
+          "id": "D",
+          "text": "Create and send the envelope automatically with no user editing"
+        }
+      ],
+      "correct": "C",
+      "explanation": "The recruiter tags fields and clicks Send in the platform while candidates sign by email, which is embedded sending on a draft envelope.",
+      "clues": [
+        "drag signature and date fields ... click Send there -> embedded sending (sender view)",
+        "candidates sign remotely by email -> no recipient view needed",
+        "return URL and Connect listener -> already handled, not decisive"
+      ],
+      "needs": "A sender view on an envelope created in draft status."
+    }
+  },
+  {
+    "id": 20023,
+    "decode": {
+      "prompt": "What does this scenario really require?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Rebuild the workflow and its assets by hand in production"
+        },
+        {
+          "id": "B",
+          "text": "Repeat the integration's go-live review for the workflow"
+        },
+        {
+          "id": "C",
+          "text": "Keep the same API host because the workflow itself is unchanged"
+        },
+        {
+          "id": "D",
+          "text": "Move a tested workflow and its dependencies from demo to production and repoint the app to the production host"
+        }
+      ],
+      "correct": "D",
+      "explanation": "Docusign's documented path is export from demo and import into production, which brings referenced assets, and production calls must use the production Maestro host.",
+      "clues": [
+        "built and tested ... in her developer (demo) account -> export/import path",
+        "production account has none of these web forms or templates -> import adds referenced assets",
+        "triggered at api-d.docusign.com -> must switch to the production host"
+      ],
+      "needs": "Export/import the workflow and call api.docusign.com/v1 in production."
+    }
+  },
+  {
+    "id": 20024,
+    "decode": {
+      "prompt": "What does this scenario really require?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Collect consent once for every scope the service will ever use plus impersonation, then request only needed API scopes per token"
+        },
+        {
+          "id": "B",
+          "text": "Consent to the minimum now and add scopes later in the assertion"
+        },
+        {
+          "id": "C",
+          "text": "Obtain refresh tokens for a server-to-server flow"
+        },
+        {
+          "id": "D",
+          "text": "Use identical scope lists in the consent request and the assertion"
+        }
+      ],
+      "correct": "A",
+      "explanation": "Consent collected once must already cover signature, aow_manage and impersonation, while least privilege means the JWT asks only for the API scopes it needs.",
+      "clues": [
+        "consent will be collected once -> consent must include signature, aow_manage and impersonation",
+        "least privilege is mandatory -> the JWT payload lists only the API scopes",
+        "extended so the service can refresh -> JWT Grant has no refresh tokens; red herring"
+      ],
+      "needs": "Consent: signature aow_manage impersonation; JWT scope: signature aow_manage."
+    }
+  },
+  {
+    "id": 20025,
+    "decode": {
+      "prompt": "What does this scenario really require?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Repeat the go-live review"
+        },
+        {
+          "id": "B",
+          "text": "Recreate account data in production and confirm the production plan has the features used, since promotion copies neither"
+        },
+        {
+          "id": "C",
+          "text": "Wait for an automatic sync from the developer account"
+        },
+        {
+          "id": "D",
+          "text": "Keep using resources in the developer account"
+        }
+      ],
+      "correct": "B",
+      "explanation": "Template-not-found errors and a missing Data Verification step both come from the production account being separate from demo in data and plan features.",
+      "clues": [
+        "template-not-found errors -> templates exist only in the developer account",
+        "Data Verification ... not available ... entry-level plan -> the production plan lacks the feature",
+        "going through Go-Live again -> red herring"
+      ],
+      "needs": "Migrate templates and use their production IDs; ensure the plan includes all features used."
+    }
+  },
+  {
+    "id": 20026,
+    "decode": {
+      "prompt": "What does this scenario really require?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Render an envelope signing session for a recipient"
+        },
+        {
+          "id": "B",
+          "text": "Identify the user by adding their ID to the shared URL"
+        },
+        {
+          "id": "C",
+          "text": "Render a specific user's web form instance rather than the shared configuration URL"
+        },
+        {
+          "id": "D",
+          "text": "Retrieve the configuration's form definition"
+        }
+      ],
+      "correct": "C",
+      "explanation": "formUrl is the same for every instance, so something unique to each session must be combined with it to open that buyer's instance.",
+      "clues": [
+        "formUrl is identical for all instances -> the URL alone does not identify an instance",
+        "each buyer's instance -> needs the per-session instanceToken",
+        "formValues and clientUserId sent correctly, status INITIATED -> data is fine; rendering is the gap"
+      ],
+      "needs": "formUrl plus instanceToken, mounted with Docusign JS."
+    }
+  },
+  {
+    "id": 20027,
+    "decode": {
+      "prompt": "What does this scenario really require?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Verify a field against the company's own records using a custom data model"
+        },
+        {
+          "id": "B",
+          "text": "Read and write records from a Maestro workflow step"
+        },
+        {
+          "id": "C",
+          "text": "Sync CRM data as part of an orchestration"
+        },
+        {
+          "id": "D",
+          "text": "Verify a standard business data type against an authoritative provider while the signer fills in an eSignature envelope"
+        }
+      ],
+      "correct": "D",
+      "explanation": "The FEIN check happens during eSignature filling against an external provider, and Corvid has no registry or custom data model, which fits the verification extension for business entities.",
+      "clues": [
+        "while the vendor fills in the agreement ... signing blocked -> eSignature extension point, verification",
+        "no internal registry ... does not want to model its own data types -> not connected fields",
+        "provider supports Docusign's business entity verification contract -> standard verification type",
+        "CRM sync runs in Maestro separately -> red herring"
+      ],
+      "needs": "A data verification extension for business entity (FEIN) in eSignature."
+    }
+  },
+  {
+    "id": 20028,
+    "decode": {
+      "prompt": "Which constraint rules out one of the designs?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Events are needed for envelopes the county receives but never creates"
+        },
+        {
+          "id": "B",
+          "text": "Events are needed only for envelopes the county itself sends"
+        },
+        {
+          "id": "C",
+          "text": "The decisive constraint is HMAC signing, which some designs cannot provide"
+        },
+        {
+          "id": "D",
+          "text": "Events must be limited to specific users in the account"
+        }
+      ],
+      "correct": "A",
+      "explanation": "The bids come from vendors' own accounts, so any design that depends on the county creating the envelope cannot see them.",
+      "clues": [
+        "vendors send envelopes from their own Docusign accounts -> the county never calls Envelopes:create for them",
+        "whenever a bid envelope reaches a buyer -> events for received envelopes",
+        "security asks for HMAC -> supported by every Connect option, not decisive"
+      ],
+      "needs": "Account or organization Connect, since envelope-level webhooks only cover envelopes you send."
+    }
+  },
+  {
+    "id": 20029,
+    "decode": {
+      "prompt": "What does this scenario really require?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Treat the request as embedded, which needs app-side user identifiers"
+        },
+        {
+          "id": "B",
+          "text": "Know how a remote web form instance identifies its participants and carries metadata for later lookup"
+        },
+        {
+          "id": "C",
+          "text": "Capture the portal's own login as signer evidence"
+        },
+        {
+          "id": "D",
+          "text": "Control when envelope generation happens"
+        }
+      ],
+      "correct": "B",
+      "explanation": "The buyers receive the form by email, so this is a remote instance where recipients are told apart by role, and instances are told apart by metadata returned by later reads.",
+      "clues": [
+        "receive a purchase web form by email -> remote instance, not embedded",
+        "recipients array listing signer1 and signer2 -> roleName distinguishes participants",
+        "tell instances apart later -> tags returned by getInstance and listInstances"
+      ],
+      "needs": "Remote instance: roleName in recipients, tags for instance metadata."
+    }
+  },
+  {
+    "id": 20031,
+    "decode": {
+      "prompt": "What does this scenario really require?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Restrict installs to a named list of accounts"
+        },
+        {
+          "id": "B",
+          "text": "Restrict what the app can access once installed"
+        },
+        {
+          "id": "C",
+          "text": "Restrict where a widely distributed app can be installed, by region, at scale"
+        },
+        {
+          "id": "D",
+          "text": "Filter unwanted installs at runtime in the app's own service"
+        }
+      ],
+      "correct": "C",
+      "explanation": "Thousands of accounts mean public distribution, and the licence limit is geographic, so availability must be controlled by publication region.",
+      "clues": [
+        "thousands of customer accounts ... cannot list them individually -> public, not private",
+        "licence covers only North America and Australia -> region-based availability",
+        "narrow the OAuth scopes -> red herring; scopes govern access, not region"
+      ],
+      "needs": "PUBLIC distribution with publicationRegions."
+    }
+  },
+  {
+    "id": 20032,
+    "decode": {
+      "prompt": "What does this scenario really require?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Send from a single template with role assignments"
+        },
+        {
+          "id": "B",
+          "text": "Upload documents only, without templates"
+        },
+        {
+          "id": "C",
+          "text": "Build the envelope incrementally over several calls"
+        },
+        {
+          "id": "D",
+          "text": "Combine several server templates with a generated document in one envelope in a single call"
+        }
+      ],
+      "correct": "D",
+      "explanation": "Two server templates plus a per-quote PDF in one create call, with room to extend, requires the envelope model that layers multiple templates and documents.",
+      "clues": [
+        "two existing server templates ... plus a premium schedule PDF -> multiple templates plus an extra document",
+        "created in a single API call -> no follow-up update calls",
+        "easy to extend later -> a modular envelope structure"
+      ],
+      "needs": "Composite templates model."
+    }
+  },
+  {
+    "id": 20033,
+    "decode": {
+      "prompt": "What does this scenario really require?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Know what public app review assesses and what must be in place before submitting"
+        },
+        {
+          "id": "B",
+          "text": "Know the usage thresholds the app must reach before review"
+        },
+        {
+          "id": "C",
+          "text": "Know what happens automatically once review passes"
+        },
+        {
+          "id": "D",
+          "text": "Know how customer administrators are told about later changes"
+        }
+      ],
+      "correct": "A",
+      "explanation": "The registration still points to a sandbox host, so the team needs the pre-submission requirements and the scope of Docusign's review.",
+      "clues": [
+        "registration pointed to a sandbox host -> production URLs needed before submission",
+        "connection, extension and functional tests -> review covers technical and functional aspects",
+        "icon, four screenshots and the listing text -> listing assets ready; not decisive"
+      ],
+      "needs": "Production URLs in the registration; review covers business, technical, security and functional aspects."
+    }
+  },
+  {
+    "id": 20034,
+    "decode": {
+      "prompt": "What does this scenario really require?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Extend the existing legacy configuration with new events"
+        },
+        {
+          "id": "B",
+          "text": "Stream connected-fields verification results in real time without disturbing an existing legacy feed"
+        },
+        {
+          "id": "C",
+          "text": "Derive verification outcomes from signer completion data"
+        },
+        {
+          "id": "D",
+          "text": "Write results to an external system from inside an extension"
+        }
+      ],
+      "correct": "B",
+      "explanation": "Verification results are published as an event that only the JSON SIM format supports, and the old XML feed must stay as is.",
+      "clues": [
+        "Connected Fields ... each verification result -> the extension-executed event",
+        "legacy XML configuration in aggregate mode ... must keep working -> leave it untouched",
+        "can parse any format -> JSON SIM is acceptable and required"
+      ],
+      "needs": "A separate JSON SIM Connect configuration subscribed to extension-executed."
+    }
+  },
+  {
+    "id": 20035,
+    "decode": {
+      "prompt": "What does this scenario really require?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Re-fetch each affected envelope individually at a safe pace"
+        },
+        {
+          "id": "B",
+          "text": "Rely on Connect to resend the lost messages"
+        },
+        {
+          "id": "C",
+          "text": "Catch up on status changes missed during a time window with as few calls as possible"
+        },
+        {
+          "id": "D",
+          "text": "Use endpoints that do not count toward API limits"
+        }
+      ],
+      "correct": "C",
+      "explanation": "Connect saw every message acknowledged so nothing will be resent, and the efficiency score rules out 1,800 single gets, leaving a time-window catch-up query.",
+      "clues": [
+        "Connect logged no delivery failures because every message was acknowledged -> no retries will happen",
+        "without hurting the efficiency score or breaking the polling rules -> avoid per-envelope gets",
+        "for about three hours -> a bounded time window to query"
+      ],
+      "needs": "Envelopes:listStatusChanges with from_date just before the outage."
+    }
+  },
+  {
+    "id": 20036,
+    "decode": {
+      "prompt": "What does this scenario really require?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Use the paging parameters of the eSignature API"
+        },
+        {
+          "id": "B",
+          "text": "Fetch every record in one unbounded call"
+        },
+        {
+          "id": "C",
+          "text": "Retrieve every record individually by ID"
+        },
+        {
+          "id": "D",
+          "text": "Page through a large Agreement Manager result set using that API's own paging mechanism"
+        }
+      ],
+      "correct": "D",
+      "explanation": "Only the first page arrives because the next-page token is ignored, and the shared hourly limit rules out per-record calls.",
+      "clues": [
+        "warehouse only ever receives the first 100 -> paging is not being followed",
+        "start_position and count used by eSignature list calls -> the wrong API's convention",
+        "hourly API limit is shared -> avoid per-agreement calls"
+      ],
+      "needs": "Follow the ctoken continuation token with limit=100."
+    }
+  },
+  {
+    "id": 20039,
+    "decode": {
+      "prompt": "What does this scenario really require?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Deliver a provider's capability that customers discover and install inside Docusign, with no customer-hosted code"
+        },
+        {
+          "id": "B",
+          "text": "Give each customer its own API integration to operate"
+        },
+        {
+          "id": "C",
+          "text": "Have customers forward envelope events to the provider"
+        },
+        {
+          "id": "D",
+          "text": "Distribute a workflow customers configure to call the provider"
+        }
+      ],
+      "correct": "A",
+      "explanation": "Use inside envelopes and workflows, discovery and install by admins, and no customer code together describe a published extension app.",
+      "clues": [
+        "inside their own envelopes and Maestro workflows -> Docusign extension points",
+        "discovered and installed by account admins -> App Center listing",
+        "no code deployed or hosted by the customer -> not an API integration or Connect listener"
+      ],
+      "needs": "An extension app registered in the Developer Console and published to the App Center."
+    }
+  },
+  {
+    "id": 20040,
+    "decode": {
+      "prompt": "What does this scenario really require?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Infer workflow progress from signing activity"
+        },
+        {
+          "id": "B",
+          "text": "Get the status and details of one specific workflow instance whose ID is already known"
+        },
+        {
+          "id": "C",
+          "text": "Scan all workflows on the account"
+        },
+        {
+          "id": "D",
+          "text": "Read a workflow's input definition"
+        }
+      ],
+      "correct": "B",
+      "explanation": "The trigger response already holds the instance ID, and the CRM needs one instance's status, starter and end time.",
+      "clues": [
+        "for each deal record -> a single instance",
+        "stored the response of each triggerWorkflow call -> the instance ID is available",
+        "who started it and when it ended -> instance-level details"
+      ],
+      "needs": "getWorkflowInstance with the workflowId and the stored instance ID."
+    }
+  },
+  {
+    "id": 20041,
+    "decode": {
+      "prompt": "What does this scenario really require?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Use a different integration key identifier in production"
+        },
+        {
+          "id": "B",
+          "text": "Have assertions validated by the demo authorization server"
+        },
+        {
+          "id": "C",
+          "text": "Sign assertions with a key registered on the production integration key, since keys are not copied at promotion"
+        },
+        {
+          "id": "D",
+          "text": "Obtain long-lived reusable tokens"
+        }
+      ],
+      "correct": "C",
+      "explanation": "Host, aud, consent and scopes are all correct; the remaining gap is the private key created in the developer account, which has no matching public key in production.",
+      "clues": [
+        "private key he generated in the developer account's Apps and Keys page -> no matching public key in production",
+        "changed the OAuth host and aud, consent granted, scopes unchanged -> the rest is correct",
+        "teammate suspects the key value changed -> red herring; the GUID stays the same"
+      ],
+      "needs": "Add an RSA key pair in production and sign with its private key."
+    }
+  },
+  {
+    "id": 20042,
+    "decode": {
+      "prompt": "What does this scenario really require?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Understand how long access tokens last"
+        },
+        {
+          "id": "B",
+          "text": "Understand how consent behaves on refresh"
+        },
+        {
+          "id": "C",
+          "text": "Understand how scopes affect token lifetime"
+        },
+        {
+          "id": "D",
+          "text": "Understand what happens to existing access tokens when a refresh occurs"
+        }
+      ],
+      "correct": "D",
+      "explanation": "Errors begin right after each refresh and before the 8-hour lifetime, so the refresh itself must be invalidating the cached token.",
+      "clues": [
+        "right after each scheduled refresh -> the refresh is the trigger",
+        "less than 8 hours have passed -> not normal expiry",
+        "cached the access token ... keeps reusing it -> a stale token after refresh"
+      ],
+      "needs": "A refresh issues new tokens and invalidates the previous access token, so every service must use the new one."
+    }
+  },
+  {
+    "id": 20043,
+    "decode": {
+      "prompt": "What does this scenario really require?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Determine the real signing outcome instead of trusting the redirect alone"
+        },
+        {
+          "id": "B",
+          "text": "Send declined users to a different page"
+        },
+        {
+          "id": "C",
+          "text": "Treat any end of session as completion"
+        },
+        {
+          "id": "D",
+          "text": "Poll envelope status frequently after the redirect"
+        }
+      ],
+      "correct": "A",
+      "explanation": "The redirect fires for cancel and decline too, so the app must check the outcome on the redirect and confirm final status through the existing Connect feed.",
+      "clues": [
+        "marks the loan as signed whenever that page loads -> the redirect happens on any session end",
+        "closed the session or declined -> different event values on the returnUrl",
+        "already has an account-level Connect listener -> confirm completion from Connect"
+      ],
+      "needs": "Check event=signing_complete and fund only after Connect confirms completion."
+    }
+  },
+  {
+    "id": 20047,
+    "decode": {
+      "prompt": "What does this scenario really require?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Change the contract or extension type identifiers"
+        },
+        {
+          "id": "B",
+          "text": "Change only environment-specific connection credentials and endpoint URLs, keeping the extension definitions"
+        },
+        {
+          "id": "C",
+          "text": "Change distribution or listing settings"
+        },
+        {
+          "id": "D",
+          "text": "Create new named connections for production"
+        }
+      ],
+      "correct": "B",
+      "explanation": "Only the OAuth client and hostnames differ while extension types, actions and listing stay the same, so only credentials and URIs change.",
+      "clues": [
+        "different OAuth client -> connection clientId, clientSecret and authorization settings",
+        "different hostnames -> params.uri of each action and capability",
+        "keeping the same extension types, actions and App Center listing -> do not touch templates or regions"
+      ],
+      "needs": "Update customConfig credentials and each params.uri."
+    }
+  },
+  {
+    "id": 20049,
+    "decode": {
+      "prompt": "What does this scenario really require?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Start the workflow from code that calls the API"
+        },
+        {
+          "id": "B",
+          "text": "Let staff start it on behalf of applicants"
+        },
+        {
+          "id": "C",
+          "text": "Let members of the public start the workflow themselves from a URL, with no server or stored credentials"
+        },
+        {
+          "id": "D",
+          "text": "Embed a form on the site with a client SDK"
+        }
+      ],
+      "correct": "C",
+      "explanation": "Tenants start it from a website button and an email reply on a static site with nowhere to store credentials, so the start must need no token.",
+      "clues": [
+        "static site ... no server-side code and no place to store OAuth credentials -> no API call",
+        "button on the public website and an automatic email reply -> a shareable link",
+        "leasing agents ... management says that is not needed -> red herring"
+      ],
+      "needs": "The From a Link start method."
+    }
+  },
+  {
+    "id": 20050,
+    "decode": {
+      "prompt": "What does this scenario really require?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Configure each customer's account to send events"
+        },
+        {
+          "id": "B",
+          "text": "Centralize events in the vendor's own organization"
+        },
+        {
+          "id": "C",
+          "text": "Capture events for envelopes users send manually"
+        },
+        {
+          "id": "D",
+          "text": "Route events per envelope to a tenant-specific URL without touching customer account settings"
+        }
+      ],
+      "correct": "D",
+      "explanation": "Only envelopes the tool creates matter, the URL varies per tenant, and admins refuse account changes, so the webhook must travel with each create request.",
+      "clues": [
+        "every envelope the tool creates ... tenant-specific URL -> per-envelope webhook",
+        "refuse to let Quillpoint change account settings or Connect pages -> no account-level Connect",
+        "envelopes sent manually are out of scope -> envelope-level is enough"
+      ],
+      "needs": "eventNotification on each Envelopes:create."
+    }
+  },
+  {
+    "id": 20051,
+    "decode": {
+      "prompt": "What does this scenario really require?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Read and write structured data with the company's own system of record as steps in a Maestro workflow"
+        },
+        {
+          "id": "B",
+          "text": "Verify field values while a signer fills in an envelope"
+        },
+        {
+          "id": "C",
+          "text": "Move files in and out of a storage service"
+        },
+        {
+          "id": "D",
+          "text": "React to envelope events from outside the workflow"
+        }
+      ],
+      "correct": "A",
+      "explanation": "Reading credit terms at the start and writing contract status back at the end are workflow steps against a system of record, not signing-time verification.",
+      "clues": [
+        "Maestro workflow ... reads ... writes the new contract status back -> read and writeback steps",
+        "Connected Fields ... verify account numbers during signing -> red herring",
+        "existing Connect listener -> outside the workflow, not a step"
+      ],
+      "needs": "Data IO extension used as Read and Writeback steps."
+    }
+  },
+  {
+    "id": 20052,
+    "decode": {
+      "prompt": "What does this scenario really require?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Confirm identity at any point before signing"
+        },
+        {
+          "id": "B",
+          "text": "Confirm the participant's identity before any sensitive prefilled data is shown"
+        },
+        {
+          "id": "C",
+          "text": "Validate the collected data after the form"
+        },
+        {
+          "id": "D",
+          "text": "Reuse the order of an earlier onboarding workflow"
+        }
+      ],
+      "correct": "B",
+      "explanation": "Compliance requires verification before the first form is displayed, so identity checks must come ahead of the web form step.",
+      "clues": [
+        "confirmed before that form is ever displayed -> identity verification precedes the web form",
+        "collected data first and verified identity afterwards -> red herring",
+        "updated mandate is sent for signature -> the signature step comes last"
+      ],
+      "needs": "Set Up Invite, Verify Someone's Identity, Collect Data with Web Forms, Send for Signature."
+    }
+  },
+  {
+    "id": 20053,
+    "decode": {
+      "prompt": "What does this scenario really require?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Know whether the integration must change its scopes"
+        },
+        {
+          "id": "B",
+          "text": "Know how to re-run AI extraction"
+        },
+        {
+          "id": "C",
+          "text": "Know whether a reviewer's edit in the UI replaces the AI-extracted value in API responses"
+        },
+        {
+          "id": "D",
+          "text": "Know how value history is exposed by the API"
+        }
+      ],
+      "correct": "C",
+      "explanation": "A user corrected the value in the UI and the integration is unchanged, so the question is simply which value later GET calls return.",
+      "clues": [
+        "changed it to P90D -> a user-updated value",
+        "has not changed its code or scopes -> nothing for the integration to change",
+        "which value will flow downstream tonight -> what GetAgreement returns"
+      ],
+      "needs": "GET returns the user-updated value."
+    }
+  },
+  {
+    "id": 20054,
+    "decode": {
+      "prompt": "What does this scenario really require?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Mark the whole concept as verifiable"
+        },
+        {
+          "id": "B",
+          "text": "Restructure which concepts are exposed to the app"
+        },
+        {
+          "id": "C",
+          "text": "Fix the app's connection"
+        },
+        {
+          "id": "D",
+          "text": "Mark specific properties as mandatory for verification so the UI enforces them"
+        }
+      ],
+      "correct": "D",
+      "explanation": "The concept is already verifiable and the tests pass, but no field shows an asterisk, so the property-level required marker is missing.",
+      "clues": [
+        "concept marked as verifiable -> the concept-level setting is fine",
+        "none shows an asterisk -> property-level required decorator missing",
+        "connection test and Get Type Names test both pass -> not a connection problem"
+      ],
+      "needs": "IsRequiredForVerifyingType on AccountNumber and RoutingNumber."
+    }
+  },
+  {
+    "id": 20055,
+    "decode": {
+      "prompt": "What does this scenario really require?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Stay within a short-window request rate by throttling the job"
+        },
+        {
+          "id": "B",
+          "text": "Raise the hourly call allowance"
+        },
+        {
+          "id": "C",
+          "text": "Respect the per-envelope polling frequency"
+        },
+        {
+          "id": "D",
+          "text": "Wait for environment-specific limits to change"
+        }
+      ],
+      "correct": "A",
+      "explanation": "About 600 calls in 20 seconds exceeds a 30-second burst cap while the hourly total is far below its limit.",
+      "clues": [
+        "about 600 envelopes ... in parallel ... about 20 seconds -> burst over 500 per 30 seconds",
+        "only about 900 calls that hour -> hourly limit not reached",
+        "never checks envelope status -> polling rules are irrelevant",
+        "even more calls failed in demo -> the demo burst limit is lower"
+      ],
+      "needs": "Throttle under the production burst limit and back off using X-RateLimit headers."
+    }
+  },
+  {
+    "id": 20058,
+    "decode": {
+      "prompt": "What does this scenario really require?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Obtain additional permissions for the token"
+        },
+        {
+          "id": "B",
+          "text": "Send the trigger request body with the field names and shape the workflow trigger expects"
+        },
+        {
+          "id": "C",
+          "text": "Make the workflow accept new instances"
+        },
+        {
+          "id": "D",
+          "text": "Use a different workflow start method"
+        }
+      ],
+      "correct": "B",
+      "explanation": "A 400 with a token that already works and a published, unpaused workflow means the request body is malformed.",
+      "clues": [
+        "returns 400 Bad Request -> malformed request, not authorization",
+        "same token successfully calls getWorkflowInstancesList -> scopes are fine",
+        "published and not paused -> workflow state is fine",
+        "body uses name and inputs -> wrong field names"
+      ],
+      "needs": "instance_name and trigger_inputs matching trigger_input_schema."
+    }
+  },
+  {
+    "id": 20059,
+    "decode": {
+      "prompt": "What does this scenario really require?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Keep the environment where the key was created as the audience"
+        },
+        {
+          "id": "B",
+          "text": "Use one user identifier that works in both environments"
+        },
+        {
+          "id": "C",
+          "text": "Use claim values that identify the key and the user as they exist in production, within the token time limit"
+        },
+        {
+          "id": "D",
+          "text": "Reuse the demo claim values because only the host changes"
+        }
+      ],
+      "correct": "C",
+      "explanation": "The user's production ID differs from demo, and where the key was first created does not affect production claims, so the claims must carry production values and respect the expiry rule.",
+      "clues": [
+        "production user ID differs from its demo user ID -> sub must be the production GUID",
+        "key was first created in the developer account -> red herring; production aud is account.docusign.com",
+        "changes only claim values -> iss stays the integration key, exp at most one hour after iat"
+      ],
+      "needs": "iss = integration key, sub = production user GUID, exp within 3600 seconds of iat."
+    }
+  },
+  {
+    "id": 20060,
+    "decode": {
+      "prompt": "What does this scenario really require?",
+      "options": [
+        {
+          "id": "A",
+          "text": "Receive events for every envelope in the account"
+        },
+        {
+          "id": "B",
+          "text": "Derive each signer's status from the final envelope message"
+        },
+        {
+          "id": "C",
+          "text": "Pull signer status on a schedule"
+        },
+        {
+          "id": "D",
+          "text": "Receive per-signer completion events only for the envelopes the app creates"
+        }
+      ],
+      "correct": "D",
+      "explanation": "Only the referral envelopes should notify, and the dashboard needs a message per signer, so the existing envelope-level webhook must subscribe to a recipient event.",
+      "clues": [
+        "eventNotification ... only these referral envelopes -> envelope-level Connect",
+        "as soon as each individual signer finishes -> recipient-completed",
+        "single message when the whole envelope finishes -> only envelope-level completion is subscribed"
+      ],
+      "needs": "Add recipient-completed to the eventNotification on Envelopes:create."
+    }
+  }
+]

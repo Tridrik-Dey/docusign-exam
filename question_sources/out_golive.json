@@ -1,0 +1,605 @@
+[
+  {
+    "paper": "A",
+    "length": "long",
+    "domain": "Go Live Process",
+    "topic": "Post-promotion OAuth configuration",
+    "stem": "Omar, a developer at Brightline Credit, built a borrower portal that uses Confidential Authorization Code Grant. In the developer account he configured two redirect URIs, a secret key and a CORS origin. The Go-Live review passed, he selected the company's production account (where he is an admin), and the key now shows Live. He switched the auth host to account.docusign.com and kept the same integration key GUID in his config, but the production login now rejects his redirect and token requests fail. A colleague insists the key was moved and that the GUID must therefore have changed. What should Omar do?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Ask Docusign Support for the new production integration key GUID and replace the developer GUID in the app configuration"
+      },
+      {
+        "id": "B",
+        "text": "Resubmit the key for Go-Live review, because the review only copies the settings that his test calls actually exercised"
+      },
+      {
+        "id": "C",
+        "text": "In the production account's Apps and Keys page, add the redirect URIs and a new secret key to the promoted key, then update the app"
+      },
+      {
+        "id": "D",
+        "text": "Wait up to 48 hours, because redirect URIs and secrets are synchronized to production only after manual approval completes"
+      }
+    ],
+    "correct": "C",
+    "answerText": "In the production account's Apps and Keys page, add the redirect URIs and a new secret key to the promoted key, then update the app",
+    "explanation": "When a key is promoted it is duplicated into production with the same value, but configuration parameters such as secrets and redirect URIs are not copied. Omar must add the redirect URIs and a secret on the production copy of the key in the production account's Apps and Keys page.",
+    "whyNotOthers": "C is right because secrets and redirect URIs are never duplicated to production and must be added there. The trap is A: the colleague's 'moved' theory is wrong, the key is duplicated with the same value, so the GUID in Omar's config is already correct. B and D fail because no review or waiting period ever copies these settings; the key is already Live.",
+    "optionExplanations": {
+      "A": "The promoted key keeps the same value in production; there is no new GUID to obtain.",
+      "B": "Go-Live review does not copy any secrets or redirect URIs, whatever calls were made; re-review would not fix this.",
+      "C": "Correct. Secrets and redirect URIs are not copied at promotion; they must be added to the key in the production account.",
+      "D": "The key is already Live; there is no delayed synchronization of secrets or redirect URIs."
+    },
+    "trapOption": "A",
+    "importance": "HIGH",
+    "basedOn": [
+      9,
+      10,
+      36
+    ]
+  },
+  {
+    "paper": "A",
+    "length": "long",
+    "domain": "Go Live Process",
+    "topic": "Integration key classification",
+    "stem": "Kestrel HR sells a payroll SaaS product and wants to add contract signing inside it for hundreds of small-business customers. Most of these customers have never used Docusign and will not buy their own accounts. Kestrel will pay for one Docusign account that it owns and controls, and every envelope will be sent through that account on its customers' behalf. The product manager also mentions a possible App Center listing and partner referral revenue in a later year, but that is not part of this release. Under 'How will you use this integration?', which classification should Kestrel choose for this integration key?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Public integration, because the app serves many customers and Kestrel can earn referral revenue through the Partner Program"
+      },
+      {
+        "id": "B",
+        "text": "Private custom integration, because Kestrel's own Docusign account is the only account the key will call"
+      },
+      {
+        "id": "C",
+        "text": "Third-party integration key, because Kestrel's customers are third parties who never see the integration key"
+      },
+      {
+        "id": "D",
+        "text": "Embedded integration, which needs an ISV Embed partner license because customers use the features through Kestrel's account"
+      }
+    ],
+    "correct": "D",
+    "answerText": "Embedded integration, which needs an ISV Embed partner license because customers use the features through Kestrel's account",
+    "explanation": "The deciding clue is that customers 'will not buy their own accounts' and use Docusign features through one account that Kestrel 'owns and controls'. That is the definition of an Embedded integration, which requires an ISV Embed partner license.",
+    "whyNotOthers": "D is right because the customers have no Docusign accounts of their own and use Kestrel's account. The trap is A: a Public integration is for many Docusign customers who use their own accounts and authorize the app, and the referral revenue is explicitly out of scope for this release. B fails because Private custom integration is for an integration used directly by your or your clients' employees, not for offering Docusign features as a service inside a product. C fails because Third-party integration key is chosen by a customer who must supply its own key to a partner's integration.",
+    "optionExplanations": {
+      "A": "Public integration means customers use their own Docusign accounts and authorize the app; Kestrel's customers have no accounts.",
+      "B": "Private custom integration covers integrations used directly by your or your clients' employees, not offering Docusign features as a service in your product.",
+      "C": "Third-party integration key is for a customer who must supply its own key to a partner product, which is the reverse of this case.",
+      "D": "Correct. Embedding Docusign features in your product, delivered through your own account to customers without accounts, is an Embedded integration (ISV Embed license)."
+    },
+    "trapOption": "A",
+    "importance": "HIGH",
+    "basedOn": [
+      27,
+      32
+    ]
+  },
+  {
+    "paper": "A",
+    "length": "long",
+    "domain": "Go Live Process",
+    "topic": "Production endpoints after Go-Live",
+    "stem": "Priya's JWT Grant claims service for Larch Mutual has just gone Live. She has already added an RSA key pair to the production copy of the key, and the claims system user has granted consent in production. Her code still contains the values she hard-coded during development: the developer API Account ID, the integration key GUID, account-d.docusign.com as the OAuth host and JWT aud value, and https://demo.docusign.net/restapi as the API base. Larch Mutual's production account is hosted in a data center she has not checked. Which two code changes are required? (Select two)",
+    "options": [
+      {
+        "id": "A",
+        "text": "Change the OAuth host and the JWT aud claim from account-d.docusign.com to account.docusign.com"
+      },
+      {
+        "id": "B",
+        "text": "Replace the iss claim with the new GUID that Docusign issued for the production copy of the integration key"
+      },
+      {
+        "id": "C",
+        "text": "Replace demo.docusign.net with na1.docusign.net, because every production account shares that base URI"
+      },
+      {
+        "id": "D",
+        "text": "Call /oauth/userinfo with the production token and build API URLs from the returned account_id and base_uri"
+      },
+      {
+        "id": "E",
+        "text": "Keep the developer API Account ID, because Go-Live copies that account ID into the production account"
+      }
+    ],
+    "correct": "A,D",
+    "correctAnswers": [
+      "A",
+      "D"
+    ],
+    "answerText": "Change the OAuth host and the JWT aud claim from account-d.docusign.com to account.docusign.com; Call /oauth/userinfo with the production token and build API URLs from the returned account_id and base_uri",
+    "explanation": "After Go-Live the authentication host (and therefore the JWT aud) must be account.docusign.com, and API calls must use the production account's account_id and base_uri from /oauth/userinfo. The clue 'a data center she has not checked' rules out hard-coding any server.",
+    "whyNotOthers": "A and D are right: the auth host changes to account.docusign.com, and the production account ID and base URI come from userinfo. The trap is C: production base URIs depend on the account's data center ({server}.docusign.net), so hard-coding na1 can be wrong. B fails because the promoted key keeps the same value, and E fails because the production account has its own account ID; nothing is copied from the developer account.",
+    "optionExplanations": {
+      "A": "Correct. Production OAuth and the JWT audience use account.docusign.com instead of account-d.docusign.com.",
+      "B": "The key is duplicated into production with the same value; iss does not change.",
+      "C": "Production base URIs vary by data center; the base_uri must come from userinfo (or Apps and Keys), not be assumed.",
+      "D": "Correct. userinfo returns the production account_id and base_uri used to build every API URL.",
+      "E": "The production account is a separate account with its own API Account ID; the developer ID is not copied."
+    },
+    "trapOption": "C",
+    "importance": "HIGH",
+    "basedOn": [
+      36,
+      2
+    ]
+  },
+  {
+    "paper": "A",
+    "length": "long",
+    "domain": "Go Live Process",
+    "topic": "Polling versus Connect",
+    "stem": "Harbor Logistics' operations dashboard shows signing progress. A background job calls Envelopes:get for every in-flight envelope every 5 minutes, and about 1,500 envelopes are usually in flight. Since go-live, the API Usage Center shows a poor efficiency score, and some calls fail with Hourly_Envelope_Polling_Limit_Exceeded. The team lead proposes that an admin use Update Hourly Limit to raise the account's limit, since the plan allows it. The business only needs the dashboard to change when an envelope or recipient status actually changes. What is the best fix?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Raise the account's hourly limit in the API Usage Center so the 5-minute polling job is no longer blocked"
+      },
+      {
+        "id": "B",
+        "text": "Subscribe to envelope and recipient events with Connect, drop per-envelope polling, and use listStatusChanges only for catch-up"
+      },
+      {
+        "id": "C",
+        "text": "Slow the job to check each envelope every 10 minutes, which keeps it under the per-envelope polling limit"
+      },
+      {
+        "id": "D",
+        "text": "Replace Envelopes:get with EnvelopeRecipients:list every 5 minutes, because recipient status checks are not polling"
+      }
+    ],
+    "correct": "B",
+    "answerText": "Subscribe to envelope and recipient events with Connect, drop per-envelope polling, and use listStatusChanges only for catch-up",
+    "explanation": "The job breaks the rule of at most one status check per envelope every 15 minutes, which is what the per-envelope polling error reports. Connect pushes only real changes, and its messages do not count against API limits; listStatusChanges covers catch-up.",
+    "whyNotOthers": "B is right because Connect removes the polling that causes both the error and the poor score. The trap is A: raising the hourly limit requires efficient apps, and the per-envelope polling limit would still be broken. C fails because 10 minutes is still more often than once per 15 minutes, and D fails because excessive recipient status requests are themselves an efficiency score factor.",
+    "optionExplanations": {
+      "A": "A higher hourly limit does not lift the per-envelope polling limit, and the limit can only be raised for apps that are efficient.",
+      "B": "Correct. Connect sends only real status changes and does not count against API limits; listStatusChanges handles catch-up.",
+      "C": "Polling every 10 minutes still exceeds the limit of one status check per envelope per 15 minutes.",
+      "D": "Excessive recipient status requests are a listed efficiency factor; this only moves the polling to another endpoint."
+    },
+    "trapOption": "A",
+    "importance": "HIGH",
+    "basedOn": [
+      42,
+      5,
+      14
+    ]
+  },
+  {
+    "paper": "A",
+    "length": "short",
+    "domain": "Go Live Process",
+    "topic": "Hourly API limit",
+    "stem": "Which statement correctly describes the default eSignature REST API hourly limit?",
+    "options": [
+      {
+        "id": "A",
+        "text": "3,000 calls per hour per account, shared by all integrations that call the account, resetting at the top of the hour"
+      },
+      {
+        "id": "B",
+        "text": "3,000 calls per hour per integration key, measured over a rolling 60-minute window for each key"
+      },
+      {
+        "id": "C",
+        "text": "1,000 calls per hour per account, after which extra calls are queued and run at the start of the next hour"
+      },
+      {
+        "id": "D",
+        "text": "500 calls per hour per integration key, plus a separate burst allowance of 200 calls every 30 seconds"
+      }
+    ],
+    "correct": "A",
+    "answerText": "3,000 calls per hour per account, shared by all integrations that call the account, resetting at the top of the hour",
+    "explanation": "The default hourly limit is 3,000 calls per hour per account. All integrations that call the account share it, and it resets on the hour.",
+    "whyNotOthers": "A is right: 3,000 per account per hour, shared, resetting on the hour. The trap is B: the number is right, but the limit applies to the account, not to each key, and it resets on the hour rather than over a rolling window. C fails because the number is wrong and excess calls are blocked, not queued. D mixes up the burst limits (500 per 30 seconds in production, 200 in demo) with the hourly limit.",
+    "optionExplanations": {
+      "A": "Correct. The limit is 3,000 per hour per account, shared by all apps, and resets on the hour.",
+      "B": "The limit is per account and shared, not per integration key, and it resets on the hour.",
+      "C": "The default is 3,000, and calls over the limit are blocked, not queued.",
+      "D": "500 per 30 seconds (production) and 200 (demo) are burst limits, not the hourly limit."
+    },
+    "trapOption": "B",
+    "importance": "HIGH",
+    "basedOn": [
+      14,
+      42
+    ]
+  },
+  {
+    "paper": "A",
+    "length": "long",
+    "domain": "Go Live Process",
+    "topic": "Go-Live troubleshooting",
+    "stem": "Lena is an administrator of her company's production Docusign account. She built an internal contract tool for her own colleagues and, this morning, created its integration key and made four test calls. She then selected Actions > Start Go live in Apps and Keys and logged in with her production credentials, but an error message appeared instead of a list of accounts to choose from. Her manager thinks the old minimum-call rule is to blame. Later Lena finds that a teammate, copying a partner tutorial, had set 'How will you use this integration?' to Public integration. What is the most likely cause of the error?",
+    "options": [
+      {
+        "id": "A",
+        "text": "The key has not yet made the minimum of 20 successful API calls required before Go-Live can start"
+      },
+      {
+        "id": "B",
+        "text": "Lena is not an administrator of the production account that she logged into during Start Go live"
+      },
+      {
+        "id": "C",
+        "text": "The integration type chosen for the key does not match the type of account she logged into"
+      },
+      {
+        "id": "D",
+        "text": "The key's earlier review expired after 90 days, so it must be reviewed again before accounts are listed"
+      }
+    ],
+    "correct": "C",
+    "answerText": "The integration type chosen for the key does not match the type of account she logged into",
+    "explanation": "Docusign documents that an error shown instead of the account list means the integration type set on the key does not match the account type you logged into. Lena's key is classified as Public integration, but it is an internal tool and she logged into an ordinary company account.",
+    "whyNotOthers": "C is right because the clue 'error instead of a list of accounts' maps to a mismatch between the key's integration type and the account type. The trap is A: the 20-call requirement was removed, and Go-Live can start right after the key is set up. B fails because the stem says Lena is an admin of that account. D fails because the key was created this morning, so no review could have expired.",
+    "optionExplanations": {
+      "A": "Go-Live no longer requires 20 API calls; you can start right after creating the key.",
+      "B": "The stem says Lena is an administrator of the production account.",
+      "C": "Correct. An error instead of the account list means the key's integration type does not match the account type.",
+      "D": "Review Expired applies only when a passed review is not submitted within 90 days; this key is a day old."
+    },
+    "trapOption": "A",
+    "importance": "HIGH",
+    "basedOn": [
+      33,
+      9
+    ]
+  },
+  {
+    "paper": "A",
+    "length": "short",
+    "domain": "Go Live Process",
+    "topic": "Go-Live review status",
+    "stem": "A developer's integration key reached Review Passed, but he never selected a production account to promote it into. Four months later, what is the key's state?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Live, because Docusign promotes passed keys into the developer's default production account after 30 days"
+      },
+      {
+        "id": "B",
+        "text": "Review Expired; the review must be done again because the key was not submitted within 90 days"
+      },
+      {
+        "id": "C",
+        "text": "Still Review Passed, because the status does not change until a production account is selected"
+      },
+      {
+        "id": "D",
+        "text": "Declined; he must fill in the manual review form, which takes 24-48 hours to process"
+      }
+    ],
+    "correct": "B",
+    "answerText": "Review Expired; the review must be done again because the key was not submitted within 90 days",
+    "explanation": "If a key that passed review is not submitted to a production account within 90 days, its status becomes Review Expired and the review must be done again.",
+    "whyNotOthers": "B is right because four months is past the 90-day window. The trap is C: Review Passed does not last forever. A fails because Docusign never promotes a key automatically; you must choose the production account. D fails because Declined means the app needs manual review; it is not what happens when a passed review is left unused.",
+    "optionExplanations": {
+      "A": "Promotion is never automatic; the developer must confirm and select a production account where he is an admin.",
+      "B": "Correct. A passed review that is not submitted within 90 days expires and must be repeated.",
+      "C": "Review Passed lasts only 90 days without submission.",
+      "D": "Declined is the manual-review outcome of a review, not the result of leaving a passed review unused."
+    },
+    "trapOption": "C",
+    "importance": "MEDIUM",
+    "basedOn": [
+      33
+    ]
+  },
+  {
+    "paper": "B",
+    "length": "long",
+    "domain": "Go Live Process",
+    "topic": "JWT keys after promotion",
+    "stem": "Tomas runs a nightly JWT Grant service for Alder Insurance that voids expired envelopes as a system user. After the key went Live in the production account, he changed the OAuth host and the aud claim to account.docusign.com, cached base_uri from userinfo, and kept signing assertions with the private key he generated in the developer account's Apps and Keys page. The system user has already granted consent in production, and the scopes are unchanged. Token requests are still rejected. A teammate suspects the key value changed during promotion. What should Tomas do?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Add an RSA key pair to the integration key in the production account's Apps and Keys and sign the JWT with its private key"
+      },
+      {
+        "id": "B",
+        "text": "Replace the iss claim with the new integration key GUID that Docusign generated for the production copy of the key"
+      },
+      {
+        "id": "C",
+        "text": "Change the aud claim back to account-d.docusign.com, because JWT assertions are always validated by the demo server"
+      },
+      {
+        "id": "D",
+        "text": "Add the extended scope so the token response includes a refresh token that can be reused in production"
+      }
+    ],
+    "correct": "A",
+    "answerText": "Add an RSA key pair to the integration key in the production account's Apps and Keys and sign the JWT with its private key",
+    "explanation": "RSA key pairs, secrets and redirect URIs are not duplicated when the key is promoted. The private key 'generated in the developer account' has no matching public key on the production key, so Tomas must add an RSA key pair in production and sign with it.",
+    "whyNotOthers": "A is right because RSA key pairs must be added to the production copy of the key. The trap is B: the key is duplicated with the same value, so iss stays the same. C fails because the production audience is account.docusign.com. D fails because JWT Grant never returns a refresh token (extended applies only to Authorization Code Grant).",
+    "optionExplanations": {
+      "A": "Correct. RSA key pairs are not copied at promotion; add one to the production key and sign with its private key.",
+      "B": "The integration key keeps the same value in production; iss does not change.",
+      "C": "In production the aud value must be account.docusign.com.",
+      "D": "JWT Grant does not return refresh tokens; the extended scope applies only to Authorization Code Grant."
+    },
+    "trapOption": "B",
+    "importance": "HIGH",
+    "basedOn": [
+      2,
+      36,
+      9
+    ]
+  },
+  {
+    "paper": "B",
+    "length": "long",
+    "domain": "Go Live Process",
+    "topic": "Migrating data after Go-Live",
+    "stem": "Mireille at Cobalt Realty promoted her integration key, set up the production OAuth settings and switched to the production base URI from userinfo. Her app creates envelopes by referring to server templates by ID. In production, envelope creation now fails with template-not-found errors. In addition, a Data Verification step that validated addresses in the developer account is not available in the production account, which runs on the company's existing entry-level plan. Her lead suggests going through Go-Live again. Which two tasks remain? (Select two)",
+    "options": [
+      {
+        "id": "A",
+        "text": "Resubmit Go-Live with the template IDs listed, so that the review copies those templates into production"
+      },
+      {
+        "id": "B",
+        "text": "Recreate or migrate the templates in the production account and update the app to use their production template IDs"
+      },
+      {
+        "id": "C",
+        "text": "Confirm that the production plan includes every feature the app used in development, such as Basic Data Verification, and upgrade if not"
+      },
+      {
+        "id": "D",
+        "text": "Point the template calls back at demo.docusign.net, because templates stay in the developer account after promotion"
+      },
+      {
+        "id": "E",
+        "text": "Wait up to 48 hours for the settings sync that copies developer templates and features into production"
+      }
+    ],
+    "correct": "B,C",
+    "correctAnswers": [
+      "B",
+      "C"
+    ],
+    "answerText": "Recreate or migrate the templates in the production account and update the app to use their production template IDs; Confirm that the production plan includes every feature the app used in development, such as Basic Data Verification, and upgrade if not",
+    "explanation": "Production account data and settings are separate from the developer account: templates must be migrated and their new production IDs used. Developer accounts may include features that the production plan lacks, so the plan must include everything the app relied on, for example Basic Data Verification.",
+    "whyNotOthers": "B and C are right: templates get new IDs in production, and the entry-level plan is the clue that a feature is missing. The trap is A: Go-Live copies only the integration key, never templates or settings. D fails because production envelopes must be created in the production account; templates in a developer account cannot be used there. E fails because no sync copies templates or features.",
+    "optionExplanations": {
+      "A": "Go-Live duplicates only the integration key; templates are never copied by a review.",
+      "B": "Correct. Templates must be added to the production account, and the production template IDs are different.",
+      "C": "Correct. The production plan must include every feature the app used in development; developer accounts can have features the plan lacks.",
+      "D": "Developer-account templates cannot be used by envelopes in the production account.",
+      "E": "There is no automatic sync of templates or features from developer to production."
+    },
+    "trapOption": "A",
+    "importance": "HIGH",
+    "basedOn": [
+      11,
+      36
+    ]
+  },
+  {
+    "paper": "B",
+    "length": "long",
+    "domain": "Go Live Process",
+    "topic": "Integration key classification",
+    "stem": "Northwind Clinics bought a scheduling product from a Docusign partner. The vendor's setup guide says each customer must create its own Docusign integration key, paste the key and its secret into the vendor's admin screen, and take the key through Go-Live. Northwind wrote none of the application code, and only Northwind's own staff will use the product. Northwind's developer, Ash, creates the key in a developer account and reaches 'How will you use this integration?'. The vendor's product does show Docusign signing inside its own screens. Which classification should Ash choose?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Private custom integration, because only Northwind's own employees will use the integration"
+      },
+      {
+        "id": "B",
+        "text": "Public integration, because the vendor's product is offered to many Docusign customers"
+      },
+      {
+        "id": "C",
+        "text": "Embedded integration, because the vendor's product shows Docusign signing inside its screens"
+      },
+      {
+        "id": "D",
+        "text": "Third-party integration key, because a partner integration requires Northwind to supply its own key"
+      }
+    ],
+    "correct": "D",
+    "answerText": "Third-party integration key, because a partner integration requires Northwind to supply its own key",
+    "explanation": "Docusign's classification table maps 'you want to use a Docusign partner integration, and that integration requires you to provide your own integration key' to Third-party integration key. The deciding clues are that the vendor requires each customer's own key and that Northwind wrote none of the code.",
+    "whyNotOthers": "D is right because Northwind is supplying its own key to a partner's product. The trap is A: Northwind's employees are the users, but Private custom integration is for an integration you build yourself, and Northwind wrote none of the code. B is the vendor's own classification for its multi-customer app, not the customer's. C fails because Embedded integration describes an ISV offering Docusign through its own account; showing signing in the UI (embedded signing) is a red herring.",
+    "optionExplanations": {
+      "A": "Private custom integration is for an integration you build for your own (or your clients') employees; Northwind only uses a partner product.",
+      "B": "Public integration is what the partner would choose for its multi-customer app; Northwind is not publishing an app.",
+      "C": "Embedded integration is an ISV Embed model where customers use the ISV's Docusign account; embedded signing in a UI is unrelated.",
+      "D": "Correct. Using a partner integration that requires your own integration key is the Third-party integration key classification."
+    },
+    "trapOption": "A",
+    "importance": "HIGH",
+    "basedOn": [
+      27,
+      32
+    ]
+  },
+  {
+    "paper": "B",
+    "length": "long",
+    "domain": "Go Live Process",
+    "topic": "Burst limit",
+    "stem": "Delmar Bank's month-end job creates about 600 envelopes by sending all create requests in parallel, and it finishes in about 20 seconds. In the developer account even more calls failed, so the team blamed the demo environment and went live anyway. In production about a hundred create calls still fail, even though the account made only about 900 calls that hour and the job never checks envelope status. The team is considering asking for a higher hourly limit. Which limit is being hit, and what should the job do?",
+    "options": [
+      {
+        "id": "A",
+        "text": "The hourly limit of 3,000 calls per account; ask an admin to raise it with Update Hourly Limit in the API Usage Center"
+      },
+      {
+        "id": "B",
+        "text": "The per-envelope polling limit; wait 15 minutes between requests that touch the same envelope"
+      },
+      {
+        "id": "C",
+        "text": "The production burst limit of 500 calls per 30 seconds; throttle the job and back off using the X-RateLimit headers"
+      },
+      {
+        "id": "D",
+        "text": "The demo burst limit of 200 calls per 30 seconds, which still applies until the key passes another review"
+      }
+    ],
+    "correct": "C",
+    "answerText": "The production burst limit of 500 calls per 30 seconds; throttle the job and back off using the X-RateLimit headers",
+    "explanation": "About 600 calls in 20 seconds is more than the production burst limit of 500 calls per 30 seconds, which explains about a hundred failures. More failed in demo because the demo burst limit is 200.",
+    "whyNotOthers": "C is right because the clue '600 calls in 20 seconds' with only 900 calls that hour points to the burst limit. The trap is A: 900 calls is far below the 3,000 hourly limit, so raising it changes nothing. B fails because the job creates envelopes and never polls them. D fails because the demo burst limit of 200 applies only in the developer environment; about a hundred failures in production match 500, not 200.",
+    "optionExplanations": {
+      "A": "About 900 calls is well under the 3,000 hourly limit, so the hourly limit is not the cause.",
+      "B": "The polling limit applies to repeated status checks on an envelope; this job only creates envelopes.",
+      "C": "Correct. 600 calls in 20 seconds exceeds the production burst limit of 500 per 30 seconds; throttle and watch the rate-limit headers.",
+      "D": "The 200-per-30-seconds burst limit applies to demo; production uses 500."
+    },
+    "trapOption": "A",
+    "importance": "HIGH",
+    "basedOn": [
+      14,
+      40
+    ]
+  },
+  {
+    "paper": "B",
+    "length": "short",
+    "domain": "Go Live Process",
+    "topic": "Raising the hourly limit",
+    "stem": "After go-live, an account admin wants to raise the account's hourly API limit. Which statement is accurate?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Use the API Dashboard in Apps and Keys, which lets any user with access to the integration change the limit"
+      },
+      {
+        "id": "B",
+        "text": "Use Update Hourly Limit in the API Usage Center; it works only if the plan allows it and the account's apps are efficient"
+      },
+      {
+        "id": "C",
+        "text": "Submit a new Go-Live request with a higher-tier classification, because the hourly limit is set during review"
+      },
+      {
+        "id": "D",
+        "text": "Raise the limit separately for each integration key in Apps and Keys, because each key has its own allowance"
+      }
+    ],
+    "correct": "B",
+    "answerText": "Use Update Hourly Limit in the API Usage Center; it works only if the plan allows it and the account's apps are efficient",
+    "explanation": "The API Usage Center has an Update Hourly Limit option. The admin can use it only if the plan includes limit management, no limit set by Support is in effect, and the apps are efficient enough (flagged issues fixed first).",
+    "whyNotOthers": "B is right: the API Usage Center is the place, and efficiency is a condition. The trap is A: the API Dashboard shows request history and failures for troubleshooting but does not change limits. C fails because classification and Go-Live review do not set the hourly limit. D fails because the hourly limit is per account and shared by all integration keys.",
+    "optionExplanations": {
+      "A": "The API Dashboard is for monitoring and troubleshooting requests; it does not change limits.",
+      "B": "Correct. Update Hourly Limit in the API Usage Center needs a plan that allows it and efficient apps.",
+      "C": "The hourly limit is not set by the Go-Live classification or review.",
+      "D": "The limit belongs to the account and is shared by all keys; there is no allowance per key."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "basedOn": [
+      14,
+      42
+    ]
+  },
+  {
+    "paper": "B",
+    "length": "long",
+    "domain": "Go Live Process",
+    "topic": "Recovering missed status changes",
+    "stem": "Fenwick Legal's Connect listener returns HTTP 200 for every message and then puts it on an internal queue. For about three hours, a bug in the queue consumer silently discarded those messages; Connect logged no delivery failures because every message was acknowledged. About 1,800 envelopes may have changed status during that time. The team wants to resynchronize without hurting the integration's efficiency score or breaking the polling rules. A developer proposes looping over all 1,800 envelopes with Envelopes:get, spaced out to stay under the burst limit. What should the team do?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Loop over the envelopes with Envelopes:get, spacing calls so the job stays under the 500-per-30-seconds burst limit"
+      },
+      {
+        "id": "B",
+        "text": "Wait for Connect to retry the discarded messages, because Connect re-sends any message the listener failed to process"
+      },
+      {
+        "id": "C",
+        "text": "Call EnvelopeRecipients:list for each envelope, because recipient status requests do not count toward API limits"
+      },
+      {
+        "id": "D",
+        "text": "Call Envelopes:listStatusChanges with a from_date slightly before the outage began, then update records from the results"
+      }
+    ],
+    "correct": "D",
+    "answerText": "Call Envelopes:listStatusChanges with a from_date slightly before the outage began, then update records from the results",
+    "explanation": "Docusign's recommended catch-up after missed Connect messages is Envelopes:listStatusChanges with an overlapping time window. A few list calls replace 1,800 individual requests.",
+    "whyNotOthers": "D is right because one ranged listStatusChanges query recovers every changed envelope efficiently. The trap is B: Connect retries only failed deliveries, and here every message was acknowledged with HTTP 200, so nothing is retried. A fails because 1,800 single-envelope requests count as excessive envelope requests even when they stay under the burst limit. C fails because recipient status requests do count, and excessive ones lower the efficiency score.",
+    "optionExplanations": {
+      "A": "Staying under the burst limit does not stop 1,800 per-envelope calls from counting as excessive envelope status requests.",
+      "B": "Connect retries only failed deliveries; these messages were acknowledged with HTTP 200, so Connect treats them as delivered.",
+      "C": "Recipient status requests count toward limits, and excessive ones are an efficiency score factor.",
+      "D": "Correct. listStatusChanges with a time window that overlaps the outage is the recommended catch-up method."
+    },
+    "trapOption": "B",
+    "importance": "HIGH",
+    "basedOn": [
+      42,
+      5
+    ]
+  },
+  {
+    "paper": "B",
+    "length": "short",
+    "domain": "Go Live Process",
+    "topic": "Integration key after promotion",
+    "stem": "Which two statements about an integration key that has been promoted to production are true? (Select two)",
+    "options": [
+      {
+        "id": "A",
+        "text": "The key is moved to production, so the developer environment copy stops working"
+      },
+      {
+        "id": "B",
+        "text": "The same key value keeps working in the developer environment and now also works in production"
+      },
+      {
+        "id": "C",
+        "text": "The key's secrets and redirect URIs are duplicated with it, so the production copy works at once"
+      },
+      {
+        "id": "D",
+        "text": "The key can call only the production account it was promoted into, because that account owns it"
+      },
+      {
+        "id": "E",
+        "text": "The key is tied to the selected production account for management, but can call the API for any account"
+      }
+    ],
+    "correct": "B,E",
+    "correctAnswers": [
+      "B",
+      "E"
+    ],
+    "answerText": "The same key value keeps working in the developer environment and now also works in production; The key is tied to the selected production account for management, but can call the API for any account",
+    "explanation": "At Go-Live the key is duplicated rather than moved, so the same value works in both environments. It is tied to the selected production account for management, but after promotion it can make API calls against any account.",
+    "whyNotOthers": "B and E are right: the key is duplicated, not moved, and the management account does not restrict which accounts it can call. The trap is D: the account you select only manages the key. A fails because the key is duplicated, not moved. C fails because secrets and redirect URIs are not copied.",
+    "optionExplanations": {
+      "A": "The key is duplicated, not moved; the developer copy keeps working.",
+      "B": "Correct. The key keeps the same value and works in both the developer and production environments.",
+      "C": "Secrets and redirect URIs are not copied and must be added in production.",
+      "D": "The production account only manages the key; the key can call the API for any account.",
+      "E": "Correct. The key is tied to the management account, but after promotion it can be used against any account."
+    },
+    "trapOption": "D",
+    "importance": "HIGH",
+    "basedOn": [
+      9,
+      36
+    ]
+  }
+]

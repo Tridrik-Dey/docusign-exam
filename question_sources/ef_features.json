@@ -1,0 +1,1768 @@
+[
+  {
+    "paper": "E",
+    "length": "long",
+    "style": "design",
+    "domain": "eSignature Features and Web Forms",
+    "topic": "Default brand for an unchangeable integration",
+    "stem": "Tamsin Foods is rolling out a new corporate identity next month. Its procurement suite, a vendor-hosted system the company cannot modify, creates about 900 supplier contracts a week through the eSignature REST API on behalf of one service user, and its requests never name a brand. The HR team, which sends from the web app using templates, has already switched its templates to the new brand. Marketing wants every supplier who receives a contract from the procurement suite to see the new logo and colors from launch day. What should the Docusign administrator do?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Select the new brand on every template in the account, so that any envelope created from those templates, including supplier contracts, carries the new identity."
+      },
+      {
+        "id": "B",
+        "text": "Ask the vendor to add the new brand's brandId to each Envelopes:create request, so every supplier contract explicitly names the brand it should use."
+      },
+      {
+        "id": "C",
+        "text": "Set the new brand as the account's default brand, so that envelopes created without a brandId, such as the procurement suite's contracts, use it automatically."
+      },
+      {
+        "id": "D",
+        "text": "Assign the new brand to a group and add the procurement service user to that group, so that the service user is permitted to send with the new brand."
+      }
+    ],
+    "correct": "C",
+    "answerText": "Set the new brand as the account's default brand, so that envelopes created without a brandId, such as the procurement suite's contracts, use it automatically.",
+    "explanation": "A brand set as the account default is used for envelopes that do not name a brand. The clues are 'a system the company cannot modify' and 'its requests never name a brand'.",
+    "whyNotOthers": "C is right because the default brand covers envelopes created without a brandId, with no code change. The trap is D: assigning a brand to a group only controls which users may use it; the suite still sends no brandId. B needs a code change in a system that cannot be modified, and A fails because the suite does not send from templates (the HR templates are a red herring).",
+    "optionExplanations": {
+      "A": "The procurement suite sends without templates, so template brands never reach its contracts.",
+      "B": "brandId on Envelopes:create works, but the vendor-hosted suite cannot be changed.",
+      "C": "Correct. The account default brand applies to envelopes that do not specify a brand.",
+      "D": "Group assignment controls who may use a brand; it does not apply it to envelopes that name no brand."
+    },
+    "trapOption": "D",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "Make the brand apply without any brandId in the API request: set it as the account default brand.",
+      "clues": [
+        "'vendor-hosted system the company cannot modify' -> no brandId can be added",
+        "'its requests never name a brand' -> needs a brand applied by default",
+        "'HR team ... switched its templates' -> red herring, the suite does not use templates"
+      ]
+    },
+    "concept": {
+      "title": "Account default brand",
+      "line": "Envelopes that do not specify a brandId use the account's default brand; group assignment only limits who may use a brand."
+    }
+  },
+  {
+    "paper": "E",
+    "length": "long",
+    "style": "design",
+    "domain": "eSignature Features and Web Forms",
+    "topic": "Recording the portal's own authentication",
+    "stem": "Westmoor Credit Union members log in to online banking with a password and a push approval before they open a loan-modification request built on a template-based web form. The credit union's auditors want the certificate of completion for each resulting agreement to show that the member was already authenticated by the bank's own login, including when and by which identity domain. The marketing team also asks for the credit union's colors on the form. Which delivery design supports this record?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Create remote instances with sendOption now and add authenticationMethod, authenticationInstant, assertionId and securityDomain to the Instances:createInstance request."
+      },
+      {
+        "id": "B",
+        "text": "Create embedded instances with the Initiate signing session from email setting enabled, and pass the four authentication record properties in Instances:createInstance."
+      },
+      {
+        "id": "C",
+        "text": "Create embedded instances from a standalone copy of the configuration, and pass the four authentication record properties in Instances:createInstance."
+      },
+      {
+        "id": "D",
+        "text": "Create embedded instances with the Initiate signing session from email setting disabled, and pass the four authentication record properties in Instances:createInstance."
+      }
+    ],
+    "correct": "D",
+    "answerText": "Create embedded instances with the Initiate signing session from email setting disabled, and pass the four authentication record properties in Instances:createInstance.",
+    "explanation": "The authentication record properties work only when the generated envelope is signed in an embedded signing view, which needs 'Initiate signing session from email' turned off. The clue is 'certificate of completion ... already authenticated by the bank's own login'.",
+    "whyNotOthers": "D is right because the record of recipient authentication is supported only for embedded signing of template-based web forms. The trap is B: the instance is embedded, but with the email setting enabled the envelope is not signed in an embedded view. A fails because remote instances do not support these properties, and C fails because standalone configurations create no envelope or certificate.",
+    "optionExplanations": {
+      "A": "Remote web form instances do not support the authentication record properties.",
+      "B": "With Initiate signing session from email enabled, signing is not embedded, so the record is not supported.",
+      "C": "Standalone configurations generate no envelope, so there is no certificate to record anything on.",
+      "D": "Correct. Embedded signing of a template-based instance supports the four authentication record properties."
+    },
+    "trapOption": "B",
+    "importance": "HIGH",
+    "decode": {
+      "needs": "Record the portal's own login on the certificate: embedded template-based instance, embedded signing, authentication record properties.",
+      "clues": [
+        "'already authenticated by the bank's own login' -> record, not enforce, the app's authentication",
+        "'certificate of completion' -> an envelope must exist, so template-based",
+        "'credit union's colors' -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "Web form authentication record",
+      "line": "authenticationMethod and related properties in createInstance only record your own login, and only for embedded signing of template-based forms."
+    }
+  },
+  {
+    "paper": "E",
+    "length": "long",
+    "style": "design",
+    "domain": "eSignature Features and Web Forms",
+    "topic": "Features lost with standards-based signatures",
+    "stem": "Velden Legal, a Dutch law firm, will move its share-purchase agreements to qualified electronic signatures so signers authenticate through a qualified trust service provider. Today, counterparties use Markup to propose wording changes, the firm's notaries hold remote notarization sessions for some deeds, every document carries a 'Confidential' watermark, and signers occasionally return a wet-signed page. The managing partner asks which current practices will no longer be available once these envelopes use standards-based signatures. (Select two)",
+    "options": [
+      {
+        "id": "A",
+        "text": "Counterparties proposing wording changes with Markup"
+      },
+      {
+        "id": "B",
+        "text": "The Confidential watermark on every document"
+      },
+      {
+        "id": "C",
+        "text": "Signers returning a wet-signed page"
+      },
+      {
+        "id": "D",
+        "text": "Remote notarization sessions run by the firm's notaries"
+      },
+      {
+        "id": "E",
+        "text": "Free-form signing after the first signer has signed"
+      }
+    ],
+    "correct": "A,D",
+    "correctAnswers": [
+      "A",
+      "D"
+    ],
+    "answerText": "Counterparties proposing wording changes with Markup; Remote notarization sessions run by the firm's notaries",
+    "explanation": "Markup and Notary are listed as not compatible with standards-based signatures. The clue is 'no longer be available', which separates incompatible features from those that only work differently.",
+    "whyNotOthers": "A and D are right because Markup and Notary cannot be used with SBS envelopes. The trap is E: free-form signing still works, but only signature and initials fields can be added after someone has signed. B and C also still work differently: watermarks become annotations and wet-signed documents are added as new documents.",
+    "optionExplanations": {
+      "A": "Correct. Markup is not compatible with standards-based signatures.",
+      "B": "Watermarks still work with SBS; they are added as annotations.",
+      "C": "Wet signing still works with SBS; the wet-signed documents are added as new documents.",
+      "D": "Correct. Notary is not compatible with standards-based signatures.",
+      "E": "Free-form signing still works, limited to signature and initials fields after the first signature."
+    },
+    "trapOption": "E",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "Separate features that SBS blocks (Markup, Notary) from features SBS only changes.",
+      "clues": [
+        "'qualified electronic signatures ... trust service provider' -> standards-based signatures (QES)",
+        "'no longer be available' -> incompatible, not merely different",
+        "'Dutch law firm' -> red herring, the rule is the same everywhere"
+      ]
+    },
+    "concept": {
+      "title": "SBS incompatible features",
+      "line": "Standards-based signatures exclude Markup, Notary, fax attachments and legacy digital signatures; watermarks, wet signing and free-form signing work differently."
+    }
+  },
+  {
+    "paper": "E",
+    "length": "long",
+    "style": "design",
+    "domain": "eSignature Features and Web Forms",
+    "topic": "ID Evidence resource token lifetime",
+    "stem": "Each night at 01:00, an unattended archiving job at Glenmore Bank collects ID Verification evidence for the previous day's account openings, around 400 recipients. The job lists recipients for each envelope, requests one identity proof resource token at start-up, caches it, and then loops through all recipients calling the ID Evidence API. The first few recipients succeed, but after that every call returns 401 Unauthorized. The bank's OAuth access token is valid for eight hours. What should the developer change?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Request a new resource token from identity_proof_token for each recipient just before calling the ID Evidence API, because a resource token is valid for only 2 minutes."
+      },
+      {
+        "id": "B",
+        "text": "Refresh the OAuth access token before each recipient and send it to the ID Evidence API directly, because that API accepts the eSignature access token as its bearer token."
+      },
+      {
+        "id": "C",
+        "text": "Request one resource token per envelope instead of per run, because a resource token is bound to an envelope and expires when the job moves to the next envelope."
+      },
+      {
+        "id": "D",
+        "text": "Process the 400 recipients in parallel threads so that every ID Evidence call is made while the single cached resource token is still within its lifetime."
+      }
+    ],
+    "correct": "A",
+    "answerText": "Request a new resource token from identity_proof_token for each recipient just before calling the ID Evidence API, because a resource token is valid for only 2 minutes.",
+    "explanation": "Resource tokens are created per recipient (the path includes the recipientIdGuid) and are valid for only 2 minutes. The clue is 'one ... resource token at start-up, caches it' followed by 401 errors after a few recipients.",
+    "whyNotOthers": "A is right because the job must request a fresh token per recipient right before the call. The trap is C: it shortens the reuse window but the token belongs to one recipient, not an envelope, and its lifetime is time-based. B fails because the ID Evidence API takes the resource token, not the OAuth token, and D still reuses one token across recipients.",
+    "optionExplanations": {
+      "A": "Correct. Resource tokens are per recipient and expire after 2 minutes.",
+      "B": "The ID Evidence API needs the resource token as the bearer token, not the OAuth access token.",
+      "C": "The token is requested for a specific recipient and expires after 2 minutes, not at an envelope boundary.",
+      "D": "A token requested for one recipient cannot serve all recipients, and racing the clock is not a fix."
+    },
+    "trapOption": "C",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "Fetch a short-lived resource token per recipient immediately before each ID Evidence call.",
+      "clues": [
+        "'unattended archiving job' -> server-side batch, no user present",
+        "'one resource token at start-up, caches it' -> token reuse is the bug",
+        "'OAuth access token is valid for eight hours' -> red herring, a different token"
+      ]
+    },
+    "concept": {
+      "title": "ID Evidence resource tokens",
+      "line": "Request a resource token per recipient from identity_proof_token just before calling ID Evidence; it is valid for 2 minutes."
+    }
+  },
+  {
+    "paper": "E",
+    "length": "long",
+    "style": "design",
+    "domain": "eSignature Features and Web Forms",
+    "topic": "Save and resume a long web form",
+    "stem": "Applicants for Riverbend University's graduate scholarships complete a long template-based web form embedded in the applicant portal, which renders it with Docusign JS. Many applicants need to look up transcripts and references, so the admissions office wants them to be able to stop halfway, close the browser, and continue another day without retyping anything. Applicants already authenticate to the portal with the university's single sign-on. How should the developer implement this?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Store the entered values in the portal's database from Docusign JS events, then create a new instance next time with those stored values in formValues."
+      },
+      {
+        "id": "B",
+        "text": "Create remote instances with sendOption now so that applicants can reopen the form from the envelope email whenever they want to continue."
+      },
+      {
+        "id": "C",
+        "text": "Set hideWelcomePage to true in webFormOptions so the saved instance reopens on the last page the applicant viewed when it is rendered again."
+      },
+      {
+        "id": "D",
+        "text": "Set showFinishLater to true in webFormOptions, then later refresh the same instance's token and render it so Docusign restores the saved values."
+      }
+    ],
+    "correct": "D",
+    "answerText": "Set showFinishLater to true in webFormOptions, then later refresh the same instance's token and render it so Docusign restores the saved values.",
+    "explanation": "showFinishLater adds a Finish Later button that saves partial values; rendering the same instance again after refreshing its token restores them. The clue is 'stop halfway ... continue another day without retyping'.",
+    "whyNotOthers": "D is right because Finish Later is the built-in save-and-resume feature of embedded instances. The trap is A: it rebuilds a new instance from copied data, which is custom work the feature already provides. B changes the delivery model away from the portal, and C only hides the welcome page.",
+    "optionExplanations": {
+      "A": "Possible but unnecessary custom storage; Finish Later already saves values on the same instance.",
+      "B": "Remote delivery moves the form out of the portal and does not add a save-for-later function.",
+      "C": "hideWelcomePage only skips the welcome page; it does not save or restore values.",
+      "D": "Correct. showFinishLater saves the partial form; refreshToken plus rendering the same instance restores it."
+    },
+    "trapOption": "A",
+    "importance": "HIGH",
+    "decode": {
+      "needs": "Built-in save and resume of an embedded instance: showFinishLater, then refreshToken on the same instance.",
+      "clues": [
+        "'stop halfway ... continue another day' -> Finish Later",
+        "'renders it with Docusign JS' -> webFormOptions are available",
+        "'single sign-on' -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "Finish Later for web forms",
+      "line": "showFinishLater in Docusign JS saves a partial instance (status INPROGRESS); refresh its token and render it again to resume."
+    }
+  },
+  {
+    "paper": "E",
+    "length": "long",
+    "style": "design",
+    "domain": "eSignature Features and Web Forms",
+    "topic": "Remote instance with an omitted role",
+    "stem": "Thornbury Lettings sends a tenancy-renewal web form by email from its property system. The template-based configuration has two roles: tenant (primary, fills in the form and signs) and guarantor (signs only), and the web form template has no fixed name or email for the guarantor role. The developer's Instances:createInstance request includes sendOption now and a recipients array with only the tenant's roleName, name and email, because 'the guarantor can be added later'. What happens?",
+    "options": [
+      {
+        "id": "A",
+        "text": "The request fails, because every role in the configuration must appear in the recipients array of a remote instance request."
+      },
+      {
+        "id": "B",
+        "text": "The tenant gets the email, and the envelope is held after the tenant signs until the property system adds the guarantor by API."
+      },
+      {
+        "id": "C",
+        "text": "The tenant gets the email, and the guarantor is removed from the envelope process together with the tabs assigned to that role."
+      },
+      {
+        "id": "D",
+        "text": "The tenant gets the email, and the guarantor's tabs are reassigned to the tenant so that the tenant completes both roles."
+      }
+    ],
+    "correct": "C",
+    "answerText": "The tenant gets the email, and the guarantor is removed from the envelope process together with the tabs assigned to that role.",
+    "explanation": "Only the primary recipient's values are mandatory; a role with no values in the request and none hard-coded in the template is removed from the envelope process with its tabs. The clue is 'no fixed name or email for the guarantor role'.",
+    "whyNotOthers": "C is right because Docusign drops recipients whose information is not supplied. The trap is A: only the primary role is required, so the request succeeds. B fails because nothing holds the envelope for a later addition, and D fails because tabs are removed, not reassigned.",
+    "optionExplanations": {
+      "A": "Only the primary recipient's name and email are required; other roles can be omitted.",
+      "B": "The envelope is not held; the omitted role is removed when the instance is created.",
+      "C": "Correct. Roles without supplied or hard-coded values are removed along with their tabs.",
+      "D": "Tabs of omitted recipients are removed, not moved to another role."
+    },
+    "trapOption": "A",
+    "importance": "HIGH",
+    "decode": {
+      "needs": "Understand which recipient values a remote createInstance must carry and what happens to omitted roles.",
+      "clues": [
+        "'sends ... by email' -> remote instance, sendOption now",
+        "'no fixed name or email for the guarantor' -> nothing hard-coded to fall back on",
+        "'can be added later' -> false assumption, the role is dropped"
+      ]
+    },
+    "concept": {
+      "title": "Remote instance recipient values",
+      "line": "Remote instances need values for the primary role; other roles without supplied or hard-coded values are removed with their tabs."
+    }
+  },
+  {
+    "paper": "F",
+    "length": "long",
+    "style": "design",
+    "domain": "eSignature Features and Web Forms",
+    "topic": "Branding form pages versus envelopes",
+    "stem": "Larkspur Insurance runs a template-based web form for roadside-assistance enrollment. Instances are created by three line-of-business apps owned by other teams, and no code release is possible this quarter. A designer opened the web form template in the Web Forms builder, chose the company brand under Advanced Options, and saved the change. Customers now see the company logo on the agreement they sign after submitting, but the form pages themselves still show the default look. What is the smallest change that brands the form pages for every instance?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Select the brand under Branding on the configuration's Preview tab, which brands the form instances while the template brand keeps covering envelopes."
+      },
+      {
+        "id": "B",
+        "text": "Pass the brand's brandId in every Instances:createInstance request, which brands both the form instance and its envelope and overrides the configuration's brand."
+      },
+      {
+        "id": "C",
+        "text": "Select the brand again under Advanced Options in the web form template, because that setting reaches form pages only after the configuration is reactivated."
+      },
+      {
+        "id": "D",
+        "text": "Set the brand as the account default brand, because web form instances always use the account default and ignore brands chosen in the Web Forms builder."
+      }
+    ],
+    "correct": "A",
+    "answerText": "Select the brand under Branding on the configuration's Preview tab, which brands the form instances while the template brand keeps covering envelopes.",
+    "explanation": "A brand chosen in the web form template's Advanced Options affects envelopes only; the Branding option on the configuration's Preview tab affects the instances. The clue is 'no code release is possible'.",
+    "whyNotOthers": "A is right because the Preview tab brand covers form pages without any API change. The trap is B: brandId in createInstance would brand both, but it needs code changes in three apps. C misunderstands the template setting, which never brands instances, and D is false because builder-level brands are applied.",
+    "optionExplanations": {
+      "A": "Correct. Preview tab Branding applies to instances; the template brand already covers envelopes.",
+      "B": "Works technically, but requires code changes in apps that cannot be released this quarter.",
+      "C": "The web form template brand affects envelopes only, however often it is reselected.",
+      "D": "Brands selected in the configuration or template are applied; instances do not ignore them."
+    },
+    "trapOption": "B",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "Brand the form pages with a configuration setting, not code: Preview tab Branding.",
+      "clues": [
+        "'no code release is possible' -> no brandId in createInstance",
+        "'Advanced Options' in the web form template -> envelopes only",
+        "'form pages ... still show the default look' -> the instance brand is missing"
+      ]
+    },
+    "concept": {
+      "title": "Web form brand levels",
+      "line": "Template brand affects envelopes, Preview tab brand affects instances, brandId in createInstance affects both and overrides."
+    }
+  },
+  {
+    "paper": "F",
+    "length": "long",
+    "style": "design",
+    "domain": "eSignature Features and Web Forms",
+    "topic": "Requiring authentication account-wide",
+    "stem": "After an internal audit, the compliance officer of Brightline Pharma Distribution requires that no counterparty can open any document sent from the company's Docusign account without passing an authentication check. Envelopes come from six integrations built by different agencies, plus about 40 staff who send from the web app. The officer does not want to depend on every integration adding the right recipient properties, and the deadline is next week. What is the most reliable approach?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Ask each agency to add an accessCode to every signer in its Envelopes:create requests and verify compliance with a monthly envelope report."
+      },
+      {
+        "id": "B",
+        "text": "Create a phone authentication identity verification configuration and make it the only active one, so every envelope automatically uses it."
+      },
+      {
+        "id": "C",
+        "text": "Have an eSignature administrator use the account's Security Settings to require that all recipients pass authentication before opening documents."
+      },
+      {
+        "id": "D",
+        "text": "Configure an account-level Connect listener that voids any envelope whose recipients lack an authentication method as soon as it is sent."
+      }
+    ],
+    "correct": "C",
+    "answerText": "Have an eSignature administrator use the account's Security Settings to require that all recipients pass authentication before opening documents.",
+    "explanation": "An eSignature administrator can require that all recipients pass an authentication or identity verification check before accessing any document sent from the account. The clue is 'not ... depend on every integration'.",
+    "whyNotOthers": "C is right because the account setting enforces authentication for every sender without code changes. The trap is B: activating a configuration only makes it available for senders to choose; it does not apply it to recipients. A depends on every integration, which the officer rejects, and D reacts after sending instead of preventing access.",
+    "optionExplanations": {
+      "A": "Relies on six agencies changing code and only detects gaps afterwards.",
+      "B": "Active configurations are options senders can choose; they are not applied automatically.",
+      "C": "Correct. The account Security Settings can require authentication for all recipients.",
+      "D": "Voiding after sending is a workaround; the counterparty may already have received the envelope."
+    },
+    "trapOption": "B",
+    "importance": "HIGH",
+    "decode": {
+      "needs": "An account-level enforcement of recipient authentication that does not rely on integrations.",
+      "clues": [
+        "'any document sent from the company's Docusign account' -> account-wide setting",
+        "'not ... depend on every integration' -> no per-request properties",
+        "'deadline is next week' -> admin setting, no development"
+      ]
+    },
+    "concept": {
+      "title": "Account-wide recipient authentication",
+      "line": "Administrators can require authentication for all recipients in Security Settings, independent of how envelopes are sent."
+    }
+  },
+  {
+    "paper": "F",
+    "length": "long",
+    "style": "design",
+    "domain": "eSignature Features and Web Forms",
+    "topic": "Different verification per signer",
+    "stem": "Oakfield Equipment Finance creates lease agreements from its loan-origination system with eSignature REST API v2.1. The lessee's director must prove identity with a government photo ID, while the personal guarantor only needs a one-time code that Docusign sends to his mobile phone. Both verification types are configured and active in the account. A teammate proposes one setting for the whole envelope to keep the request simple. How should the envelope request be built?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Set one identityVerification object at the envelope level with the ID Verification workflowId, which Docusign then applies to every signer in routing order."
+      },
+      {
+        "id": "B",
+        "text": "Add identityVerification with the ID Verification workflowId to the director, and set idCheckConfigurationName to ID Check on the guarantor."
+      },
+      {
+        "id": "C",
+        "text": "Add identityVerification with the ID Verification workflowId to the director, and set an accessCode on the guarantor that the system texts to him."
+      },
+      {
+        "id": "D",
+        "text": "Add identityVerification to each signer, using the ID Verification workflowId for the director and the Phone Authentication workflowId for the guarantor."
+      }
+    ],
+    "correct": "D",
+    "answerText": "Add identityVerification to each signer, using the ID Verification workflowId for the director and the Phone Authentication workflowId for the guarantor.",
+    "explanation": "identityVerification is a recipient property, and different workflow IDs from IdentityVerifications:list can be set per recipient. The clue is 'one-time code that Docusign sends to his mobile phone', which is phone authentication.",
+    "whyNotOthers": "D is right because each signer gets its own workflowId. The trap is C: an access code texted by the lender's system is not a code Docusign sends. A fails because the setting is per recipient, not per envelope, and B uses ID Check, which is knowledge-based authentication.",
+    "optionExplanations": {
+      "A": "identityVerification is set on recipients, not on the envelope.",
+      "B": "ID Check is knowledge-based authentication, not a code sent to a phone.",
+      "C": "The access code would be sent by the lender's system, not by Docusign.",
+      "D": "Correct. Each signer carries identityVerification with its own workflowId."
+    },
+    "trapOption": "C",
+    "importance": "HIGH",
+    "decode": {
+      "needs": "Two signers, two verification workflows, each set on its own recipient.",
+      "clues": [
+        "'government photo ID' -> ID Verification workflow",
+        "'one-time code that Docusign sends to his mobile' -> Phone Authentication workflow",
+        "'one setting for the whole envelope' -> red herring, there is no envelope-level option"
+      ]
+    },
+    "concept": {
+      "title": "Per-recipient identity verification",
+      "line": "Set identityVerification with a workflowId from IdentityVerifications:list on each recipient; workflow IDs can differ per recipient."
+    }
+  },
+  {
+    "paper": "F",
+    "length": "long",
+    "style": "design",
+    "domain": "eSignature Features and Web Forms",
+    "topic": "Updated connected fields data model",
+    "stem": "Pellham Freight's private connected fields extension app verifies customer account numbers against its billing platform. Last sprint, the billing team added a 'credit hold' property to the verified customer object in the external data model and redeployed the service. Senders now report that the new field does not appear among the app's fields when preparing envelopes, although verification of the existing fields still works. Reinstalling the app in production would delete live connections. What should the team do?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Republish the extension app manifest with a new version number so that the App Center review adds the new property to the field list for all accounts."
+      },
+      {
+        "id": "B",
+        "text": "Refresh the extension app's connection in the App Center so that Docusign calls Get Type Names and Get Type Definitions again and loads the updated model."
+      },
+      {
+        "id": "C",
+        "text": "Uninstall and reinstall the extension app on the Developer Console Testing page and then run a new connection test to rebuild the list of fields."
+      },
+      {
+        "id": "D",
+        "text": "Add the new property to each envelope's tabs through extensionData by API, because the Add Fields view lists only properties that existed at installation."
+      }
+    ],
+    "correct": "B",
+    "answerText": "Refresh the extension app's connection in the App Center so that Docusign calls Get Type Names and Get Type Definitions again and loads the updated model.",
+    "explanation": "When a connection is created or refreshed, Docusign calls Get Type Names and Get Type Definitions to load the data model. The clue is 'added a property ... does not appear', with existing connections that must survive.",
+    "whyNotOthers": "B is right because refreshing keeps the connection intact and reloads the model. The trap is C: reinstalling in the Developer Console would rebuild the list but deletes all existing connections, which the stem rules out. A is not needed for a data model change, and D is wrong because a refreshed model shows in Add Fields.",
+    "optionExplanations": {
+      "A": "The data model is read from the external service at connection time, not from a new manifest version.",
+      "B": "Correct. A connection refresh re-runs Get Type Names and Get Type Definitions.",
+      "C": "Reinstalling deletes existing connections, which the stem says must be avoided.",
+      "D": "The Add Fields view shows new properties once the connection is refreshed."
+    },
+    "trapOption": "C",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "Reload an extension's data model without breaking live connections: refresh the connection.",
+      "clues": [
+        "'added a property ... does not appear' -> stale data model",
+        "'verification of existing fields still works' -> connection is healthy",
+        "'would delete live connections' -> rules out reinstalling"
+      ]
+    },
+    "concept": {
+      "title": "Refreshing a connected fields model",
+      "line": "Changes to the external data model appear after the connection is refreshed, which re-runs Get Type Names and Get Type Definitions."
+    }
+  },
+  {
+    "paper": "F",
+    "length": "long",
+    "style": "design",
+    "domain": "eSignature Features and Web Forms",
+    "topic": "Tracking a co-signer after embedded submission",
+    "stem": "Copperfield Motors embeds a template-based web form for vehicle finance in its dealer website. The buyer fills in the form and signs in focused view on the dealer's tablet; a co-buyer named in the form signs the generated agreement later from an emailed link. The website already listens to Docusign JS events. The finance team's dashboard must show when each co-buyer has signed, and the dealership wants push updates rather than scheduled checks. What should the developer use?",
+    "options": [
+      {
+        "id": "A",
+        "text": "A Docusign Connect listener subscribed to envelope and recipient events, because Docusign JS events reflect envelope activity only for the instance submitter."
+      },
+      {
+        "id": "B",
+        "text": "The Docusign JS envelope events already handled by the website, because they report signing activity for every recipient of the generated envelope."
+      },
+      {
+        "id": "C",
+        "text": "Instances:getInstance on a schedule, reading the co-buyer's instanceRecipientStatus, because it changes to SUBMITTED when the co-buyer signs the agreement."
+      },
+      {
+        "id": "D",
+        "text": "Envelopes:listStatusChanges every few minutes from the dashboard, because it reports each recipient's status, including recipients outside the embedded session."
+      }
+    ],
+    "correct": "A",
+    "answerText": "A Docusign Connect listener subscribed to envelope and recipient events, because Docusign JS events reflect envelope activity only for the instance submitter.",
+    "explanation": "Docusign JS events only reflect envelope activity for the web form instance submitter; other recipients are tracked with Connect or Envelopes:listStatusChanges. The clue is 'push updates rather than scheduled checks'.",
+    "whyNotOthers": "A is right because Connect pushes envelope and recipient events for every recipient. The trap is B: the JS events only cover the buyer who submitted the instance. C polls and tracks form submission, not signing, and D polls, which the dealership ruled out.",
+    "optionExplanations": {
+      "A": "Correct. Connect pushes events for all recipients; JS events cover only the submitter.",
+      "B": "Docusign JS events reflect envelope activity only for the instance submitter.",
+      "C": "Scheduled polling, and instanceRecipientStatus tracks the form view, not envelope signing.",
+      "D": "listStatusChanges can report recipient status, but it is polling on a schedule, which the dealership rejected in favour of push updates; Connect provides the push."
+    },
+    "trapOption": "B",
+    "importance": "HIGH",
+    "decode": {
+      "needs": "Push notifications about the co-signer's signing of the generated envelope.",
+      "clues": [
+        "'co-buyer ... from an emailed link' -> recipient outside the embedded session",
+        "'push updates rather than scheduled checks' -> Connect, not polling",
+        "'already listens to Docusign JS events' -> tempting but limited to the submitter"
+      ]
+    },
+    "concept": {
+      "title": "Tracking web form envelopes",
+      "line": "Docusign JS events cover only the instance submitter; track other recipients with Connect or Envelopes:listStatusChanges."
+    }
+  },
+  {
+    "paper": "F",
+    "length": "long",
+    "style": "design",
+    "domain": "eSignature Features and Web Forms",
+    "topic": "Standalone versus template-based configuration",
+    "stem": "The Larchmont Food Bank collects volunteer availability with a standalone web form embedded on its website; nothing is signed. The board now asks for changes: volunteers should upload a scan of their safeguarding certificate; the form should keep the food bank's logo and colors; returning volunteers should see their name and phone number prefilled; and the coordinator wants Docusign to email the form to volunteers who registered by phone. Which two requirements force a move to a template-based configuration? (Select two)",
+    "options": [
+      {
+        "id": "A",
+        "text": "Keeping the food bank's logo and colors on the form"
+      },
+      {
+        "id": "B",
+        "text": "Uploading a scan of the safeguarding certificate"
+      },
+      {
+        "id": "C",
+        "text": "Prefilling name and phone number for returning volunteers"
+      },
+      {
+        "id": "D",
+        "text": "Docusign emailing the form to volunteers who registered by phone"
+      },
+      {
+        "id": "E",
+        "text": "Embedding the form in the food bank's website"
+      }
+    ],
+    "correct": "B,D",
+    "correctAnswers": [
+      "B",
+      "D"
+    ],
+    "answerText": "Uploading a scan of the safeguarding certificate; Docusign emailing the form to volunteers who registered by phone",
+    "explanation": "Attachment fields and remote (emailed) delivery are supported only with template-based configurations. The clues are 'upload a scan' and 'Docusign to email the form'.",
+    "whyNotOthers": "B and D are right because standalone configurations support neither attachment fields nor remote delivery. The trap is A: branding feels like a template feature, but a brand can be applied to standalone forms on the configuration's Preview tab. C and E work with standalone embedded instances through formValues and Docusign JS.",
+    "optionExplanations": {
+      "A": "A brand can be applied to standalone configurations on the Preview tab.",
+      "B": "Correct. Attachment fields need a template-based configuration.",
+      "C": "Prefill with formValues works for standalone embedded instances.",
+      "D": "Correct. Remote delivery needs a template-based configuration.",
+      "E": "Standalone configurations support embedded delivery."
+    },
+    "trapOption": "A",
+    "importance": "HIGH",
+    "decode": {
+      "needs": "Identify which needs exceed a standalone configuration: attachments and emailed delivery.",
+      "clues": [
+        "'upload a scan' -> attachment field, template-based only",
+        "'Docusign to email the form' -> remote instance, template-based only",
+        "'logo and colors' -> possible on standalone, a trap"
+      ]
+    },
+    "concept": {
+      "title": "Standalone configuration limits",
+      "line": "Standalone forms lack envelopes, routing, envelope custom fields, attachments, authentication records and remote delivery."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "short",
+    "style": "fact",
+    "domain": "eSignature Features and Web Forms",
+    "topic": "Signing-only brand settings",
+    "stem": "According to the eSignature brand settings, which two items can be set for the signing view but are not listed for the sending view? (Select two)",
+    "options": [
+      {
+        "id": "A",
+        "text": "A custom logo"
+      },
+      {
+        "id": "B",
+        "text": "A redirect URL for all branded envelopes"
+      },
+      {
+        "id": "C",
+        "text": "The colors of the UI"
+      },
+      {
+        "id": "D",
+        "text": "Footer links"
+      },
+      {
+        "id": "E",
+        "text": "A default language and additional signer languages"
+      }
+    ],
+    "correct": "B,E",
+    "correctAnswers": [
+      "B",
+      "E"
+    ],
+    "answerText": "A redirect URL for all branded envelopes; A default language and additional signer languages",
+    "explanation": "Signing branding adds a redirect URL, header links, languages and a resource file on top of the colors, logo and footer links that sending also has.",
+    "whyNotOthers": "B and E are right because they appear only in the signing view settings. The trap is D: footer links feel signing-specific, but they can be set for the sending view too. A and C apply to both views.",
+    "optionExplanations": {
+      "A": "Logos can be set for both the sending and signing views.",
+      "B": "Correct. A redirect URL for branded envelopes is a signing setting.",
+      "C": "UI colors can be set for both views.",
+      "D": "Footer links can be set for the sending view as well.",
+      "E": "Correct. Default and additional languages are signing settings."
+    },
+    "trapOption": "D",
+    "importance": "MEDIUM",
+    "concept": {
+      "title": "Signing versus sending branding",
+      "line": "Both views take colors, logo and footer links; signing adds redirect URL, header links, languages and resource files."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "short",
+    "style": "fact",
+    "domain": "eSignature Features and Web Forms",
+    "topic": "Brand logo limits",
+    "stem": "An administrator's upload of a 450 KB PNG as a brand's primary logo is rejected. What is the cause?",
+    "options": [
+      {
+        "id": "A",
+        "text": "PNG is not a supported logo format"
+      },
+      {
+        "id": "B",
+        "text": "The file exceeds the 300 KB logo size limit"
+      },
+      {
+        "id": "C",
+        "text": "Primary logos must first be set as the email logo"
+      },
+      {
+        "id": "D",
+        "text": "Logos larger than 296 x 76 pixels are rejected"
+      }
+    ],
+    "correct": "B",
+    "answerText": "The file exceeds the 300 KB logo size limit",
+    "explanation": "Brand logos accept JPG, GIF and PNG up to 300 KB. The clue is the 450 KB size.",
+    "whyNotOthers": "B is right because 450 KB is over the 300 KB maximum. The trap is D: 296 x 76 pixels is only the recommended size, and larger images are resized, not rejected. A is false because PNG is supported, and C invents an ordering rule.",
+    "optionExplanations": {
+      "A": "JPG, GIF and PNG are all supported.",
+      "B": "Correct. The maximum logo file size is 300 KB.",
+      "C": "Primary, secondary and email logos are set independently.",
+      "D": "296 x 76 is recommended; larger images are resized."
+    },
+    "trapOption": "D",
+    "importance": "LOW",
+    "concept": {
+      "title": "Brand logo limits",
+      "line": "Brand logos (primary, secondary, email) accept JPG, GIF or PNG up to 300 KB; larger dimensions are resized."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "short",
+    "style": "fact",
+    "domain": "eSignature Features and Web Forms",
+    "topic": "Account settings for branding",
+    "stem": "AccountBrands requests fail in a newly provisioned account. Which account settings must be enabled for the brands API to be used?",
+    "options": [
+      {
+        "id": "A",
+        "text": "canSelfBrandSend, canSelfBrandSign, or both"
+      },
+      {
+        "id": "B",
+        "text": "Both canSelfBrandSend and canSelfBrandSign together"
+      },
+      {
+        "id": "C",
+        "text": "canSelfBrandSign only, as brands affect recipients"
+      },
+      {
+        "id": "D",
+        "text": "None; only the brand's group assignment matters"
+      }
+    ],
+    "correct": "A",
+    "answerText": "canSelfBrandSend, canSelfBrandSign, or both",
+    "explanation": "Branding for sending or signing must be enabled: canSelfBrandSend, canSelfBrandSign, or both must be true.",
+    "whyNotOthers": "A is right because either setting is enough. The trap is B: both are allowed but not both required. C ignores sending branding, and D confuses who may use a brand with whether branding is enabled.",
+    "optionExplanations": {
+      "A": "Correct. Either setting, or both, enables the brands resource.",
+      "B": "Either setting alone is sufficient; both are not required.",
+      "C": "canSelfBrandSend alone also enables branding.",
+      "D": "Group assignment controls use of a brand, not whether branding is enabled."
+    },
+    "trapOption": "B",
+    "importance": "LOW",
+    "concept": {
+      "title": "Branding account settings",
+      "line": "The AccountBrands API needs branding enabled: canSelfBrandSend, canSelfBrandSign, or both."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "short",
+    "style": "fact",
+    "domain": "eSignature Features and Web Forms",
+    "topic": "Brand resource file types",
+    "stem": "Which brand resource file type customizes the text of the embedded (captive) signing experience?",
+    "options": [
+      {
+        "id": "A",
+        "text": "sending"
+      },
+      {
+        "id": "B",
+        "text": "signing"
+      },
+      {
+        "id": "C",
+        "text": "email"
+      },
+      {
+        "id": "D",
+        "text": "signing_captive"
+      }
+    ],
+    "correct": "D",
+    "answerText": "signing_captive",
+    "explanation": "Brand resource files are sending, signing, email and signing_captive; signing_captive controls the captive (embedded) signing experience.",
+    "whyNotOthers": "D is right because captive means embedded signing. The trap is B: signing covers the remote signing experience. A covers sending and C covers email messages.",
+    "optionExplanations": {
+      "A": "Controls the sending experience.",
+      "B": "Controls remote signing, not the captive experience.",
+      "C": "Controls email messages.",
+      "D": "Correct. signing_captive is for embedded (captive) signing."
+    },
+    "trapOption": "B",
+    "importance": "LOW",
+    "concept": {
+      "title": "Brand resource files",
+      "line": "Brands use four resource files: sending, signing, email and signing_captive (embedded signing)."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "long",
+    "style": "design",
+    "domain": "eSignature Features and Web Forms",
+    "topic": "Phone authentication for recipients",
+    "stem": "Harrow Utilities sends service-transfer agreements to new tenants. The legal team wants a second factor beyond the email link, delivered by Docusign itself, and tenants have mobile phones but many are recent arrivals without US credit history. Tenants should be able to pick a voice call or a text message. The tenant platform builds envelopes with eSignature REST API v2.1 in Java. How should the developer configure each tenant?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Set idCheckConfigurationName to ID Check on the signer, so that the tenant answers questions and then receives a code on the phone number on file."
+      },
+      {
+        "id": "B",
+        "text": "Add identityVerification to the signer with the Phone Authentication workflowId from IdentityVerifications:list and supply the tenant's phone number."
+      },
+      {
+        "id": "C",
+        "text": "Generate a random accessCode for the signer and have the tenant platform text it to the tenant's mobile phone before the envelope is sent."
+      },
+      {
+        "id": "D",
+        "text": "Add identityVerification to the signer with the ID Verification workflowId from IdentityVerifications:list, so the tenant scans a photo ID by phone."
+      }
+    ],
+    "correct": "B",
+    "answerText": "Add identityVerification to the signer with the Phone Authentication workflowId from IdentityVerifications:list and supply the tenant's phone number.",
+    "explanation": "Phone authentication sends a code by call or text, and recipients choose which; it is set with identityVerification and the Phone Authentication workflowId. The clues are 'delivered by Docusign itself' and 'pick a voice call or a text message'.",
+    "whyNotOthers": "B is right because phone authentication matches every requirement. The trap is C: the code would be texted by the tenant platform, not Docusign. A is knowledge-based authentication, which relies on US public records, and D asks for a photo ID, which is more than a phone second factor.",
+    "optionExplanations": {
+      "A": "ID Check is KBA, which relies on US public records these tenants may lack.",
+      "B": "Correct. Phone authentication with its workflowId lets the tenant choose call or SMS.",
+      "C": "The tenant platform, not Docusign, would deliver the code.",
+      "D": "ID Verification requires a government ID, not a code by call or text."
+    },
+    "trapOption": "C",
+    "importance": "HIGH",
+    "decode": {
+      "needs": "A Docusign-delivered code by call or SMS: phone authentication via identityVerification.",
+      "clues": [
+        "'delivered by Docusign itself' -> not an access code from your own system",
+        "'without US credit history' -> KBA is unsuitable",
+        "'voice call or a text message' -> phone authentication",
+        "'in Java' -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "Phone authentication setup",
+      "line": "Phone authentication uses identityVerification with the Phone Authentication workflowId; recipients choose call or SMS."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "short",
+    "style": "fact",
+    "domain": "eSignature Features and Web Forms",
+    "topic": "Access code rules",
+    "stem": "Which statement about a recipient access code set through the eSignature API is correct?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Minimum 8 characters, case-sensitive"
+      },
+      {
+        "id": "B",
+        "text": "Maximum 50 characters, not case-sensitive"
+      },
+      {
+        "id": "C",
+        "text": "Generated and texted by Docusign"
+      },
+      {
+        "id": "D",
+        "text": "Maximum 50 characters, case-sensitive"
+      }
+    ],
+    "correct": "B",
+    "answerText": "Maximum 50 characters, not case-sensitive",
+    "explanation": "An access code is a string of 50 characters or less that the sender provides, and it is not case-sensitive.",
+    "whyNotOthers": "B is right on both length and case. The trap is D: the length limit is right, but access codes are not case-sensitive. A invents a minimum, and C describes phone authentication.",
+    "optionExplanations": {
+      "A": "There is a 50-character maximum, and codes are not case-sensitive.",
+      "B": "Correct. Up to 50 characters and not case-sensitive.",
+      "C": "The sender sets the access code and shares it out of band.",
+      "D": "Correct length, but access codes are not case-sensitive."
+    },
+    "trapOption": "D",
+    "importance": "LOW",
+    "concept": {
+      "title": "Access code rules",
+      "line": "Access codes are sender-defined, up to 50 characters, not case-sensitive, and exclude the characters <, >, & and #."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "long",
+    "style": "design",
+    "domain": "eSignature Features and Web Forms",
+    "topic": "Handling a KBA failure",
+    "stem": "A relationship manager at Kestrel Wealth sent a trust amendment to a client who had to pass knowledge-based authentication. The client failed the questions twice, and the envelope now shows a delivery failure. The client says the questions referred to addresses she never lived at. She lives in the United States, wants to finish today, and ID Verification is enabled for the account. What should the sender do?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Use Correct to switch the client to ID Verification, because KBA failures usually mean the service could not validate her identity."
+      },
+      {
+        "id": "B",
+        "text": "Use Resend on the envelope now so she gets a new KBA question set, because a fresh attempt is always available straight after a failure."
+      },
+      {
+        "id": "C",
+        "text": "Void the envelope and send a new one with KBA, because a recipient who fails KBA cannot be given another method on the same envelope."
+      },
+      {
+        "id": "D",
+        "text": "Ask an administrator to look up the KBA answers in the envelope details and give them to the client by phone so that she can pass."
+      }
+    ],
+    "correct": "A",
+    "answerText": "Use Correct to switch the client to ID Verification, because KBA failures usually mean the service could not validate her identity.",
+    "explanation": "KBA failures are most often due to the service being unable to validate the signer, and the sender can use Correct to change the authentication method. The clues are 'failed twice' and 'wants to finish today'.",
+    "whyNotOthers": "A is right because a different method avoids the public-records problem. The trap is B: Resend is a valid action, but accounts commonly lock signers out for 24 hours after two failures within 24 hours, and the records issue would remain. C is false because Correct can change the method, and D is not possible.",
+    "optionExplanations": {
+      "A": "Correct. Correct lets the sender change the method, and IDV avoids the public-records issue.",
+      "B": "A common configuration locks the signer out for 24 hours after two failures, and the bad records remain.",
+      "C": "The authentication method can be changed with Correct; voiding is unnecessary.",
+      "D": "Senders and administrators do not get KBA answers to share."
+    },
+    "trapOption": "B",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "Recover the failed KBA envelope quickly with a different method.",
+      "clues": [
+        "'failed the questions twice' -> possible lockout",
+        "'addresses she never lived at' -> public-record data problem",
+        "'ID Verification is enabled' -> an alternative method exists"
+      ]
+    },
+    "concept": {
+      "title": "KBA failure handling",
+      "line": "After authentication failure, Resend gives another attempt or Correct changes the method; KBA failures usually mean identity could not be validated."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "short",
+    "style": "fact",
+    "domain": "eSignature Features and Web Forms",
+    "topic": "API version for identityVerification",
+    "stem": "A legacy integration calls eSignature REST API v2. The team now needs phone authentication and ID Verification using the identityVerification property with a workflowId. What must change?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Nothing; v2 supports identityVerification"
+      },
+      {
+        "id": "B",
+        "text": "Create those envelopes with REST API v2.1"
+      },
+      {
+        "id": "C",
+        "text": "Switch the integration to the Web Forms API"
+      },
+      {
+        "id": "D",
+        "text": "Use idCheckConfigurationName for both on v2"
+      }
+    ],
+    "correct": "B",
+    "answerText": "Create those envelopes with REST API v2.1",
+    "explanation": "Phone authentication and ID Verification with identityVerification are eSignature REST API v2.1 only.",
+    "whyNotOthers": "B is right because identityVerification requires v2.1. The trap is D: idCheckConfigurationName sets KBA or older named methods, not ID Verification. A is false, and C is unrelated to envelope authentication.",
+    "optionExplanations": {
+      "A": "identityVerification is v2.1 only.",
+      "B": "Correct. Use REST API v2.1 for identityVerification.",
+      "C": "The Web Forms API does not replace envelope recipient authentication.",
+      "D": "idCheckConfigurationName cannot request ID Verification."
+    },
+    "trapOption": "D",
+    "importance": "MEDIUM",
+    "concept": {
+      "title": "identityVerification needs v2.1",
+      "line": "Phone authentication and ID Verification through identityVerification and a workflowId are available only in eSignature REST API v2.1."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "short",
+    "style": "fact",
+    "domain": "eSignature Features and Web Forms",
+    "topic": "Requesting KBA in the API",
+    "stem": "In an Envelopes:create request, which signer property and value require knowledge-based authentication?",
+    "options": [
+      {
+        "id": "A",
+        "text": "accessCode set to KBA"
+      },
+      {
+        "id": "B",
+        "text": "idCheckConfigurationName: ID Check"
+      },
+      {
+        "id": "C",
+        "text": "requireIdLookup set to ID Check"
+      },
+      {
+        "id": "D",
+        "text": "authenticationMethod set to KBA"
+      }
+    ],
+    "correct": "B",
+    "answerText": "idCheckConfigurationName: ID Check",
+    "explanation": "The KBA how-to sets idCheckConfigurationName to the string ID Check on the signer.",
+    "whyNotOthers": "B is right. The trap is D: authenticationMethod only records an authentication your own app performed; it enforces nothing. A would make KBA the literal access code, and C names a different property.",
+    "optionExplanations": {
+      "A": "This would make the literal text KBA the access code.",
+      "B": "Correct. idCheckConfigurationName with ID Check requests KBA.",
+      "C": "idCheckConfigurationName, not requireIdLookup, carries the ID Check value.",
+      "D": "authenticationMethod records your own authentication; it does not enforce KBA."
+    },
+    "trapOption": "D",
+    "importance": "MEDIUM",
+    "concept": {
+      "title": "KBA in Envelopes:create",
+      "line": "KBA is requested with idCheckConfigurationName set to ID Check; authenticationMethod only records your own authentication."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "short",
+    "style": "fact",
+    "domain": "eSignature Features and Web Forms",
+    "topic": "Discovering signature providers",
+    "stem": "Which call lists the signature provider names an account can use in recipientSignatureProviders for EU AES or QES signing?",
+    "options": [
+      {
+        "id": "A",
+        "text": "IdentityVerifications:list"
+      },
+      {
+        "id": "B",
+        "text": "AccountBrands:list"
+      },
+      {
+        "id": "C",
+        "text": "AccountSignatureProviders:list"
+      },
+      {
+        "id": "D",
+        "text": "TabInfo:GetConnectedFieldsTabGroups"
+      }
+    ],
+    "correct": "C",
+    "answerText": "AccountSignatureProviders:list",
+    "explanation": "AccountSignatureProviders:list (GET /restapi/v2.1/accounts/{accountId}/signatureProviders) returns the providers available for recipientSignatureProviders.",
+    "whyNotOthers": "C is right. The trap is A: IdentityVerifications:list returns identity verification workflow IDs for identityVerification, not signature providers. B lists brands, and D lists connected fields.",
+    "optionExplanations": {
+      "A": "Returns identity verification workflow IDs, not signature providers.",
+      "B": "Returns brands.",
+      "C": "Correct. It lists the signature providers available to the account.",
+      "D": "Returns connected fields tab groups."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "concept": {
+      "title": "Signature providers for SBS",
+      "line": "Use AccountSignatureProviders:list to find names for recipientSignatureProviders; IdentityVerifications:list gives IDV workflow IDs."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "long",
+    "style": "design",
+    "domain": "eSignature Features and Web Forms",
+    "topic": "Enabling ID Evidence storage",
+    "stem": "Corbel Insurance's fraud team wants its case system to pull the date of birth and document number captured when policyholders pass Docusign ID Verification. The integration already gets a resource token and calls the ID Evidence API successfully, but the events contain only the verification status, a transaction number and the name of the third-party verifier. No personal details or images come back for any recipient. What is the cause and fix?",
+    "options": [
+      {
+        "id": "A",
+        "text": "The include_media parameter was omitted; set it to true so that the personal details and the ID images are included in the events response."
+      },
+      {
+        "id": "B",
+        "text": "The resource token was requested without the recipient's recipientIdGuid; request it with that GUID so the personal fields are unlocked."
+      },
+      {
+        "id": "C",
+        "text": "The events were requested in JSON format; request the PDF format, which carries the full personal details as a signed export instead."
+      },
+      {
+        "id": "D",
+        "text": "ID Evidence storage is not configured to keep those details; an administrator must choose which ID data fields Docusign stores as evidence."
+      }
+    ],
+    "correct": "D",
+    "answerText": "ID Evidence storage is not configured to keep those details; an administrator must choose which ID data fields Docusign stores as evidence.",
+    "explanation": "By default IDV stores only the verification status, transaction number and third-party verifier name; personal data is available only if ID Evidence storage is configured. The clue is the exact list of what comes back.",
+    "whyNotOthers": "D is right because the account never stored the personal data. The trap is A: include_media only controls whether stored media is embedded or linked; it cannot return data that was never stored. B fails because a token without the GUID cannot be created at all, and C only changes the format.",
+    "optionExplanations": {
+      "A": "include_media controls how stored media is returned, not whether data is stored.",
+      "B": "The token endpoint path already requires the recipientIdGuid; the calls are succeeding.",
+      "C": "PDF changes the format and adds a signature; it does not add unstored data.",
+      "D": "Correct. Without ID Evidence storage, only status, transaction number and verifier are kept."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "Retain personal ID data by configuring ID Evidence storage before relying on the API.",
+      "clues": [
+        "'only the verification status, a transaction number and the ... verifier' -> default storage",
+        "'calls the ID Evidence API successfully' -> token flow is fine",
+        "'fraud team' -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "ID Evidence storage",
+      "line": "By default IDV keeps only status, transaction number and verifier name; configure ID Evidence storage to retain personal data and images."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "long",
+    "style": "design",
+    "domain": "eSignature Features and Web Forms",
+    "topic": "Tamper-evident ID evidence export",
+    "stem": "A regulator asks Ashby Lettings to hand over proof of how each tenant's identity was verified for a disputed tenancy. The compliance lead wants a file the regulator can check was produced by Docusign and not altered by the company afterwards; a spreadsheet built from the raw data would not satisfy this. Evidence storage already retains the needed data, and the developer has a working resource token flow. What should the integration request?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Call Events:list in json format with include_media set to true, then save the response with a SHA-256 hash recorded in the company's database."
+      },
+      {
+        "id": "B",
+        "text": "Download the envelope's combined PDF with the certificate of completion, which embeds the full ID Evidence event log and the ID images."
+      },
+      {
+        "id": "C",
+        "text": "Call Events:list in pdf format, because ID Evidence applies a digital signature to the PDF to guarantee the origin and integrity of the data."
+      },
+      {
+        "id": "D",
+        "text": "Call the media endpoint for each event and convert the images to PDF pages signed with the company's own document-signing certificate."
+      }
+    ],
+    "correct": "C",
+    "answerText": "Call Events:list in pdf format, because ID Evidence applies a digital signature to the PDF to guarantee the origin and integrity of the data.",
+    "explanation": "Events:list supports json and pdf formats; with pdf, ID Evidence digitally signs the file to guarantee origin and integrity. The clue is 'produced by Docusign and not altered by the company'.",
+    "whyNotOthers": "C is right because only the Docusign-signed PDF proves origin and integrity. The trap is A: a hash stored by the company does not prove Docusign produced the data. B overstates the certificate, which does not embed the ID Evidence log and images, and D signs with the company's own certificate.",
+    "optionExplanations": {
+      "A": "A company-held hash cannot prove the data came from Docusign unaltered.",
+      "B": "The certificate of completion does not contain the ID Evidence event log and images.",
+      "C": "Correct. The pdf format is digitally signed by ID Evidence.",
+      "D": "A company signature proves only that the company signed it, not Docusign origin."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "A Docusign-signed export of ID evidence events.",
+      "clues": [
+        "'produced by Docusign and not altered' -> digitally signed by Docusign",
+        "'spreadsheet ... would not satisfy' -> raw JSON is not enough",
+        "'disputed tenancy' -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "Signed ID Evidence export",
+      "line": "Request ID Evidence events in pdf format to get a file digitally signed for origin and integrity."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "short",
+    "style": "fact",
+    "domain": "eSignature Features and Web Forms",
+    "topic": "ID Evidence media",
+    "stem": "When the ID Evidence API returns the image of the front of a recipient's photo ID, which statement is true?",
+    "options": [
+      {
+        "id": "A",
+        "text": "It can be resubmitted for a later IDV check"
+      },
+      {
+        "id": "B",
+        "text": "It is a link to the third-party verifier's site"
+      },
+      {
+        "id": "C",
+        "text": "It is returned only for KBA verifications"
+      },
+      {
+        "id": "D",
+        "text": "It has a honeycomb overlay and cannot be reused"
+      }
+    ],
+    "correct": "D",
+    "answerText": "It has a honeycomb overlay and cannot be reused",
+    "explanation": "The returned ID image has a honeycomb pattern superimposed on it and cannot be used to make additional IDV requests.",
+    "whyNotOthers": "D is right. The trap is A: the image looks like a usable ID copy but is deliberately marked so it cannot be reused. B and C misdescribe the media endpoint, which serves images captured by Docusign ID Verification.",
+    "optionExplanations": {
+      "A": "The overlay prevents reuse for further IDV requests.",
+      "B": "The media endpoint returns the stored image itself, not a third-party link.",
+      "C": "Media comes from ID Verification image capture, not KBA.",
+      "D": "Correct. A honeycomb pattern is superimposed and the image cannot be reused for IDV."
+    },
+    "trapOption": "A",
+    "importance": "LOW",
+    "concept": {
+      "title": "ID Evidence media",
+      "line": "ID images from the ID Evidence media endpoint carry a honeycomb overlay and cannot be reused for new IDV checks."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "short",
+    "style": "fact",
+    "domain": "eSignature Features and Web Forms",
+    "topic": "Connected Fields API scope",
+    "stem": "Besides the eSignature scopes, which OAuth scope must an app request to call TabInfo:GetConnectedFieldsTabGroups?",
+    "options": [
+      {
+        "id": "A",
+        "text": "extended"
+      },
+      {
+        "id": "B",
+        "text": "aow_manage"
+      },
+      {
+        "id": "C",
+        "text": "webforms_read"
+      },
+      {
+        "id": "D",
+        "text": "adm_store_unified_repo_read"
+      }
+    ],
+    "correct": "D",
+    "answerText": "adm_store_unified_repo_read",
+    "explanation": "Calling the Connected Fields API requires adm_store_unified_repo_read in addition to the eSignature scopes.",
+    "whyNotOthers": "D is right. The trap is B: aow_manage is the Maestro workflow scope, another api-d.docusign.com service. A is for long-lived refresh tokens and C is a Web Forms scope.",
+    "optionExplanations": {
+      "A": "extended relates to refresh token lifetime, not connected fields.",
+      "B": "aow_manage is the Workflow Builder (Maestro) API scope.",
+      "C": "webforms_read is for the Web Forms API.",
+      "D": "Correct. adm_store_unified_repo_read is required for the Connected Fields API."
+    },
+    "trapOption": "B",
+    "importance": "MEDIUM",
+    "concept": {
+      "title": "Connected Fields API scope",
+      "line": "Calling TabInfo:GetConnectedFieldsTabGroups needs adm_store_unified_repo_read plus the eSignature scopes."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "short",
+    "style": "fact",
+    "domain": "eSignature Features and Web Forms",
+    "topic": "Fields returned by the Connected Fields API",
+    "stem": "An optional property in a connected fields data model appears in the Add Fields view but not in the TabInfo:GetConnectedFieldsTabGroups response. Why?",
+    "options": [
+      {
+        "id": "A",
+        "text": "The API returns only mandatory fields or ones with IsRequiredForVerifyingType"
+      },
+      {
+        "id": "B",
+        "text": "The connection must be refreshed before the API can list optional fields"
+      },
+      {
+        "id": "C",
+        "text": "Optional fields are returned only for public extension apps in the App Center"
+      },
+      {
+        "id": "D",
+        "text": "The API returns optional fields only when the extended scope is requested"
+      }
+    ],
+    "correct": "A",
+    "answerText": "The API returns only mandatory fields or ones with IsRequiredForVerifyingType",
+    "explanation": "Unlike the Connected Fields UI, the API endpoint returns only fields that are mandatory or carry the IsRequiredForVerifyingType decorator.",
+    "whyNotOthers": "A is right. The trap is B: refreshing reloads the model, but the field is already in the model since the UI shows it. C and D invent conditions.",
+    "optionExplanations": {
+      "A": "Correct. The API returns only mandatory or IsRequiredForVerifyingType fields.",
+      "B": "The field already shows in the UI, so the model is current.",
+      "C": "Public versus private publication does not change the API response.",
+      "D": "Scopes do not change which fields are returned."
+    },
+    "trapOption": "B",
+    "importance": "LOW",
+    "concept": {
+      "title": "Connected Fields API response",
+      "line": "GetConnectedFieldsTabGroups returns only mandatory or IsRequiredForVerifyingType fields, unlike the Add Fields UI."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "long",
+    "style": "design",
+    "domain": "eSignature Features and Web Forms",
+    "topic": "Optional connected field placed alone",
+    "stem": "Sennet Telecom's connected fields app verifies business customers against its CRM. The data model's customer object requires account number and postcode for verification and also offers an optional 'preferred contact' field. A sales assistant, wanting a shorter form, built an envelope with only the preferred contact field on the document. When the signer types a value, verification fails every time, even for valid customers. The CRM logs show no errors. What explains this and what is the fix?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Optional connected fields are verified only after signing completes; mark the field Must verify to sign so that it is checked during signing."
+      },
+      {
+        "id": "B",
+        "text": "The CRM ignores optional fields; move the preferred contact property into the required fields of the data model and reconnect the app."
+      },
+      {
+        "id": "C",
+        "text": "An optional connected field without the required fields of its group fails verification; place the account number and postcode fields too."
+      },
+      {
+        "id": "D",
+        "text": "The field was placed by a sales assistant without admin rights; have an administrator place the field so that verification can run."
+      }
+    ],
+    "correct": "C",
+    "answerText": "An optional connected field without the required fields of its group fails verification; place the account number and postcode fields too.",
+    "explanation": "If an optional connected field is added without the required connected fields, verification fails when the optional field is filled. The clue is 'only the preferred contact field on the document'.",
+    "whyNotOthers": "C is right because verification needs the required fields of the group. The trap is B: changing the data model is unnecessary, since the fields simply need to be placed together. A misdescribes when verification runs, and D invents a permission rule.",
+    "optionExplanations": {
+      "A": "Verification runs during signing; Must verify to sign does not fix missing required fields.",
+      "B": "The model is fine; the envelope is missing the required fields of the group.",
+      "C": "Correct. Required fields of the group must be on the document for verification to succeed.",
+      "D": "Verification does not depend on the preparer's admin rights."
+    },
+    "trapOption": "B",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "Place the whole required field group along with the optional connected field.",
+      "clues": [
+        "'requires account number and postcode' -> required fields of the group",
+        "'only the preferred contact field' -> required fields missing",
+        "'CRM logs show no errors' -> the problem is on the envelope side"
+      ]
+    },
+    "concept": {
+      "title": "Connected field groups",
+      "line": "Connected fields are verified as a group; an optional field without the group's required fields fails verification."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "long",
+    "style": "design",
+    "domain": "eSignature Features and Web Forms",
+    "topic": "Receiving verification results",
+    "stem": "Halvorsen Bank's connected fields app verifies a payee's account details while customers sign transfer authorizations. The operations team wants its case management system to record, for every envelope, whether verification succeeded, without polling Docusign and without staff reading certificates. The bank already runs an account-level Connect listener that receives envelope-completed events in the legacy XML format for its archive. What should the developer set up?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Enable the extension-executed event on the current XML listener configuration so that verification results arrive in the archive's existing messages."
+      },
+      {
+        "id": "B",
+        "text": "Read each envelope's history with the eSignature API after every completed event and parse the verification entries into the case system."
+      },
+      {
+        "id": "C",
+        "text": "Have the extension app call the case management system directly after each verification by adding an action to the manifest's connections object."
+      },
+      {
+        "id": "D",
+        "text": "Create a Connect configuration that uses the JSON SIM event model and subscribes to the extension-executed event, and post results to the case system."
+      }
+    ],
+    "correct": "D",
+    "answerText": "Create a Connect configuration that uses the JSON SIM event model and subscribes to the extension-executed event, and post results to the case system.",
+    "explanation": "Verification results are delivered by the Connect extension-executed event, which is supported only with the JSON SIM event model. The clues are 'without polling' and 'legacy XML format'.",
+    "whyNotOthers": "D is right because only a JSON SIM configuration can receive extension-executed events. The trap is A: the existing listener uses XML, which does not support this event. B is polling-style extra calls, and C misuses the manifest connections object, which holds authentication to the external system.",
+    "optionExplanations": {
+      "A": "extension-executed is supported only with JSON SIM, not legacy XML.",
+      "B": "Extra API calls per envelope; Connect can push the result directly.",
+      "C": "The connections object defines authentication; it is not a notification mechanism.",
+      "D": "Correct. A JSON SIM Connect configuration can subscribe to extension-executed."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "Push connected fields verification results to a back-office system.",
+      "clues": [
+        "'without polling Docusign' -> Connect",
+        "'legacy XML format' -> cannot carry extension-executed",
+        "'whether verification succeeded' -> extension-executed event"
+      ]
+    },
+    "concept": {
+      "title": "Connected fields results",
+      "line": "Verification results arrive through the Connect extension-executed event (JSON SIM only) and appear in envelope history and the certificate."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "long",
+    "style": "design",
+    "domain": "eSignature Features and Web Forms",
+    "topic": "Connected fields missing after template upload",
+    "stem": "Marwick Group's subsidiary in Ireland built an eSignature template with connected fields from a private extension app installed in its own Docusign account. Head office downloaded the template and uploaded it into the group account, where the same documents will be sent. In the group account the template opens, but the app's fields are missing from the Add Fields view and senders cannot add verified fields. The extension app is published privately to both accounts. What is the most likely cause?",
+    "options": [
+      {
+        "id": "A",
+        "text": "The extension app is not installed and connected in the group account, so the uploaded template has no connection there to use."
+      },
+      {
+        "id": "B",
+        "text": "Templates with connected fields cannot be moved between accounts, so the fields must be rebuilt in a new template from scratch."
+      },
+      {
+        "id": "C",
+        "text": "The template still points to the Irish account's connection, which is shown only to users in that account's sending group."
+      },
+      {
+        "id": "D",
+        "text": "The group account's senders lack the adm_store_unified_repo_read scope, which the Add Fields view needs to list connected fields."
+      }
+    ],
+    "correct": "A",
+    "answerText": "The extension app is not installed and connected in the group account, so the uploaded template has no connection there to use.",
+    "explanation": "Connected fields appear only when the extension app is installed and connected in the account. The clue is 'published privately to both accounts', which makes it available but does not install or connect it.",
+    "whyNotOthers": "A is right because publication is not installation. The trap is D: that scope is needed for the Connected Fields API, not for senders using the web app. B is false because uploaded templates work once the app is connected, and C invents cross-account group visibility.",
+    "optionExplanations": {
+      "A": "Correct. Install and connect the app in the group account.",
+      "B": "Uploaded templates work when the app is installed and connected in the target account.",
+      "C": "Connections are per account; there is no cross-account group sharing.",
+      "D": "That scope applies to API calls, not to the Add Fields view in the web app."
+    },
+    "trapOption": "D",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "Make the connected fields available in the new account: install and connect the app there.",
+      "clues": [
+        "'uploaded it into the group account' -> different account",
+        "'published privately to both accounts' -> available, not installed",
+        "'subsidiary in Ireland' -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "Connected fields per account",
+      "line": "Connected fields need the extension app installed and connected in each account that uses them."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "short",
+    "style": "fact",
+    "domain": "eSignature Features and Web Forms",
+    "topic": "Checking remote delivery support",
+    "stem": "Which property in a Configurations:getForm response tells an app whether the configuration can be used for remote (emailed) web form instances?",
+    "options": [
+      {
+        "id": "A",
+        "text": "type set to hasEsignTemplate"
+      },
+      {
+        "id": "B",
+        "text": "allowSending set to true"
+      },
+      {
+        "id": "C",
+        "text": "status set to active"
+      },
+      {
+        "id": "D",
+        "text": "sendOption set to now"
+      }
+    ],
+    "correct": "B",
+    "answerText": "allowSending set to true",
+    "explanation": "allowSending true means the configuration can create remote instances; false or missing means it cannot.",
+    "whyNotOthers": "B is right. The trap is A: a template-based type is necessary, but attachment fields or an older release can still block remote delivery. C only means the form is activated, and D is a createInstance request property.",
+    "optionExplanations": {
+      "A": "Template-based is required but not sufficient for remote delivery.",
+      "B": "Correct. allowSending indicates remote instance support.",
+      "C": "Active status is needed to create any instance; it does not indicate remote support.",
+      "D": "sendOption is sent in createInstance, not returned by getForm."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "concept": {
+      "title": "Remote delivery support",
+      "line": "allowSending in getForm or listForms shows remote support; standalone, attachment fields or old releases block it."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "short",
+    "style": "fact",
+    "domain": "eSignature Features and Web Forms",
+    "topic": "Web form instance status values",
+    "stem": "Instances:getInstance returns an overall status of INPROGRESS. What does this mean?",
+    "options": [
+      {
+        "id": "A",
+        "text": "The user opened the form but has not typed anything"
+      },
+      {
+        "id": "B",
+        "text": "The user submitted it and the envelope is being signed"
+      },
+      {
+        "id": "C",
+        "text": "The user selected Finish Later and the values were saved"
+      },
+      {
+        "id": "D",
+        "text": "The instance passed its expiration without a submission"
+      }
+    ],
+    "correct": "C",
+    "answerText": "The user selected Finish Later and the values were saved",
+    "explanation": "For the overall instance status, INPROGRESS means the user selected Finish Later after partly filling the form, and the values were saved.",
+    "whyNotOthers": "C is right. The trap is A: that describes instanceRecipientStatus INPROGRESS (opened, not submitted), not the overall status. B would be SUBMITTED and D would be EXPIRED.",
+    "optionExplanations": {
+      "A": "That matches instanceRecipientStatus, not the overall status.",
+      "B": "A submitted instance has status SUBMITTED.",
+      "C": "Correct. Overall INPROGRESS means Finish Later was used.",
+      "D": "An expired instance has status EXPIRED."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "concept": {
+      "title": "Web form instance statuses",
+      "line": "Overall status: INITIATED, INPROGRESS (Finish Later), SUBMITTED, EXPIRED, FAILED; instanceRecipientStatus tracks each user's view."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "long",
+    "style": "design",
+    "domain": "eSignature Features and Web Forms",
+    "topic": "Prefill precedence",
+    "stem": "Fairhaven Insurance prefills its claims web form. The backend's Instances:createInstance request sets formValues policy_number to the customer's current policy, and the configuration has a default of 'unknown' for the same field. A front-end developer also added prefillValues to the Docusign JS webFormOptions, copying a cached value from the customer's previous session. Customers with renewed policies now see their old policy number. What explains this?",
+    "options": [
+      {
+        "id": "A",
+        "text": "The configuration default overrides API prefill values, so the default for policy_number must be removed in the Web Forms builder."
+      },
+      {
+        "id": "B",
+        "text": "Docusign JS prefillValues override createInstance formValues, which override configuration defaults; remove or refresh the cached value."
+      },
+      {
+        "id": "C",
+        "text": "formValues in createInstance apply only to remote instances; embedded instances read prefill data only from Docusign JS prefillValues."
+      },
+      {
+        "id": "D",
+        "text": "createInstance values override Docusign JS prefillValues, so the old number must come from a previous instance reused through refreshToken."
+      }
+    ],
+    "correct": "B",
+    "answerText": "Docusign JS prefillValues override createInstance formValues, which override configuration defaults; remove or refresh the cached value.",
+    "explanation": "Values in Docusign JS prefillValues override values from createInstance, and prefill values override configuration defaults. The clue is the cached value copied into prefillValues.",
+    "whyNotOthers": "B is right because the front-end cached value wins. The trap is D: it reverses the order of precedence. A also reverses precedence, and C is false because formValues prefill embedded instances too.",
+    "optionExplanations": {
+      "A": "Prefill values override configuration defaults, not the other way round.",
+      "B": "Correct. Docusign JS prefillValues win over createInstance values, which win over defaults.",
+      "C": "formValues prefill embedded instances as well.",
+      "D": "It is the reverse: Docusign JS prefillValues override createInstance values."
+    },
+    "trapOption": "D",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "Know which prefill source wins: Docusign JS over createInstance over defaults.",
+      "clues": [
+        "'prefillValues to the Docusign JS webFormOptions' -> highest precedence",
+        "'cached value from the previous session' -> stale data source",
+        "'default of unknown' -> lowest precedence, a distraction"
+      ]
+    },
+    "concept": {
+      "title": "Web form prefill precedence",
+      "line": "Docusign JS prefillValues override createInstance formValues, which override configuration defaults."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "long",
+    "style": "design",
+    "domain": "eSignature Features and Web Forms",
+    "topic": "Finding a user's latest submission",
+    "stem": "Hollins Pharmacy lets patients update their insurance details through an embedded standalone web form, using the patient number as clientUserId. Some patients submit the form several times in a month. A nightly job must write each patient's most recent submitted details back to the pharmacy system. The job knows the configuration ID and the patient number but does not store instance IDs. How should it find the right instance?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Call Instances:getInstance with the patient number as the instance ID, because the clientUserId becomes the instance's identifier on creation."
+      },
+      {
+        "id": "B",
+        "text": "Call Instances:listInstances filtered by client_user_id and take the instance with the earliest createdDateTime as the authoritative submission."
+      },
+      {
+        "id": "C",
+        "text": "Call Instances:listInstances with the client_user_id query parameter and pick the SUBMITTED instance with the latest lastModifiedDateTime."
+      },
+      {
+        "id": "D",
+        "text": "Read the envelopes array of the newest instance and call EnvelopeCustomFields:list on that envelope to get the submitted insurance details."
+      }
+    ],
+    "correct": "C",
+    "answerText": "Call Instances:listInstances with the client_user_id query parameter and pick the SUBMITTED instance with the latest lastModifiedDateTime.",
+    "explanation": "listInstances accepts a client_user_id query parameter; when several SUBMITTED instances share a clientUserId, instanceMetadata.lastModifiedDateTime identifies the most recent. The clue is 'most recent submitted details'.",
+    "whyNotOthers": "C is right. The trap is B: it uses the right filter but picks the oldest instance. A fails because the instance ID is a Docusign GUID, and D fails because standalone configurations create no envelope.",
+    "optionExplanations": {
+      "A": "Instance IDs are GUIDs returned by createInstance, not the clientUserId.",
+      "B": "Right filter, but the earliest instance is not the most recent submission.",
+      "C": "Correct. Filter by client_user_id and take the latest SUBMITTED instance.",
+      "D": "Standalone configurations create no envelope, so the envelopes array is empty."
+    },
+    "trapOption": "B",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "Find a user's latest submitted instance without stored instance IDs.",
+      "clues": [
+        "'patient number as clientUserId' -> client_user_id filter",
+        "'most recent submitted details' -> latest SUBMITTED instance",
+        "'standalone web form' -> no envelope to read"
+      ]
+    },
+    "concept": {
+      "title": "Locating instances by user",
+      "line": "Filter Instances:listInstances by client_user_id and use instanceMetadata.lastModifiedDateTime to find the latest submission."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "long",
+    "style": "design",
+    "domain": "eSignature Features and Web Forms",
+    "topic": "Retrieving web form attachments",
+    "stem": "Ellery Rentals' template-based rental application web form, embedded in its website, includes an attachment field with the API reference name 'payslip', where applicants upload pay slips as JPG or PDF files. The tenancy system must store each uploaded file against the application after submission. The developer reads formValues from Instances:getInstance but finds no file content there. What is the correct retrieval approach?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Take the envelope ID from the envelopes array, call EnvelopeDocuments:list, and download the documents named __payslip__ plus the file name."
+      },
+      {
+        "id": "B",
+        "text": "Call Configurations:getForm for the payslip component and download each applicant's uploaded files from that component's attachment URLs."
+      },
+      {
+        "id": "C",
+        "text": "Call Instances:getInstance with an include_attachments option set to true so each uploaded file is returned Base64-encoded in formValues."
+      },
+      {
+        "id": "D",
+        "text": "Take the envelope ID from the envelopes array and download the uploaded files as signer attachments in their original JPG or PDF format."
+      }
+    ],
+    "correct": "A",
+    "answerText": "Take the envelope ID from the envelopes array, call EnvelopeDocuments:list, and download the documents named __payslip__ plus the file name.",
+    "explanation": "Uploaded files are appended to the generated envelope, converted to PDF, and named with the field's API reference name between double underscores. The clue is 'attachment field with the API reference name payslip'.",
+    "whyNotOthers": "A is right. The trap is D: it reaches the right envelope but uploads are converted to PDF documents, not kept as original-format signer attachments. B confuses the field definition with user data, and C invents a getInstance option.",
+    "optionExplanations": {
+      "A": "Correct. Uploads become PDF envelope documents named __payslip__ followed by the file name.",
+      "B": "getForm returns field definitions, not users' uploaded files.",
+      "C": "getInstance has no such option; files are not in formValues.",
+      "D": "Uploaded files are converted to PDF and appended as envelope documents."
+    },
+    "trapOption": "D",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "Fetch uploaded files from the generated envelope's documents.",
+      "clues": [
+        "'template-based' -> an envelope exists",
+        "'API reference name payslip' -> document name prefix __payslip__",
+        "'JPG or PDF files' -> all uploads are converted to PDF"
+      ]
+    },
+    "concept": {
+      "title": "Web form attachment retrieval",
+      "line": "Attachment uploads become PDF documents in the generated envelope, named __componentName__ plus the file name."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "short",
+    "style": "fact",
+    "domain": "eSignature Features and Web Forms",
+    "topic": "Creating web form configurations",
+    "stem": "A DevOps team wants its CI pipeline to create and activate new web form configurations from JSON definitions through the Web Forms API. What is true?",
+    "options": [
+      {
+        "id": "A",
+        "text": "The API can create them, but activation is manual"
+      },
+      {
+        "id": "B",
+        "text": "Configurations can be created only as standalone forms"
+      },
+      {
+        "id": "C",
+        "text": "Configurations cannot be created through the API"
+      },
+      {
+        "id": "D",
+        "text": "Instances:createInstance can create a configuration"
+      }
+    ],
+    "correct": "C",
+    "answerText": "Configurations cannot be created through the API",
+    "explanation": "Web form configurations cannot be created through the API; they are created and activated in the Web Forms builder, and the API creates instances from them.",
+    "whyNotOthers": "C is right. The trap is A: activation is indeed required before instances can be created, but creation is not available by API either. B and D invent capabilities.",
+    "optionExplanations": {
+      "A": "Neither creation nor activation of configurations is available in the API.",
+      "B": "No configuration type can be created through the API.",
+      "C": "Correct. Configurations are built and activated in the Web Forms builder.",
+      "D": "createInstance creates instances from an existing, activated configuration."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "concept": {
+      "title": "Web form configurations by API",
+      "line": "Configurations are built and activated in the Web Forms builder; the API reads them and creates instances."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "long",
+    "style": "design",
+    "domain": "eSignature Features and Web Forms",
+    "topic": "Focused view after web form submission",
+    "stem": "Granite Peak Credit Union embeds a template-based membership web form in its online banking app with Docusign JS. Product owners want members to sign the generated agreement right after submitting, inside the same page, in a minimal signing interface that shows only the agreement and a navigation bar. During testing, members are instead emailed a link to start signing, and the minimal interface never appears. useFocusedViewForSigning is left at its default. What should be changed?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Set useFocusedViewForSigning to true explicitly, because its default value of false falls back to the email-initiated signing flow."
+      },
+      {
+        "id": "B",
+        "text": "Create the instances as remote instances with sendOption now, so that the generated agreement opens in focused view in the banking app."
+      },
+      {
+        "id": "C",
+        "text": "Call EnvelopeViews:createRecipient for the generated envelope with a returnUrl, which replaces the email with an embedded focused view."
+      },
+      {
+        "id": "D",
+        "text": "Disable the configuration's Initiate signing session from email setting, because focused view is not available while that setting is on."
+      }
+    ],
+    "correct": "D",
+    "answerText": "Disable the configuration's Initiate signing session from email setting, because focused view is not available while that setting is on.",
+    "explanation": "Focused view for the generated envelope is not available when the configuration's Initiate signing session from email setting is enabled. The clue is 'members are instead emailed a link to start signing'.",
+    "whyNotOthers": "D is right. The trap is A: useFocusedViewForSigning already defaults to true, so setting it changes nothing. B moves delivery to email entirely, and C is the eSignature embedded signing call, not the web form flow.",
+    "optionExplanations": {
+      "A": "useFocusedViewForSigning defaults to true; the email setting is what blocks focused view.",
+      "B": "Remote instances are delivered by email, the opposite of the goal.",
+      "C": "The web form flow presents the envelope through Docusign JS; the email setting is the blocker.",
+      "D": "Correct. Turn off Initiate signing session from email to allow focused view."
+    },
+    "trapOption": "A",
+    "importance": "HIGH",
+    "decode": {
+      "needs": "In-page signing after submission requires the email-initiated signing setting to be off.",
+      "clues": [
+        "'inside the same page' -> embedded signing of the generated envelope",
+        "'only the agreement and a navigation bar' -> focused view",
+        "'emailed a link to start signing' -> Initiate signing session from email is on"
+      ]
+    },
+    "concept": {
+      "title": "Web form focused view",
+      "line": "Docusign JS shows the generated envelope in focused view only when Initiate signing session from email is disabled."
+    }
+  }
+]

@@ -1,0 +1,984 @@
+[
+  {
+    "paper": "C",
+    "length": "long",
+    "style": "design",
+    "domain": "eSignature API",
+    "topic": "Bulk send: call sequence",
+    "stem": "Harborview Food Bank renews about 900 annual pledge agreements every January. A headless nightly job reads the donor roster from the CRM, and every donor must receive their own agreement to sign. The compliance team wants a dry run that proves the roster lines up with the agreement's signer roles before anything is released, and the fundraising director wants the emails to use the organization's purple branding. Which sequence of eSignature API calls should the job use?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Create the bulk send list, create the envelope with status sent so its roles are fixed, run createBulkSendTestRequest, then call createBulkSendRequest and keep the batchId"
+      },
+      {
+        "id": "B",
+        "text": "Create the bulk send list, create the envelope as a draft with status created, run createBulkSendTestRequest and check canBeSent, then call createBulkSendRequest"
+      },
+      {
+        "id": "C",
+        "text": "Create the envelope as a draft with status created, call createBulkSendRequest with the roster inline, then run createBulkSendTestRequest on the returned batchId"
+      },
+      {
+        "id": "D",
+        "text": "Create the bulk send list, run createBulkSendTestRequest against the list on its own, then call Envelopes:create with status sent and the listId to release it"
+      }
+    ],
+    "correct": "B",
+    "answerText": "Create the bulk send list, create the envelope as a draft with status created, run createBulkSendTestRequest and check canBeSent, then call createBulkSendRequest",
+    "explanation": "The v2.1 bulk flow is: create the list, create a draft envelope (status created), optionally test it against the list (canBeSent true), then send the batch. The clue 'dry run that proves the roster lines up with the signer roles' is the optional test step.",
+    "whyNotOthers": "B is right because the envelope used for bulk send must be a draft and the test is run before the send. The trap is A: the order looks right, but an envelope created with status sent goes to its own placeholder recipients and is not the sendable draft the bulk send needs. C runs the test after the batch is already released and puts the roster in the wrong call; D tests without an envelope and releases the batch through the wrong method.",
+    "optionExplanations": {
+      "A": "Status sent sends the envelope itself immediately; bulk send needs a draft (created) envelope or a template.",
+      "B": "Correct. List, draft envelope, optional test returning canBeSent, then createBulkSendRequest, which returns the batchId.",
+      "C": "The roster belongs in the bulk send list, and testing after the send cannot stop a bad batch.",
+      "D": "The test checks a list against an envelope or template, and the batch is released with createBulkSendRequest, not Envelopes:create."
+    },
+    "trapOption": "A",
+    "importance": "HIGH",
+    "decode": {
+      "needs": "Bulk send v2.1: list, draft envelope, test, send",
+      "clues": [
+        "headless nightly job, own agreement per donor -> bulk send, one envelope per copy",
+        "dry run that proves the roster lines up -> createBulkSendTestRequest returning canBeSent",
+        "purple branding -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "Bulk send v2.1 call order",
+      "line": "Create list, create draft envelope (status created), optionally test for canBeSent, send the batch, optionally check batch status."
+    }
+  },
+  {
+    "paper": "C",
+    "length": "short",
+    "style": "fact",
+    "domain": "eSignature API",
+    "topic": "Bulk send: test response",
+    "stem": "In a v2.1 bulk send, which value in the createBulkSendTestRequest response confirms that the list and the envelope are compatible?",
+    "options": [
+      {
+        "id": "A",
+        "text": "A batchId for the test batch"
+      },
+      {
+        "id": "B",
+        "text": "The listId of the bulk list"
+      },
+      {
+        "id": "C",
+        "text": "A queued count of 0"
+      },
+      {
+        "id": "D",
+        "text": "canBeSent set to true"
+      }
+    ],
+    "correct": "D",
+    "answerText": "canBeSent set to true",
+    "explanation": "createBulkSendTestRequest returns canBeSent: true when the list is compatible with the envelope or template; otherwise it returns the errors found.",
+    "whyNotOthers": "D is right because canBeSent is the Boolean the test call returns. The trap is A: batchId is returned only by createBulkSendRequest when the batch is actually queued. B is returned by createBulkSendList, and C (queued, sent, failed counts) comes from getBulkSendBatchStatus.",
+    "optionExplanations": {
+      "A": "batchId comes from createBulkSendRequest, the real send, not from the test.",
+      "B": "listId is returned when you create the bulk send list.",
+      "C": "Queued, sent and failed counts come from getBulkSendBatchStatus.",
+      "D": "Correct. A successful test returns canBeSent true."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "concept": {
+      "title": "Bulk send return values",
+      "line": "createBulkSendList returns listId; test returns canBeSent; send returns batchId; batch status returns sent, queued and failed counts."
+    }
+  },
+  {
+    "paper": "C",
+    "length": "long",
+    "style": "design",
+    "domain": "eSignature API",
+    "topic": "Composite templates: same template twice",
+    "stem": "Lakeshore Credit Union closes joint mortgages in which each of two co-borrowers must sign their own copy of the same Borrower Certification server template. That template defines one role, borrower, with its tabs. The loan officer also wants a rate-lock letter that the loan system generates as a PDF included in the same envelope, and everything must be created in one API call. The credit union is also moving to a new core banking vendor next quarter. How should the developer structure the request?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Use the template reference model with the template ID once and two templateRoles entries named borrower, one per co-borrower, and add the rate-lock PDF in documents"
+      },
+      {
+        "id": "B",
+        "text": "Use one composite template object holding the server template plus two inline templates, sequence 2 and 3, each mapping a different co-borrower to the borrower role"
+      },
+      {
+        "id": "C",
+        "text": "Use one composite template object per co-borrower, each with the server template and an inline template mapping that person to borrower, plus one for the PDF"
+      },
+      {
+        "id": "D",
+        "text": "Use the direct documents model, upload the certification PDF twice, and rely on the server template's anchor settings to place the borrower tabs for each signer"
+      }
+    ],
+    "correct": "C",
+    "answerText": "Use one composite template object per co-borrower, each with the server template and an inline template mapping that person to borrower, plus one for the PDF",
+    "explanation": "Composite templates can apply the same server template more than once with a different recipient for each instance, but each composite template object contributes only one document. The clue 'each co-borrower must sign their own copy' needs two objects, plus one for the generated PDF.",
+    "whyNotOthers": "C is right because each copy of the certification needs its own composite template object with its own inline recipient mapping. The trap is B: one object contributes a single document, and the inline template with the higher sequence overwrites the lower one, so only one copy and one borrower survive. A cannot mix a template with an extra document or duplicate the template, and D loses the template's tabs because direct documents do not use server template settings.",
+    "optionExplanations": {
+      "A": "The template reference model applies one template once; it cannot duplicate the template or add the generated PDF.",
+      "B": "One object yields one document, and attributes from higher sequences overwrite lower ones, so the two mappings collide.",
+      "C": "Correct. Separate objects give two copies of the template, each mapped to a different co-borrower, plus an object for the letter.",
+      "D": "Direct documents ignore server template tabs, so the borrower fields would have to be rebuilt by hand."
+    },
+    "trapOption": "B",
+    "importance": "HIGH",
+    "decode": {
+      "needs": "Composite templates: one object per template instance plus one for the generated document",
+      "clues": [
+        "each co-borrower signs their own copy of the same template -> same server template applied twice",
+        "generated PDF in the same envelope, one API call -> composite templates",
+        "new core banking vendor -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "One document per composite object",
+      "line": "To reuse a server template for several recipients, give each instance its own composite template object with an inline template mapping the role."
+    }
+  },
+  {
+    "paper": "C",
+    "length": "short",
+    "style": "fact",
+    "domain": "eSignature API",
+    "topic": "Bulk send: how batches behave",
+    "stem": "Which two statements about bulk send with eSignature REST API v2.1 are true? (Select two)",
+    "options": [
+      {
+        "id": "A",
+        "text": "Each copy in the bulk send list becomes a separate envelope for that copy's recipients"
+      },
+      {
+        "id": "B",
+        "text": "All copies go out as one envelope in which each recipient sees only their own documents"
+      },
+      {
+        "id": "C",
+        "text": "The envelope or template being bulk sent must already have the status sent"
+      },
+      {
+        "id": "D",
+        "text": "A send request is queued as a whole batch; partial acceptance generally does not occur"
+      },
+      {
+        "id": "E",
+        "text": "The test request sends one sample envelope to the first copy so the sender can preview it"
+      }
+    ],
+    "correct": "A,D",
+    "correctAnswers": [
+      "A",
+      "D"
+    ],
+    "answerText": "Each copy in the bulk send list becomes a separate envelope for that copy's recipients; A send request is queued as a whole batch; partial acceptance generally does not occur",
+    "explanation": "Bulk send creates an individual envelope for each copy in the list, and createBulkSendRequest queues the entire batch or fails; partial success generally does not occur.",
+    "whyNotOthers": "A and D are right because each recipient gets their own agreement and the batch is queued as a unit. The trap is E: the test call sounds like a preview send, but it only checks compatibility and returns canBeSent without sending anything. B describes one shared envelope, which is not how bulk send works, and C is wrong because the envelope must be a draft.",
+    "optionExplanations": {
+      "A": "Correct. Every copy in the list produces its own envelope.",
+      "B": "Bulk send does not build one shared envelope; each copy is its own envelope.",
+      "C": "The bulk envelope must be a draft (status created), not sent.",
+      "D": "Correct. The whole batch is queued for asynchronous processing or the call fails; partial success generally does not occur.",
+      "E": "The test sends nothing; it returns canBeSent or the compatibility errors."
+    },
+    "trapOption": "E",
+    "importance": "MEDIUM",
+    "concept": {
+      "title": "Bulk send creates separate envelopes",
+      "line": "Each bulk list copy becomes its own envelope; the batch is queued as a whole; the test only validates compatibility."
+    }
+  },
+  {
+    "paper": "C",
+    "length": "long",
+    "style": "design",
+    "domain": "eSignature API",
+    "topic": "Embedded and remote signers in one envelope",
+    "stem": "Pinewood Auto Finance closes car loans at the dealership. The buyer signs on a tablet in the finance office as soon as the paperwork is ready, while the co-signer, usually a parent in another city, signs whenever convenient. The dealership portal has already logged the buyer in, and the finance manager does not want the buyer to receive any Docusign email. Both signers are in one envelope, buyer first, and the dealership uses a dark-blue theme. How should the developer define the signers?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Give only the buyer a clientUserId and request the buyer's signing URL at the tablet; leave the co-signer without one so Docusign emails the co-signer"
+      },
+      {
+        "id": "B",
+        "text": "Give both signers a clientUserId, then email the co-signer the URL returned by createRecipient so the portal controls every signing link from one place"
+      },
+      {
+        "id": "C",
+        "text": "Give only the co-signer a clientUserId so the remote signer is handled by the portal, and open the buyer's session at the tablet from the envelope's sender view"
+      },
+      {
+        "id": "D",
+        "text": "Leave both signers without a clientUserId and let the buyer open the Docusign email on the tablet, because one envelope cannot mix embedded and remote signers"
+      }
+    ],
+    "correct": "A",
+    "answerText": "Give only the buyer a clientUserId and request the buyer's signing URL at the tablet; leave the co-signer without one so Docusign emails the co-signer",
+    "explanation": "clientUserId marks a signer as embedded (no Docusign email; your app requests the signing URL), and signers without it are remote and receive email. The clue 'buyer on the tablet, co-signer whenever convenient' means mixed recipients in one envelope.",
+    "whyNotOthers": "A is right because embedded and remote signers can coexist, and only the embedded one gets a clientUserId. The trap is B: it sounds centralised, but a recipient view URL is single-use and expires in minutes, so it cannot be emailed for later signing. C reverses the roles and uses the sender view, which is for preparing and sending, and D wrongly claims mixing is impossible and ignores the no-email requirement.",
+    "optionExplanations": {
+      "A": "Correct. Embedded buyer via clientUserId and createRecipient; remote co-signer notified by Docusign email.",
+      "B": "Recipient view URLs are short-lived and single-use, so emailing one for later signing fails.",
+      "C": "Roles are reversed, and the sender view does not create a signing session for a recipient.",
+      "D": "An envelope can mix embedded and remote signers, and the buyer would receive an email."
+    },
+    "trapOption": "B",
+    "importance": "HIGH",
+    "decode": {
+      "needs": "clientUserId only on the in-app signer; the other signer stays remote",
+      "clues": [
+        "tablet in the finance office, already logged in -> embedded signer with clientUserId",
+        "signs whenever convenient in another city -> remote signer by email",
+        "dark-blue theme -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "Mixing embedded and remote signers",
+      "line": "Set clientUserId only on signers who sign inside your app; others stay remote and get Docusign email."
+    }
+  },
+  {
+    "paper": "C",
+    "length": "long",
+    "style": "design",
+    "domain": "eSignature API",
+    "topic": "Embedded sending: ENVELOPE_INVALID_STATUS",
+    "stem": "Brightline Staffing's recruiting app builds each offer packet on the server, then lets the recruiter open Docusign inside the app to drag fields and press Send. Nothing may reach the candidate until the recruiter presses Send. The server calls Envelopes:create with status sent and then EnvelopeViews:createSender, which returns 400 with errorCode ENVELOPE_INVALID_STATUS. The recruiters work across three time zones. What should the developer change?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Lock the envelope with EnvelopeLocks:create before calling createSender, so that the sender view is allowed to edit the envelope that has already been sent"
+      },
+      {
+        "id": "B",
+        "text": "Keep status sent and call EnvelopeViews:createCorrect instead, because the correct view opens the same tagging screen for envelopes that are already in flight"
+      },
+      {
+        "id": "C",
+        "text": "Add a clientUserId to the recruiter as a sender recipient, so that Docusign treats the sender view as embedded and accepts the envelope that was sent"
+      },
+      {
+        "id": "D",
+        "text": "Create the envelope with status created and then call createSender, so the recruiter places the fields and sends it from the embedded sender view"
+      }
+    ],
+    "correct": "D",
+    "answerText": "Create the envelope with status created and then call createSender, so the recruiter places the fields and sends it from the embedded sender view",
+    "explanation": "The sender view can be created only for an envelope in the created (draft) state; otherwise the call returns ENVELOPE_INVALID_STATUS. The clue 'nothing may reach the candidate until the recruiter presses Send' also rules out sending at creation.",
+    "whyNotOthers": "D is right because embedded sending starts from a draft that the user tags and sends. The trap is B: the correct view does work on sent envelopes, but the envelope would already have reached the candidate, breaking the requirement. A misunderstands locking, which holds an in-flight envelope for edits but does not make a sent envelope a draft, and C misuses clientUserId, which belongs to embedded recipients.",
+    "optionExplanations": {
+      "A": "A lock does not turn a sent envelope back into a draft; the sender view still refuses it.",
+      "B": "The correct view needs a sent envelope, so the candidate would already have been notified.",
+      "C": "clientUserId marks embedded recipients; it does not change which envelope status the sender view accepts.",
+      "D": "Correct. createSender requires status created; the recruiter tags and sends from the view."
+    },
+    "trapOption": "B",
+    "importance": "HIGH",
+    "decode": {
+      "needs": "Embedded sending on a draft envelope",
+      "clues": [
+        "drag fields and press Send inside the app -> embedded sending with createSender",
+        "nothing may reach the candidate until Send -> envelope status created",
+        "three time zones -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "Sender view needs a draft",
+      "line": "EnvelopeViews:createSender works only on envelopes in created status; otherwise it returns ENVELOPE_INVALID_STATUS."
+    }
+  },
+  {
+    "paper": "C",
+    "length": "long",
+    "style": "design",
+    "domain": "eSignature API",
+    "topic": "Correcting a recipient email",
+    "stem": "A wealth management firm's onboarding service sent an account-opening envelope an hour ago. The first signer, the client, has not received it because the advisor mistyped the client's email address; the second signer, the advisor's manager, is later in routing order. Compliance wants the original envelope and its audit trail kept, and the client must receive the invitation at the corrected address now. What should the service do?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Void the envelope with a voidedReason and create a new one with the corrected address, because a sent envelope's recipients can no longer be changed"
+      },
+      {
+        "id": "B",
+        "text": "Call EnvelopeRecipients:update with the corrected email for that recipient and set the resend_envelope query parameter to true"
+      },
+      {
+        "id": "C",
+        "text": "Call EnvelopeRecipients:update with only the corrected email for that recipient, relying on Docusign to notify the client at the new address"
+      },
+      {
+        "id": "D",
+        "text": "Call Envelopes:update with status sent and the corrected email in the body, so that the same envelope is reissued to the client"
+      }
+    ],
+    "correct": "B",
+    "answerText": "Call EnvelopeRecipients:update with the corrected email for that recipient and set the resend_envelope query parameter to true",
+    "explanation": "A recipient's email can be corrected on a sent envelope with EnvelopeRecipients:update. Because the client is the current recipient, the envelope is not resent by default, so resend_envelope=true forces the new notification. The clue is 'keep the original envelope' and 'must receive the invitation now'.",
+    "whyNotOthers": "B is right because it corrects in place and forces the resend. The trap is C: the update succeeds, but for a recipient at or before the envelope's current routing order the envelope is not resent unless resend_envelope is true, so the client would not be notified. A throws away the original envelope and audit trail, and D uses the wrong endpoint; Envelopes:update does not change recipient addresses.",
+    "optionExplanations": {
+      "A": "Voiding discards the original envelope, which compliance wants to keep; recipient email can be corrected after sending.",
+      "B": "Correct. Update the email and force the resend with resend_envelope=true.",
+      "C": "The address is corrected, but a recipient at the current routing order is not re-notified unless resend_envelope=true is set.",
+      "D": "Recipient details are changed through EnvelopeRecipients:update, not by re-sending the envelope status."
+    },
+    "trapOption": "C",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "EnvelopeRecipients:update with resend_envelope=true",
+      "clues": [
+        "mistyped email on a sent envelope -> correct the recipient in place",
+        "keep the original envelope and audit trail -> do not void and recreate",
+        "must receive the invitation now -> force a resend"
+      ]
+    },
+    "concept": {
+      "title": "Correct and resend a recipient",
+      "line": "Fix a sent envelope's recipient with EnvelopeRecipients:update; add resend_envelope=true to force a new notification."
+    }
+  },
+  {
+    "paper": "C",
+    "length": "short",
+    "style": "fact",
+    "domain": "eSignature API",
+    "topic": "Reading a request URL",
+    "stem": "A log shows POST https://demo.docusign.net/restapi/v2.1/accounts/{accountId}/envelopes/{envelopeId}/views/recipient. What did the integration request?",
+    "options": [
+      {
+        "id": "A",
+        "text": "A URL that lets a sender tag and send a draft envelope"
+      },
+      {
+        "id": "B",
+        "text": "The list of recipients and their current status"
+      },
+      {
+        "id": "C",
+        "text": "A URL for an embedded signer's signing session"
+      },
+      {
+        "id": "D",
+        "text": "A new recipient added to the sent envelope"
+      }
+    ],
+    "correct": "C",
+    "answerText": "A URL for an embedded signer's signing session",
+    "explanation": "POST .../envelopes/{envelopeId}/views/recipient is EnvelopeViews:createRecipient, which returns the embedded signing (recipient view) URL. The demo host shows the developer environment.",
+    "whyNotOthers": "C is right because /views/recipient creates the recipient view. The trap is A: the sender view is also under /views, but its path ends in /views/sender. B is a GET on /recipients, and D is a POST on /recipients, not /views/recipient.",
+    "optionExplanations": {
+      "A": "The sender view path ends in /views/sender.",
+      "B": "Listing recipients is GET .../envelopes/{envelopeId}/recipients.",
+      "C": "Correct. /views/recipient is EnvelopeViews:createRecipient, the embedded signing URL.",
+      "D": "Adding a recipient is POST .../envelopes/{envelopeId}/recipients."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "concept": {
+      "title": "Decode the request path",
+      "line": "Base URI, /restapi/v2.1/accounts/{accountId}, then resource path; /views/recipient is embedded signing, /views/sender is embedded sending."
+    }
+  },
+  {
+    "paper": "C",
+    "length": "long",
+    "style": "design",
+    "domain": "eSignature API",
+    "topic": "Request URL: base URI per account",
+    "stem": "Atlas Payroll sells a SaaS product in which each customer company connects its own Docusign account through Authorization Code Grant. The first customers were in North America, and every call worked with a hard-coded https://na3.docusign.net host. A new customer in Germany connects, and every eSignature call for that customer fails, although the access token and the customer's account ID are correct. Some customers' users also belong to other companies' Docusign accounts. The German customer also prints on A4 paper. What should the developer do?",
+    "options": [
+      {
+        "id": "A",
+        "text": "After login, call userinfo, pick the customer's account, and build each call from its base_uri followed by /restapi/v2.1/accounts/{accountId}"
+      },
+      {
+        "id": "B",
+        "text": "Keep the na3 host but put the German account ID in the path, because the host only routes traffic and any Docusign data center can serve any account"
+      },
+      {
+        "id": "C",
+        "text": "Switch to the account-d.docusign.com host for this customer, because the authentication host also serves eSignature REST calls for every region"
+      },
+      {
+        "id": "D",
+        "text": "After login, call userinfo, take the first account in the accounts list, and build each call from its base_uri followed by /restapi/v2.1/accounts/{accountId}"
+      }
+    ],
+    "correct": "A",
+    "answerText": "After login, call userinfo, pick the customer's account, and build each call from its base_uri followed by /restapi/v2.1/accounts/{accountId}",
+    "explanation": "Each account lives on a specific base URI, returned per account by the userinfo endpoint; the request URL is {base_uri}/restapi/v2.1/accounts/{accountId}/... The clue is 'token and account ID are correct' but the host is hard-coded.",
+    "whyNotOthers": "A is right because the base URI must come from userinfo for the specific account being used. The trap is D: userinfo is correct, but users who belong to other companies' accounts may have a different account listed first, so the app must select the customer's account rather than the first entry. B fails because an account must be called on its own base URI, which for this customer is not na3. C confuses the demo authentication host with an eSignature API host.",
+    "optionExplanations": {
+      "A": "Correct. userinfo returns each account's base_uri; append /restapi/v2.1/accounts/{accountId}.",
+      "B": "An account must be called on its own base URI; a hard-coded host fails for accounts in other data centers.",
+      "C": "account-d.docusign.com is the demo authentication server, not an eSignature API host.",
+      "D": "userinfo is the right source, but a user can belong to several accounts; the first one listed is not necessarily the customer's account, so its base_uri and ID may be wrong."
+    },
+    "trapOption": "D",
+    "importance": "HIGH",
+    "decode": {
+      "needs": "Build URLs from userinfo base_uri",
+      "clues": [
+        "each customer connects its own account -> different accounts on different base URIs",
+        "token and account ID are correct but calls fail -> wrong host",
+        "users also belong to other companies' accounts -> pick the right account from userinfo, not the first one",
+        "A4 paper -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "Discover base_uri per account",
+      "line": "Never hard-code the API host; call userinfo and use the selected account's base_uri with its account ID."
+    }
+  },
+  {
+    "paper": "C",
+    "length": "long",
+    "style": "design",
+    "domain": "eSignature API",
+    "topic": "Bulk send best practices",
+    "stem": "Meridian Logistics' HR department must collect a signed safety-policy acknowledgement from 1,800 warehouse staff in one run started by an unattended back-office job. Each employee gets their own agreement, and HR wants the HRIS updated as each person signs without the job hammering the API. The HR director wants the email subject to read Annual Safety Policy. Which two practices should the developer adopt? (Select two)",
+    "options": [
+      {
+        "id": "A",
+        "text": "Submit all 1,800 copies in a single bulk send list, because the account's queue of 2,000 in-flight envelopes can hold the whole run"
+      },
+      {
+        "id": "B",
+        "text": "Split the staff into two bulk send lists of no more than 1,000 copies each and release each list as its own batch"
+      },
+      {
+        "id": "C",
+        "text": "Poll Envelopes:get for every envelope once a minute until it completes, then update the employee's HRIS record"
+      },
+      {
+        "id": "D",
+        "text": "Create the envelope to be bulk sent with status sent, so that Docusign can copy its recipients and tabs into each copy"
+      },
+      {
+        "id": "E",
+        "text": "Use a Connect configuration to push envelope status events to the HRIS instead of polling individual envelopes"
+      }
+    ],
+    "correct": "B,E",
+    "correctAnswers": [
+      "B",
+      "E"
+    ],
+    "answerText": "Split the staff into two bulk send lists of no more than 1,000 copies each and release each list as its own batch; Use a Connect configuration to push envelope status events to the HRIS instead of polling individual envelopes",
+    "explanation": "A bulk send list may hold at most 1,000 copies (BULK_SEND_ENVELOPE_LIST_CONTAINS_TOO_MANY_COPIES), so 1,800 staff need two lists, and Connect pushes status changes so the job does not poll. The clue 'without hammering the API' points to Connect.",
+    "whyNotOthers": "B and E are right because they respect the per-list copy limit and replace polling with webhooks. The trap is A: the in-flight queue limit is real, but it is a separate account-wide limit; a single list over 1,000 copies is rejected. C breaks the polling guideline of at most once per 15 minutes per envelope, and D uses a sent envelope where bulk send needs a draft.",
+    "optionExplanations": {
+      "A": "The queue limit is separate; a list above 1,000 copies is rejected regardless of queue space.",
+      "B": "Correct. Each bulk send list is limited to 1,000 copies, so split the run.",
+      "C": "Polling each envelope every minute breaks the once-per-15-minutes guideline and wastes the hourly limit.",
+      "D": "The bulk envelope must be a draft (status created), not sent.",
+      "E": "Correct. Connect pushes envelope events, which the bulk send course recommends over polling."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "Respect the 1,000-copy list limit and use Connect",
+      "clues": [
+        "1,800 staff, each their own agreement -> bulk send above one list's limit",
+        "without hammering the API -> Connect, not polling",
+        "email subject wording -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "Bulk send limits and status tracking",
+      "line": "Keep each bulk list at 1,000 copies or fewer, mind the account queue, and track status with Connect rather than polling."
+    }
+  },
+  {
+    "paper": "D",
+    "length": "long",
+    "style": "design",
+    "domain": "eSignature API",
+    "topic": "Bulk send: envelope custom fields",
+    "stem": "Cobalt Energy sends about 600 supplier rate-confirmation agreements each quarter in one bulk send run. Each agreement must carry the supplier's vendor number as hidden metadata so the ERP can match the signed copy when it comes back. The bulk list already gives every copy its recipients and an envelope-level custom field named vendorNumber, but createBulkSendTestRequest reports a custom field error. The agreements use the company's standard NDA wording. What should the developer change?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Remove vendorNumber from the bulk send list and add it to each envelope afterwards with EnvelopeCustomFields:create once the batch has finished"
+      },
+      {
+        "id": "B",
+        "text": "Move vendorNumber into a text tab assigned to the signer, because a bulk send list cannot carry any envelope-level custom field values"
+      },
+      {
+        "id": "C",
+        "text": "Define a custom field named vendorNumber with a placeholder value on the draft envelope, and keep the per-copy values in the bulk send list"
+      },
+      {
+        "id": "D",
+        "text": "Add vendorNumber to the createBulkSendRequest body instead, because envelope custom fields are applied only when the batch is released"
+      }
+    ],
+    "correct": "C",
+    "answerText": "Define a custom field named vendorNumber with a placeholder value on the draft envelope, and keep the per-copy values in the bulk send list",
+    "explanation": "Each envelope-level custom field in the bulk send list must correspond to a custom field defined in the envelope definition; Docusign advises placeholder values for such fields on the draft. The clue is 'the test reports a custom field error' while the list already carries vendorNumber.",
+    "whyNotOthers": "C is right because the draft envelope must declare the field so each copy's value can override it. The trap is B: tabs can hold data, but it would be visible to signers and bulk lists can carry envelope custom fields. A needs hundreds of extra calls after sending, and D puts the field in a request that only takes the list and envelope IDs.",
+    "optionExplanations": {
+      "A": "This adds hundreds of follow-up calls and leaves envelopes unmatched until they are patched.",
+      "B": "Bulk lists do carry envelope custom fields, and a signer tab is not hidden metadata.",
+      "C": "Correct. Declare vendorNumber on the draft envelope; the list supplies each copy's value.",
+      "D": "createBulkSendRequest identifies the list and envelope or template; it does not carry per-copy custom fields."
+    },
+    "trapOption": "B",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "Declare the custom field on the draft envelope",
+      "clues": [
+        "vendor number as hidden metadata for the ERP -> envelope custom field",
+        "test reports a custom field error -> list field has no match in the envelope definition",
+        "standard NDA wording -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "Bulk list fields must exist on envelope",
+      "line": "Every envelope-level custom field in a bulk send list must match a custom field defined, with a placeholder, on the draft envelope."
+    }
+  },
+  {
+    "paper": "D",
+    "length": "short",
+    "style": "fact",
+    "domain": "eSignature API",
+    "topic": "Bulk send: batchId",
+    "stem": "Which bulk send call returns the batchId used to track a run?",
+    "options": [
+      {
+        "id": "A",
+        "text": "BulkSend:createBulkSendList"
+      },
+      {
+        "id": "B",
+        "text": "BulkSend:createBulkSendRequest"
+      },
+      {
+        "id": "C",
+        "text": "BulkSend:createBulkSendTestRequest"
+      },
+      {
+        "id": "D",
+        "text": "BulkSend:getBulkSendBatchStatus"
+      }
+    ],
+    "correct": "B",
+    "answerText": "BulkSend:createBulkSendRequest",
+    "explanation": "createBulkSendRequest queues the envelopes and returns the batchId; getBulkSendBatchStatus then takes that batchId.",
+    "whyNotOthers": "B is right because the batch exists only once the send request is accepted. The trap is D: getBulkSendBatchStatus uses the batchId as input and returns sent, queued and failed counts. A returns listId and C returns canBeSent.",
+    "optionExplanations": {
+      "A": "Creating the list returns listId.",
+      "B": "Correct. The send request returns the batchId.",
+      "C": "The test returns canBeSent or errors.",
+      "D": "Batch status takes the batchId as input and returns the counts."
+    },
+    "trapOption": "D",
+    "importance": "MEDIUM",
+    "concept": {
+      "title": "Bulk send return values",
+      "line": "listId from the list, canBeSent from the test, batchId from the send, counts from the batch status."
+    }
+  },
+  {
+    "paper": "D",
+    "length": "long",
+    "style": "design",
+    "domain": "eSignature API",
+    "topic": "Template reference: pre-filling tabs",
+    "stem": "Northbay Property Management sends lease renewals from a server template that already defines the tenant role, the signature field and a text field with the data label monthlyRent. The leasing app must pre-fill each tenant's new rent and send the lease in a single Envelopes:create call, and the template must not be changed because the legal team owns it. The app also stores each tenant's parking space number, which is not on the lease. What should the request contain?",
+    "options": [
+      {
+        "id": "A",
+        "text": "templateId plus a templateRoles entry for the tenant whose tabs include a textTabs item with tabLabel monthlyRent and the rent value"
+      },
+      {
+        "id": "B",
+        "text": "templateId plus templateRoles for the tenant, and a textCustomFields entry named monthlyRent so the template's field picks up that value"
+      },
+      {
+        "id": "C",
+        "text": "compositeTemplates with an inline template whose documents property re-uploads the lease PDF with the new rent already printed on it"
+      },
+      {
+        "id": "D",
+        "text": "templateId with status created, then EnvelopeRecipientTabs:update to set monthlyRent before a second call changes the status to sent"
+      }
+    ],
+    "correct": "A",
+    "answerText": "templateId plus a templateRoles entry for the tenant whose tabs include a textTabs item with tabLabel monthlyRent and the rent value",
+    "explanation": "In the template reference model, templateRoles can carry tabs; a tab whose tabLabel matches the template field's data label receives the supplied value. The clue is 'single Envelopes:create call' with a template that must not change.",
+    "whyNotOthers": "A is right because the value travels with the role mapping in one call. The trap is B: envelope custom fields are metadata about the envelope and do not populate document fields, even with a matching name. C replaces the template's document with a reprinted one and best practice puts documents on the composite document property; D works but needs extra calls, breaking the single-call requirement.",
+    "optionExplanations": {
+      "A": "Correct. templateRoles.tabs with a matching tabLabel pre-fills the template field.",
+      "B": "Envelope custom fields do not populate a document's text tabs.",
+      "C": "Reprinting the lease bypasses the template field and is not how values are pre-filled.",
+      "D": "This takes three calls instead of the single Envelopes:create required."
+    },
+    "trapOption": "B",
+    "importance": "HIGH",
+    "decode": {
+      "needs": "templateRoles tabs matched by tabLabel",
+      "clues": [
+        "text field with data label monthlyRent -> tabLabel to match",
+        "single Envelopes:create call -> no follow-up tab updates",
+        "parking space number -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "Pre-fill template tabs by tabLabel",
+      "line": "With templateId and templateRoles, include tabs whose tabLabel matches the template field's data label to set its value."
+    }
+  },
+  {
+    "paper": "D",
+    "length": "short",
+    "style": "fact",
+    "domain": "eSignature API",
+    "topic": "Composite vs template reference",
+    "stem": "Which two capabilities need the composite templates model rather than the template reference model? (Select two)",
+    "options": [
+      {
+        "id": "A",
+        "text": "Assigning recipients to the template's roles by matching roleName"
+      },
+      {
+        "id": "B",
+        "text": "Creating the envelope as a draft with status created"
+      },
+      {
+        "id": "C",
+        "text": "Combining two different server templates in one envelope"
+      },
+      {
+        "id": "D",
+        "text": "Pre-filling a template's text field with a value when creating it"
+      },
+      {
+        "id": "E",
+        "text": "Reusing one server template twice with a different recipient each"
+      }
+    ],
+    "correct": "C,E",
+    "correctAnswers": [
+      "C",
+      "E"
+    ],
+    "answerText": "Combining two different server templates in one envelope; Reusing one server template twice with a different recipient each",
+    "explanation": "The template reference model uses one template; combining templates, or applying the same template several times with different recipients, needs composite templates.",
+    "whyNotOthers": "C and E are right because only composite templates hold several template instances. The trap is D: pre-filling sounds advanced, but templateRoles can carry tabs with matching tabLabels in the template reference model. A and B are available in both models.",
+    "optionExplanations": {
+      "A": "templateRoles maps people to roles by roleName in the template reference model too.",
+      "B": "Any model can create a draft with status created.",
+      "C": "Correct. Combining several server templates requires composite templates.",
+      "D": "templateRoles tabs can pre-fill values in the template reference model.",
+      "E": "Correct. Reusing one template for several recipients needs separate composite template objects."
+    },
+    "trapOption": "D",
+    "importance": "HIGH",
+    "concept": {
+      "title": "When composite templates are required",
+      "line": "Use composite templates to combine templates, reuse a template several times, or add documents; simple role mapping and tab values work with templateRoles."
+    }
+  },
+  {
+    "paper": "D",
+    "length": "long",
+    "style": "design",
+    "domain": "eSignature API",
+    "topic": "Focused view vs classic view",
+    "stem": "Summit Fitness lets new members join on a tablet at the front desk. The membership agreement, embedded in the club's web app, includes a payment field that charges the first month's dues by card during signing. Marketing wants the signing area to sit neatly inside the club's branded page, and the IT lead has already prototyped focused view with Docusign JS. The club has 40 locations. Which approach should the developer use for this agreement?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Use focused view with frameAncestors and messageOrigins set correctly, because focused view supports payment fields once Docusign JS is loaded"
+      },
+      {
+        "id": "B",
+        "text": "Keep focused view for signing and send the payment as a separate remote envelope by email after the member has signed the agreement"
+      },
+      {
+        "id": "C",
+        "text": "Replace the envelope with a standalone web form, because web forms collect card payments and need no envelope at the front desk"
+      },
+      {
+        "id": "D",
+        "text": "Use classic view for this embedded signing session, because payment fields are among the features that focused view does not support"
+      }
+    ],
+    "correct": "D",
+    "answerText": "Use classic view for this embedded signing session, because payment fields are among the features that focused view does not support",
+    "explanation": "Focused view is recommended for basic embedded signing, but classic view is required for payment tabs (also ID verification, some SBS providers, AI-Assisted Review and 21 CFR Part 11). The clue is 'payment field that charges the first month's dues during signing'.",
+    "whyNotOthers": "D is right because the payment field rules out focused view. The trap is A: frameAncestors and messageOrigins are required for focused view, but no configuration makes it support payment tabs. B breaks the requirement to charge during signing, and C drops the envelope, while a standalone web form has no signing step at all.",
+    "optionExplanations": {
+      "A": "Correct configuration of focused view still does not enable payment tabs.",
+      "B": "Splitting payment into a later email breaks 'charge during signing' and adds friction.",
+      "C": "A standalone web form produces no envelope and no signature.",
+      "D": "Correct. Payment tabs need classic view."
+    },
+    "trapOption": "A",
+    "importance": "HIGH",
+    "decode": {
+      "needs": "Embedded signing in classic view because of payment",
+      "clues": [
+        "payment field that charges dues during signing -> payment tab",
+        "IT already prototyped focused view -> red herring that tempts A",
+        "40 locations -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "Classic view for payments",
+      "line": "Choose focused view for simple embedded signing; use classic view for payment tabs, IDV, some SBS providers or Part 11."
+    }
+  },
+  {
+    "paper": "D",
+    "length": "short",
+    "style": "fact",
+    "domain": "eSignature API",
+    "topic": "returnUrl event values",
+    "stem": "An embedded signer clicks Finish Later in the signing session. Which event value does Docusign append to the returnUrl?",
+    "options": [
+      {
+        "id": "A",
+        "text": "cancel"
+      },
+      {
+        "id": "B",
+        "text": "decline"
+      },
+      {
+        "id": "C",
+        "text": "session_timeout"
+      },
+      {
+        "id": "D",
+        "text": "ttl_expired"
+      }
+    ],
+    "correct": "A",
+    "answerText": "cancel",
+    "explanation": "event=cancel means the recipient decided to finish later.",
+    "whyNotOthers": "A is right because Finish Later is reported as cancel. The trap is B: decline means the recipient refused to sign, which ends the envelope. C means the signer did not finish in time (20 minutes), and D means the signing URL token was not used in time or was already used.",
+    "optionExplanations": {
+      "A": "Correct. cancel = the recipient chose to finish later.",
+      "B": "decline = the recipient refused to sign.",
+      "C": "session_timeout = the signer did not finish within the session timeout.",
+      "D": "ttl_expired = the URL token expired or was already used."
+    },
+    "trapOption": "B",
+    "importance": "MEDIUM",
+    "concept": {
+      "title": "returnUrl event meanings",
+      "line": "signing_complete, cancel (finish later), decline, session_timeout, ttl_expired (URL unused in time or reused), viewing_complete."
+    }
+  },
+  {
+    "paper": "D",
+    "length": "long",
+    "style": "fact",
+    "domain": "eSignature API",
+    "topic": "Downloading envelope documents",
+    "stem": "Crestline Insurance's records team archives every completed policy in its document management system. The archivist wants exactly one PDF per envelope containing every signed document plus the certificate of completion, so auditors open a single file. Envelopes contain between two and six documents, and some were signed on phones. Which call should the archiving job make after completion?",
+    "options": [
+      {
+        "id": "A",
+        "text": "EnvelopeDocuments:get with documentId archive, which includes the certificate"
+      },
+      {
+        "id": "B",
+        "text": "EnvelopeDocuments:get for each documentId, then certificate"
+      },
+      {
+        "id": "C",
+        "text": "EnvelopeDocuments:get with documentId combined and certificate=true"
+      },
+      {
+        "id": "D",
+        "text": "EnvelopeDocuments:get with documentId certificate"
+      }
+    ],
+    "correct": "C",
+    "answerText": "EnvelopeDocuments:get with documentId combined and certificate=true",
+    "explanation": "documentId combined returns all documents as a single PDF, and the certificate query parameter set to true includes the certificate of completion in that PDF. The clue is 'exactly one PDF'.",
+    "whyNotOthers": "C is right because combined plus certificate=true gives one PDF with everything. The trap is A: archive also includes all documents and the certificate, but as a ZIP file, not a single PDF. B returns several files, and D returns only the certificate.",
+    "optionExplanations": {
+      "A": "archive returns a ZIP containing the PDFs and certificate, not one PDF.",
+      "B": "Separate calls produce several files and use more API calls.",
+      "C": "Correct. combined returns one PDF; certificate=true adds the certificate of completion.",
+      "D": "certificate returns only the certificate of completion."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "documentId combined with certificate=true",
+      "clues": [
+        "exactly one PDF per envelope -> combined, not archive",
+        "plus the certificate of completion -> certificate=true",
+        "signed on phones -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "Special documentId keywords",
+      "line": "combined = one PDF (certificate optional), archive = ZIP with documents and certificate, certificate = certificate only."
+    }
+  },
+  {
+    "paper": "D",
+    "length": "long",
+    "style": "design",
+    "domain": "eSignature API",
+    "topic": "Bulk send error: queue full",
+    "stem": "A university's financial aid office runs a headless job that bulk sends award letters every evening. Tonight, while an earlier batch of several thousand letters is still being processed, the job's next createBulkSendRequest fails with BULK_SEND_ACCOUNT_HAS_TOO_MANY_QUEUED_ENVELOPES. The new list has only 400 copies and passed its test call yesterday. The registrar asks for the fix that will actually let tonight's letters go out. What should the developer do?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Split the 400 copies into four lists of 100 copies and send them one after another, so each smaller batch fits within the per-list limit"
+      },
+      {
+        "id": "B",
+        "text": "Run createBulkSendTestRequest again right before the send, because a passing test reserves space in the queue for the following batch"
+      },
+      {
+        "id": "C",
+        "text": "Move the job to the legacy v2 bulk recipients method, because that older method uses a separate queue from v2.1 bulk send lists"
+      },
+      {
+        "id": "D",
+        "text": "Wait until the earlier batch has drained, tracked with getBulkSendBatchStatus or Connect, then retry tonight's send request"
+      }
+    ],
+    "correct": "D",
+    "answerText": "Wait until the earlier batch has drained, tracked with getBulkSendBatchStatus or Connect, then retry tonight's send request",
+    "explanation": "This error means the account already has the maximum number of in-flight bulk envelopes waiting to be processed; the documented fix is to try again later (or ask Docusign Support for a higher tier). The clue is 'an earlier batch of several thousand letters is still being processed'.",
+    "whyNotOthers": "D is right because the limit is account-wide queued envelopes, which only drains with time. The trap is A: splitting fixes the per-list copy limit, but 400 copies are already under it and smaller lists still add to the same full queue. B is wrong because a test reserves nothing, and C relies on an invented separate queue for a legacy method.",
+    "optionExplanations": {
+      "A": "The list is already under the 1,000-copy limit; smaller lists still hit the same full account queue.",
+      "B": "The test checks compatibility only; it reserves no queue capacity.",
+      "C": "There is no documented separate queue to escape to; the account limit still applies.",
+      "D": "Correct. The account queue is full; wait for it to drain and retry."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "Account queue full: wait and retry",
+      "clues": [
+        "earlier batch of several thousand still being processed -> account in-flight queue full",
+        "only 400 copies -> not the per-list limit",
+        "passed its test yesterday -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "Queue limit is account-wide",
+      "line": "BULK_SEND_ACCOUNT_HAS_TOO_MANY_QUEUED_ENVELOPES means the account queue is full; wait and retry, unlike the per-list 1,000-copy limit."
+    }
+  },
+  {
+    "paper": "D",
+    "length": "short",
+    "style": "fact",
+    "domain": "eSignature API",
+    "topic": "Sending a draft envelope",
+    "stem": "Which request sends an existing draft envelope?",
+    "options": [
+      {
+        "id": "A",
+        "text": "POST .../envelopes/{envelopeId}/send with an empty body"
+      },
+      {
+        "id": "B",
+        "text": "PUT .../envelopes/{envelopeId} with status set to sent"
+      },
+      {
+        "id": "C",
+        "text": "PUT .../envelopes/{envelopeId}/recipients?resend_envelope=true"
+      },
+      {
+        "id": "D",
+        "text": "POST .../envelopes with the draft's envelopeId and status sent"
+      }
+    ],
+    "correct": "B",
+    "answerText": "PUT .../envelopes/{envelopeId} with status set to sent",
+    "explanation": "A draft (status created) is sent with Envelopes:update, a PUT on the envelope with status sent in the body.",
+    "whyNotOthers": "B is right because changing the status to sent releases the draft. The trap is C: resend_envelope forces a resend to recipients of an envelope already sent; it does not send a draft. A is not an eSignature endpoint, and D creates a new envelope.",
+    "optionExplanations": {
+      "A": "There is no /send endpoint on an envelope in the eSignature API.",
+      "B": "Correct. Envelopes:update with status sent sends the draft.",
+      "C": "resend_envelope re-notifies recipients of a sent envelope; it does not send a draft.",
+      "D": "POST /envelopes creates a new envelope rather than sending the existing draft."
+    },
+    "trapOption": "C",
+    "importance": "MEDIUM",
+    "concept": {
+      "title": "Send a draft with Envelopes:update",
+      "line": "Create with status created for a draft, then PUT the envelope with status sent; voiding uses the same call with status voided."
+    }
+  },
+  {
+    "paper": "D",
+    "length": "long",
+    "style": "design",
+    "domain": "eSignature API",
+    "topic": "Embedded signing best practices",
+    "stem": "Riverside Bank's branch staff open account agreements on a tablet while the customer sits at the desk. Staff often create the envelope when the appointment is booked in the morning, and customers sometimes step away during signing and come back later. Product owners also want the core banking record flagged as signed reliably. The branch Wi-Fi is slow at peak hours. Which two practices should the developer follow? (Select two)",
+    "options": [
+      {
+        "id": "A",
+        "text": "Request the signing URL when the appointment is booked and store it, so the tablet opens the session instantly when the customer arrives"
+      },
+      {
+        "id": "B",
+        "text": "Call createRecipient only when the customer is at the tablet, and call it again for a fresh URL if the session must restart"
+      },
+      {
+        "id": "C",
+        "text": "Keep the first signing URL and reload it if the customer steps away, because the URL stays valid until the envelope is completed"
+      },
+      {
+        "id": "D",
+        "text": "Confirm completion through Connect or the envelope status rather than relying only on the event value in the returnUrl"
+      },
+      {
+        "id": "E",
+        "text": "Create the envelope with status created so no email goes out, and request the signing URL for that draft at the tablet"
+      }
+    ],
+    "correct": "B,D",
+    "correctAnswers": [
+      "B",
+      "D"
+    ],
+    "answerText": "Call createRecipient only when the customer is at the tablet, and call it again for a fresh URL if the session must restart; Confirm completion through Connect or the envelope status rather than relying only on the event value in the returnUrl",
+    "explanation": "Signing URLs expire after about 5 minutes and are single-use, so request them only when the signer is ready and request a new one to restart. The returnUrl can be spoofed or skipped, so confirm status through Connect or the API.",
+    "whyNotOthers": "B and D are right because they respect the URL lifetime and the rule not to trust the returnUrl alone. The trap is C: reusing the same URL sounds efficient, but a used or old URL returns ttl_expired. A creates the URL hours early, and E fails because embedded signing needs a sent envelope; clientUserId already suppresses email.",
+    "optionExplanations": {
+      "A": "The URL expires within minutes, so one created at booking time is dead when the customer arrives.",
+      "B": "Correct. Request the URL just in time and generate a new one to resume.",
+      "C": "The URL is single-use and short-lived; reloading it gives ttl_expired.",
+      "D": "Correct. The returnUrl can be skipped or spoofed, so verify with Connect or the envelope status.",
+      "E": "Recipient views require a sent envelope; clientUserId, not draft status, stops the email."
+    },
+    "trapOption": "C",
+    "importance": "HIGH",
+    "decode": {
+      "needs": "Just-in-time signing URLs and verified completion",
+      "clues": [
+        "created when the appointment is booked -> URL would expire",
+        "steps away and comes back -> request a fresh URL",
+        "flagged as signed reliably -> do not trust returnUrl alone",
+        "slow Wi-Fi -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "Signing URLs are short-lived",
+      "line": "Request the recipient view only when the signer is ready, regenerate it to resume, and verify completion via Connect or status."
+    }
+  }
+]

@@ -1,0 +1,979 @@
+[
+  {
+    "paper": "C",
+    "length": "long",
+    "style": "design",
+    "domain": "eSignature Features and Web Forms",
+    "topic": "Brands per subsidiary",
+    "stem": "Halcyon Group runs two subsidiaries, Halcyon Marine and Halcyon Rail, from a single Docusign account. Each subsidiary's line-of-business app sends contracts through the eSignature REST API on behalf of its own staff. Marketing wants every counterparty to see the right subsidiary's logo and colors and to land on that subsidiary's website after signing. Compliance insists that Marine staff can never send with Rail's look by mistake, and the reverse. Both apps already use JWT with the same integration key, and volume is about 5,000 envelopes a month. Which approach fits?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Create one brand per subsidiary, leave both brands available to every sender in the account, and pass the matching brandId in every Envelopes:create request from that subsidiary's app."
+      },
+      {
+        "id": "B",
+        "text": "Create one brand per subsidiary, assign each brand to that subsidiary's user group, and pass the matching brandId in every Envelopes:create request from that subsidiary's app."
+      },
+      {
+        "id": "C",
+        "text": "Create one brand per subsidiary and mark both as the account's default brand, so Docusign chooses the right one from the sender's group without any brandId in the request."
+      },
+      {
+        "id": "D",
+        "text": "Create one brand per subsidiary and put the post-signing website in each brand's sending settings, because the sending view decides where counterparties land after signing."
+      }
+    ],
+    "correct": "B",
+    "answerText": "Create one brand per subsidiary, assign each brand to that subsidiary's user group, and pass the matching brandId in every Envelopes:create request from that subsidiary's app.",
+    "explanation": "Separate brands carry separate logos, colors and the post-signing redirect URL; assigning a brand to a group means only that group's users can use it ('Marine staff can never send with Rail's look'), and brandId on Envelopes:create applies it.",
+    "whyNotOthers": "B is right because per-subsidiary brands, group assignment and brandId cover look, redirect and the access restriction. The trap is A: it gets the look and redirect right, but leaving both brands available to every sender means a wrong brandId is accepted, so 'never by mistake' is not enforced; assigning brands to groups is what limits which brands each group's members can use. C fails because the account has one default brand, and D fails because the redirect URL is a signing-brand setting, not a sending one.",
+    "optionExplanations": {
+      "A": "Separate brands and brandId give the right look and redirect, but with both brands open to all senders nothing stops a Marine sender from passing Rail's brandId, so the compliance rule is not enforced.",
+      "B": "Correct. One brand per subsidiary, restricted to that subsidiary's group, applied with brandId on each envelope.",
+      "C": "An account has a single default brand; the default is meant for all envelopes, not chosen per group.",
+      "D": "The sending view brand covers colors, logo and footer links; the post-signing redirect belongs to the signing experience."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "Two signing brands, each assigned to a group, applied with brandId in Envelopes:create.",
+      "clues": [
+        "'right logo and colors... land on the website after signing' -> signing brand: logo, colors, redirect URL",
+        "'Marine staff can never send with Rail's look' -> assign each brand to that subsidiary's group; brandId alone does not restrict anyone",
+        "'same integration key, 5,000 envelopes' -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "Brands, groups and brandId",
+      "line": "Use one brand per business identity, restrict it by assigning it to groups, and apply it per envelope with brandId."
+    }
+  },
+  {
+    "paper": "C",
+    "length": "long",
+    "style": "fact",
+    "domain": "eSignature Features and Web Forms",
+    "topic": "ID verification in the envelope request",
+    "stem": "Brightwater Lending's loan-origination system creates closing envelopes with eSignature REST API v2.1. Regulators require that the primary borrower prove their identity with a government-issued photo ID before opening the documents; the co-borrower only needs the normal email link. The account admin has already created and activated an ID Verification configuration in eSignature Settings, and the integration uses JWT with the signature and impersonation scopes. Which two steps must the developer add to the envelope request flow? (Select two)",
+    "options": [
+      {
+        "id": "A",
+        "text": "Set idCheckConfigurationName to 'ID Check $' on the primary borrower so Docusign checks the borrower's identity before access."
+      },
+      {
+        "id": "B",
+        "text": "Add identityVerification with the workflowId to both borrowers, because the setting applies to every signer in the envelope."
+      },
+      {
+        "id": "C",
+        "text": "Call IdentityVerifications:list (GET .../accounts/{accountId}/identity_verification) to look up the configuration's workflowId."
+      },
+      {
+        "id": "D",
+        "text": "Set authenticationMethod to the ID verification method on the primary borrower so the certificate shows that photo ID was required."
+      },
+      {
+        "id": "E",
+        "text": "Add an identityVerification object with that workflowId to the primary borrower's signer object in the Envelopes:create request."
+      }
+    ],
+    "correct": "C,E",
+    "correctAnswers": [
+      "C",
+      "E"
+    ],
+    "answerText": "Call IdentityVerifications:list (GET .../accounts/{accountId}/identity_verification) to look up the configuration's workflowId.; Add an identityVerification object with that workflowId to the primary borrower's signer object in the Envelopes:create request.",
+    "explanation": "IDV is required per recipient by adding identityVerification.workflowId to that signer, and the workflowId comes from IdentityVerifications:list. The clue 'only the primary borrower' means only that signer gets it.",
+    "whyNotOthers": "C and E are right: look up the workflowId, then put it on the borrower's signer object. The trap is D: authenticationMethod only records an authentication your own app performed on the certificate; it enforces nothing. A is knowledge-based authentication (public-record questions), not photo ID, and B ignores that the co-borrower needs only the email link; workflow IDs are set per recipient.",
+    "optionExplanations": {
+      "A": "'ID Check $' is knowledge-based authentication with public-record questions, not a government photo ID check.",
+      "B": "identityVerification is a recipient-level setting; the co-borrower must not get it.",
+      "C": "Correct. IdentityVerifications:list returns the account's workflow IDs, including the IDV configuration.",
+      "D": "authenticationMethod only records your app's own authentication on the certificate; Docusign does not enforce it.",
+      "E": "Correct. identityVerification.workflowId on the signer makes Docusign require that verification before access."
+    },
+    "trapOption": "D",
+    "importance": "HIGH",
+    "decode": {
+      "needs": "Look up the IDV workflowId and set identityVerification.workflowId on that one signer.",
+      "clues": [
+        "'government-issued photo ID' -> ID Verification, not KBA",
+        "'only the primary borrower' -> recipient-level setting",
+        "'admin already created the configuration' -> it has a workflowId to look up"
+      ]
+    },
+    "concept": {
+      "title": "IDV via workflowId",
+      "line": "Require IDV or phone auth per recipient with identityVerification.workflowId, found through IdentityVerifications:list; authenticationMethod only records."
+    }
+  },
+  {
+    "paper": "C",
+    "length": "long",
+    "style": "design",
+    "domain": "eSignature Features and Web Forms",
+    "topic": "Choosing a low-cost second factor",
+    "stem": "Orchard Foods sends its annual code-of-conduct acknowledgment to 8,000 employees from its HR platform. The document carries low legal risk, but internal audit wants a second factor beyond the emailed link, so that someone holding a forwarded email cannot sign in an employee's name. Finance has refused any per-transaction verification charges, and about a third of staff work outside the United States. Every employee can already see a personal PIN on the HR intranet, which uses single sign-on. Which recipient authentication approach fits?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Require phone authentication by SMS for every employee, because a one-time code sent to a mobile number is the lightest second factor that Docusign enforces."
+      },
+      {
+        "id": "B",
+        "text": "Require knowledge-based authentication for every employee, because public-record questions stop a forwarded email from being used without any extra setup."
+      },
+      {
+        "id": "C",
+        "text": "Record authenticationMethod on each recipient to show that employees signed in to the intranet, which adds the second factor to the certificate of completion."
+      },
+      {
+        "id": "D",
+        "text": "Set an accessCode on each recipient equal to the employee's intranet PIN, so the code reaches employees through a separate channel with no per-use fee."
+      }
+    ],
+    "correct": "D",
+    "answerText": "Set an accessCode on each recipient equal to the employee's intranet PIN, so the code reaches employees through a separate channel with no per-use fee.",
+    "explanation": "An access code is the lightest enforced method and is shared out of band (here the intranet PIN). Phone, KBA and IDV carry per-use fees, which conflicts with 'refused any per-transaction verification charges'.",
+    "whyNotOthers": "D is right because the access code is enforced, delivered by a separate channel and has no per-use fee. The trap is A: SMS phone authentication is a real second factor but incurs per-use fees, and SMS can cost extra. B also has a fee and relies on US public records, which fails a third of the staff. C only records an authentication on the certificate and enforces nothing.",
+    "optionExplanations": {
+      "A": "Phone authentication incurs a per-use fee (and SMS may cost more), which finance refused.",
+      "B": "KBA incurs a per-use fee and uses US public records, so non-US staff cannot pass it; it is heavy for a low-risk acknowledgment.",
+      "C": "authenticationMethod records your app's authentication on the certificate; it does not enforce a second factor.",
+      "D": "Correct. accessCode is enforced, uses an out-of-band channel (the intranet PIN) and has no per-use fee."
+    },
+    "trapOption": "A",
+    "importance": "HIGH",
+    "decode": {
+      "needs": "An enforced, fee-free second factor shared out of band: recipient accessCode.",
+      "clues": [
+        "'second factor beyond the emailed link' -> enforced recipient authentication",
+        "'refused any per-transaction verification charges' -> excludes phone, KBA, IDV",
+        "'personal PIN on the HR intranet' -> out-of-band access code",
+        "'third of staff outside the United States' -> rules out KBA"
+      ]
+    },
+    "concept": {
+      "title": "Match authentication to risk",
+      "line": "Access code is the lightest enforced factor with no per-use fee; phone, KBA and IDV add fees and friction for stronger assurance."
+    }
+  },
+  {
+    "paper": "C",
+    "length": "short",
+    "style": "fact",
+    "domain": "eSignature Features and Web Forms",
+    "topic": "Empty connected fields discovery",
+    "stem": "A developer calls TabInfo:GetConnectedFieldsTabGroups for an account to build envelopes with verified fields, but the response contains no data types. What is the most likely cause?",
+    "options": [
+      {
+        "id": "A",
+        "text": "No connected fields or data verification extension app is installed and connected in the account."
+      },
+      {
+        "id": "B",
+        "text": "The request must include the ID of the template whose documents will carry the connected fields."
+      },
+      {
+        "id": "C",
+        "text": "Connected field definitions are returned only after the envelope has been created as a draft."
+      },
+      {
+        "id": "D",
+        "text": "The access token lacks the extended scope that connected fields discovery requires."
+      }
+    ],
+    "correct": "A",
+    "answerText": "No connected fields or data verification extension app is installed and connected in the account.",
+    "explanation": "GetConnectedFieldsTabGroups returns the field types that the account's installed connected fields or data verification extension apps can verify; if the account has neither, it returns no data types.",
+    "whyNotOthers": "A is right because discovery depends on an installed and connected extension app. The trap is B: discovery is per account, not per template, and the result is used to build tabs before the envelope exists, which also rules out C. D fails because extended is the Authorization Code Grant refresh-token scope, unrelated to connected fields.",
+    "optionExplanations": {
+      "A": "Correct. Without an installed and connected connected fields or data verification app there are no types to return.",
+      "B": "Discovery describes the account's verifiable data types; it is not tied to a template.",
+      "C": "The tab groups are fetched first and then placed in each tab's extensionData when the envelope is created.",
+      "D": "The extended scope only governs reusable refresh tokens in Authorization Code Grant."
+    },
+    "trapOption": "B",
+    "importance": "MEDIUM",
+    "concept": {
+      "title": "Connected fields need installed apps",
+      "line": "Connected fields discovery returns types only from connected fields or data verification extension apps installed and connected in the account."
+    }
+  },
+  {
+    "paper": "C",
+    "length": "long",
+    "style": "design",
+    "domain": "eSignature Features and Web Forms",
+    "topic": "Data collection without an envelope",
+    "stem": "The Riverside Rowing Association wants its 3,000 members to update their emergency contact details each season. No signature is involved, and the board does not want any agreement or signing record created for this exercise. The developer built a standalone web form configuration and now calls Instances:createInstance with sendOption set to now and a recipients array so each member gets the form by email, but the request fails. The member portal already has single sign-on, and the club emails its newsletter through its own mailing tool. Which approach fits?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Recreate the form as a template-based configuration so that remote delivery is allowed, and let Docusign email each member a link to their own form instance."
+      },
+      {
+        "id": "B",
+        "text": "Keep the standalone configuration and retry createInstance with a clientUserId added next to sendOption and the recipients array for each member."
+      },
+      {
+        "id": "C",
+        "text": "Keep the standalone configuration, create an embedded instance with a clientUserId when a member opens the portal page, and email members a link to that page."
+      },
+      {
+        "id": "D",
+        "text": "Set the configuration's allowSending property to true through the Web Forms API and keep sending the same createInstance request with sendOption."
+      }
+    ],
+    "correct": "C",
+    "answerText": "Keep the standalone configuration, create an embedded instance with a clientUserId when a member opens the portal page, and email members a link to that page.",
+    "explanation": "Standalone configurations collect data without generating an envelope, but they are not eligible for remote (emailed) delivery; they support embedded delivery with a clientUserId. Emailing a portal link with the club's own tool meets 'no agreement or signing record'.",
+    "whyNotOthers": "C is right because embedded delivery is supported for standalone forms and the club can send its own link. The trap is A: template-based configurations do allow remote delivery, but every submission then generates an eSignature envelope, which the board ruled out. B still asks for remote delivery, and D fails because allowSending is a read-only indicator in Configurations responses; a standalone form must be recreated as template-based to send remotely.",
+    "optionExplanations": {
+      "A": "Template-based forms generate an envelope on submission, which the board does not want.",
+      "B": "Adding clientUserId does not change the fact that standalone configurations cannot be delivered remotely.",
+      "C": "Correct. Standalone plus embedded delivery collects the data with no envelope, and the club emails its own link to the portal.",
+      "D": "allowSending is reported by Configurations:getForm and listForms; it is not switched on by an API call, and standalone forms never allow sending."
+    },
+    "trapOption": "A",
+    "importance": "HIGH",
+    "decode": {
+      "needs": "Standalone web form, embedded instance with clientUserId, no envelope, own email with a link.",
+      "clues": [
+        "'no agreement or signing record' -> standalone configuration (no envelope)",
+        "'sendOption... recipients... request fails' -> standalone is not eligible for remote delivery",
+        "'portal with single sign-on' -> embedded instance with clientUserId",
+        "'own mailing tool' -> the club can send the link itself"
+      ]
+    },
+    "concept": {
+      "title": "Standalone forms are embedded only",
+      "line": "Standalone web forms collect data with no envelope and support embedded delivery only; remote email delivery needs a template-based configuration."
+    }
+  },
+  {
+    "paper": "C",
+    "length": "long",
+    "style": "design",
+    "domain": "eSignature Features and Web Forms",
+    "topic": "Retrieving ID images for an archive",
+    "stem": "Northline Bank's compliance archive must keep the front and back images of each customer's photo ID after an account-opening envelope with ID Verification completes. A headless nightly job will collect them, about 200 envelopes per night, and an auditor will later spot-check that the stored images match each signer. The admin has confirmed that the IDV configuration is set to save the front and back side of the ID. The job already holds a JWT access token that it renews every hour. Which retrieval sequence fits?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Per recipient, read the recipientIdGuid from EnvelopeRecipients:list, get a resource token from POST .../identity_proof_token, then call ID Evidence events and media with it."
+      },
+      {
+        "id": "B",
+        "text": "Request one resource token with POST .../identity_proof_token at the start of the job and reuse it for all recipients, calling the ID Evidence events list and media URLs for each one."
+      },
+      {
+        "id": "C",
+        "text": "Call the ID Evidence events list for each recipient with the JWT access token as the bearer token, then download the ID images from the media URLs listed in that response."
+      },
+      {
+        "id": "D",
+        "text": "Download each envelope's certificate of completion with EnvelopeDocuments:get, because it embeds the verified ID images once ID Evidence storage is enabled."
+      }
+    ],
+    "correct": "A",
+    "answerText": "Per recipient, read the recipientIdGuid from EnvelopeRecipients:list, get a resource token from POST .../identity_proof_token, then call ID Evidence events and media with it.",
+    "explanation": "The ID Evidence API takes a resource token, created per envelope recipient with EnvelopeRecipients:createRecipientProofFileResourceToken (POST .../recipients/{recipientIdGuid}/identity_proof_token) and valid for only 2 minutes; it is then used for Events:list and the media URLs.",
+    "whyNotOthers": "A is right because each recipient needs its own short-lived resource token. The trap is B: the resource token is issued for one recipient and expires after 2 minutes, so it cannot serve a whole nightly batch. C skips the resource token, which the ID Evidence API requires instead of the OAuth token, and D fails because the certificate of completion does not carry the ID images.",
+    "optionExplanations": {
+      "A": "Correct. recipientIdGuid, then a per-recipient resource token, then events and media from the ID Evidence API.",
+      "B": "A resource token is tied to one envelope recipient and is valid for 2 minutes only.",
+      "C": "The OAuth token is used to request the resource token; the ID Evidence calls need the resource token.",
+      "D": "ID images are retrieved through the ID Evidence media endpoint, not from the certificate of completion."
+    },
+    "trapOption": "B",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "Per recipient: recipientIdGuid, identity_proof_token resource token, ID Evidence events and media.",
+      "clues": [
+        "'front and back images of each customer's photo ID' -> ID Evidence media",
+        "'IDV configuration saves front and back side' -> ID Evidence storage enabled",
+        "'headless nightly job, JWT renewed hourly' -> OAuth token only to request resource tokens",
+        "'about 200 envelopes' -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "ID Evidence resource tokens",
+      "line": "Get ID evidence with a per-recipient resource token (valid 2 minutes) from identity_proof_token, then call the ID Evidence events and media."
+    }
+  },
+  {
+    "paper": "C",
+    "length": "long",
+    "style": "design",
+    "domain": "Agreement Manager API",
+    "topic": "Linking agreements to their source envelope",
+    "stem": "Pellham Insurance syncs Agreement Manager records into its CRM so account managers see agreement types, parties and renewal terms. Agreements reach the repository in two ways: completed envelopes sent from the CRM itself, and scanned legacy contracts uploaded by the legal team. Account managers want a View original envelope button on agreements that came from eSignature, matched against the envelope IDs the CRM already stores. The nightly sync uses GetAgreementsList with ctoken paging. How should the sync match agreements to the CRM's envelope records?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Treat each agreement's id as the envelope ID, because Agreement Manager reuses the envelope GUID as the agreement identifier for completed envelopes."
+      },
+      {
+        "id": "B",
+        "text": "Read related_agreement_documents.parent_agreement_document_id, which points back to the envelope that produced the agreement in eSignature."
+      },
+      {
+        "id": "C",
+        "text": "Call CreateAgreementSummary for each agreement and read the originating envelope ID from the AI summary text that the call returns."
+      },
+      {
+        "id": "D",
+        "text": "Read source_name to see which system the agreement came from and source_id for its identifier in that system, then match it to the stored envelope ID."
+      }
+    ],
+    "correct": "D",
+    "answerText": "Read source_name to see which system the agreement came from and source_id for its identifier in that system, then match it to the stored envelope ID.",
+    "explanation": "Each agreement record carries source_name (the originating system, such as Docusign eSign), source_id (the record's identifier in that system) and source_account_id; this is what links an agreement to the envelope it came from, while uploaded legacy contracts show a different source.",
+    "whyNotOthers": "D is right because the source fields identify the originating system and record. The trap is A: the agreement id is Agreement Manager's own GUID, separate from the source envelope ID. B describes a link to a parent agreement document (for example an amendment's master), not to an envelope, and C returns an AI-written overview of the document, not system identifiers.",
+    "optionExplanations": {
+      "A": "The agreement id is Agreement Manager's own identifier; the envelope reference is kept in the source fields.",
+      "B": "parent_agreement_document_id relates an agreement to a parent agreement document, not to an envelope.",
+      "C": "The summary is an AI-written overview of the content and does not carry source system IDs.",
+      "D": "Correct. source_name tells eSignature from uploads, and source_id carries the identifier in that source system."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "Use the agreement's source_name and source_id to link back to the originating envelope.",
+      "clues": [
+        "'completed envelopes... and scanned legacy contracts' -> different sources",
+        "'View original envelope button' -> needs the source record ID",
+        "'ctoken paging' -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "Source fields trace origin",
+      "line": "Agreement records carry source_name, source_id and source_account_id to trace each agreement back to the system and record it came from."
+    }
+  },
+  {
+    "paper": "C",
+    "length": "long",
+    "style": "design",
+    "domain": "Agreement Manager API",
+    "topic": "Incremental nightly sync",
+    "stem": "Varden Analytics copies Agreement Manager data into a data lake every night. The first full load is done, and the architect now wants each nightly run to pick up only the agreements added to the repository since the previous run. The legal team is still uploading contracts that were signed years ago, and many agreements have effective dates in the future. The account's hourly API limit is shared with a CPQ integration, and the data lake team prefers small nightly batches. Which request pattern fits?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Call GetAgreementsList with a provisions.execution_date filter of gte the last run time, following ctoken until the final page has been read."
+      },
+      {
+        "id": "B",
+        "text": "Call GetAgreementsList with a metadata.created_at filter of gte the last run time, following ctoken until the final page has been read."
+      },
+      {
+        "id": "C",
+        "text": "Call GetAgreementsList with a provisions.effective_date filter of gte the last run time, following ctoken until the final page has been read."
+      },
+      {
+        "id": "D",
+        "text": "Call GetAgreementsList with no filter every night and compare each returned id with the data lake, following ctoken until the final page has been read."
+      }
+    ],
+    "correct": "B",
+    "answerText": "Call GetAgreementsList with a metadata.created_at filter of gte the last run time, following ctoken until the final page has been read.",
+    "explanation": "metadata.created_at is when the agreement record was created in the repository and accepts gte with an ISO 8601 date, so it returns exactly what was 'added since the previous run', whatever the contract's own dates.",
+    "whyNotOthers": "B is right because only the record creation timestamp tracks additions to the repository. The trap is A: execution_date is when the contract was signed, so legacy contracts 'signed years ago' but uploaded yesterday would be missed. C uses a contractual date that can lie in the future, and D works but re-reads the whole repository each night, wasting the shared hourly limit.",
+    "optionExplanations": {
+      "A": "execution_date is the contract's signing date; old contracts uploaded today fall outside the filter.",
+      "B": "Correct. metadata.created_at with gte the last run time returns agreements added since then.",
+      "C": "effective_date is a contract term; future-dated agreements would be picked up repeatedly and others missed.",
+      "D": "Returns the same results with far more calls against the shared hourly limit."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "GetAgreementsList filtered on metadata.created_at gte last run, paged with ctoken.",
+      "clues": [
+        "'added to the repository since the previous run' -> record creation timestamp",
+        "'contracts that were signed years ago' -> execution_date would miss them",
+        "'effective dates in the future' -> effective_date is the wrong clock",
+        "'hourly API limit is shared' -> avoid full re-reads"
+      ]
+    },
+    "concept": {
+      "title": "Filter on record creation date",
+      "line": "For incremental sync filter GetAgreementsList on metadata.created_at; provision dates describe the contract, not when it entered the repository."
+    }
+  },
+  {
+    "paper": "C",
+    "length": "short",
+    "style": "fact",
+    "domain": "Agreement Manager API",
+    "topic": "Agreement Manager API operations",
+    "stem": "Which list contains only operations that exist in the Agreement Manager (Navigator) API?",
+    "options": [
+      {
+        "id": "A",
+        "text": "GetAgreementsList, GetAgreement, UpdateAgreement, DeleteAgreement"
+      },
+      {
+        "id": "B",
+        "text": "GetAgreementsList, GetAgreement, getAgreementSummary, DeleteAgreement"
+      },
+      {
+        "id": "C",
+        "text": "GetAgreementsList, GetAgreement, DeleteAgreement, CreateAgreementSummary"
+      },
+      {
+        "id": "D",
+        "text": "GetAgreementsList, CreateAgreement, DeleteAgreement, CreateAgreementSummary"
+      }
+    ],
+    "correct": "C",
+    "answerText": "GetAgreementsList, GetAgreement, DeleteAgreement, CreateAgreementSummary",
+    "explanation": "The API has exactly four agreement operations: GetAgreementsList, GetAgreement, DeleteAgreement and CreateAgreementSummary (POST .../agreements/{agreementId}/ai/actions/summarize).",
+    "whyNotOthers": "C is right because it lists the four real operations. The trap is B: there is no getAgreementSummary; the summary is produced by the POST CreateAgreementSummary. A invents UpdateAgreement (extracted values are corrected in the UI), and D invents CreateAgreement.",
+    "optionExplanations": {
+      "A": "There is no UpdateAgreement; corrections to extracted values are made in the Agreement Manager UI.",
+      "B": "There is no getAgreementSummary; the AI summary is requested with the POST CreateAgreementSummary.",
+      "C": "Correct. These are the four agreement operations of the API.",
+      "D": "There is no CreateAgreement operation in the API."
+    },
+    "trapOption": "B",
+    "importance": "HIGH",
+    "concept": {
+      "title": "Four Agreement Manager operations",
+      "line": "The Agreement Manager API offers GetAgreementsList, GetAgreement, DeleteAgreement and CreateAgreementSummary, and nothing that updates agreements."
+    }
+  },
+  {
+    "paper": "C",
+    "length": "long",
+    "style": "design",
+    "domain": "Agreement Manager API",
+    "topic": "Review loop for extracted values",
+    "stem": "Kestrel Pharma wants AI-extracted renewal terms checked before they drive its procurement ERP. The plan is an external review queue that compares each agreement's extracted renewal_notice_period and expiration_date with the ERP's own records, and a contract analyst who resolves any mismatch. The integration has read access to Agreement Manager, and IT has asked that the ERP never act on a value nobody has confirmed. Which two design elements match what the Agreement Manager API supports today? (Select two)",
+    "options": [
+      {
+        "id": "A",
+        "text": "Pull each agreement with GetAgreement and compare its provisions with the ERP's values to build the analyst's mismatch queue."
+      },
+      {
+        "id": "B",
+        "text": "Write the analyst's corrected value back with a PUT on the agreement so the repository and the ERP stay aligned automatically."
+      },
+      {
+        "id": "C",
+        "text": "Call CreateAgreementSummary on a mismatched agreement so Docusign AI re-runs the extraction with the corrected value."
+      },
+      {
+        "id": "D",
+        "text": "Have the analyst correct the value in the Agreement Manager UI, and let the next GetAgreement sync pick up the user-updated value."
+      },
+      {
+        "id": "E",
+        "text": "Delete the mismatched agreement with DeleteAgreement and upload it again so the AI produces a fresh extraction of its terms."
+      }
+    ],
+    "correct": "A,D",
+    "correctAnswers": [
+      "A",
+      "D"
+    ],
+    "answerText": "Pull each agreement with GetAgreement and compare its provisions with the ERP's values to build the analyst's mismatch queue.; Have the analyst correct the value in the Agreement Manager UI, and let the next GetAgreement sync pick up the user-updated value.",
+    "explanation": "The API reads provisions (GetAgreement) but has no update operation; reviewers correct values in the Agreement Manager UI, and later GET responses return the user-updated values instead of the AI ones.",
+    "whyNotOthers": "A and D are right: read and compare through the API, correct in the UI, and the next sync sees the fix. The trap is B: writing values back sounds natural, but the API has no update operation today. C returns an AI overview and does not re-extract or accept corrections, and E destroys the record and simply re-runs the AI, which can produce the same error.",
+    "optionExplanations": {
+      "A": "Correct. GetAgreement returns the provisions needed to compare against the ERP.",
+      "B": "There is no update operation in the Agreement Manager API; values are corrected in the UI.",
+      "C": "CreateAgreementSummary produces a summary; it does not re-run extraction or take corrected values.",
+      "D": "Correct. UI edits replace the AI-extracted values in later GET responses.",
+      "E": "Deleting and re-uploading only repeats the AI extraction and loses the record; nobody confirms the value."
+    },
+    "trapOption": "B",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "External review via GetAgreement, human correction in the UI, re-sync picks up the edit.",
+      "clues": [
+        "'external review queue compares' -> read provisions with GetAgreement",
+        "'analyst resolves any mismatch' -> correction in the Agreement Manager UI",
+        "'supports today' -> no update operation in the API"
+      ]
+    },
+    "concept": {
+      "title": "Review extractions: read via API",
+      "line": "Read extracted provisions through the API for external review; corrections are made in the Agreement Manager UI and flow back on the next GET."
+    }
+  },
+  {
+    "paper": "D",
+    "length": "long",
+    "style": "design",
+    "domain": "eSignature Features and Web Forms",
+    "topic": "Per-instance brand on a web form",
+    "stem": "Lumen Credit Union runs a template-based web form for auto-loan applications, embedded in its website, and the configuration already uses the credit union's own brand. For a three-month co-marketing campaign, applications that start from a car dealer partner's landing page must show the partner's co-branded logo and colors on both the form pages and the loan envelope signed afterwards; every other application keeps the normal look. The co-branded brand already exists in the account, and the backend creates one instance per applicant. Which approach fits?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Select the co-branded brand in the web form template's Advanced Options, so that both the form pages and the envelope use it for campaign applicants."
+      },
+      {
+        "id": "B",
+        "text": "Select the co-branded brand under Branding on the configuration's Preview tab, so that campaign instances show the partner's logo on every page."
+      },
+      {
+        "id": "C",
+        "text": "Pass the co-branded brand's brandId in Instances:createInstance for campaign applicants only, which brands both the form instance and its envelope."
+      },
+      {
+        "id": "D",
+        "text": "Pass the co-branded brand's brandId in Envelopes:create after each campaign form is submitted, which re-brands the envelope the instance generated."
+      }
+    ],
+    "correct": "C",
+    "answerText": "Pass the co-branded brand's brandId in Instances:createInstance for campaign applicants only, which brands both the form instance and its envelope.",
+    "explanation": "A brandId in Instances:createInstance applies to both the web form instance and its envelope and overrides the configuration's brand, so it can be set per applicant ('applications that start from a partner's page').",
+    "whyNotOthers": "C is right because only the request-level brandId is per instance and covers both the form and the envelope. The trap is A: a brand chosen in the web form template's Advanced Options affects envelopes only and applies to every applicant. B affects instances only, again for everyone, and D fails because the envelope is generated automatically on submission; the app does not call Envelopes:create.",
+    "optionExplanations": {
+      "A": "Web form template Advanced Options brand the envelopes only, and for every instance of the configuration.",
+      "B": "The Preview tab brand applies to instances only, not envelopes, and to all applicants.",
+      "C": "Correct. brandId in createInstance brands the instance and its envelope and overrides the configuration's brand.",
+      "D": "Docusign creates the envelope on submission with no Envelopes:create call from the app."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "Per-instance brandId in Instances:createInstance for template-based forms.",
+      "clues": [
+        "'both the form pages and the loan envelope' -> brand must cover instance and envelope",
+        "'every other application keeps the normal look' -> per-instance override",
+        "'template-based' -> request-level brandId is supported (not for standalone)"
+      ]
+    },
+    "concept": {
+      "title": "Branding web forms per instance",
+      "line": "brandId in createInstance brands instance and envelope and overrides configuration brands; template brand affects envelopes, Preview brand affects instances."
+    }
+  },
+  {
+    "paper": "D",
+    "length": "short",
+    "style": "fact",
+    "domain": "eSignature Features and Web Forms",
+    "topic": "Connected field that must pass verification",
+    "stem": "When an envelope with connected fields is created through the eSignature REST API, which extensionData property makes a field pass verification before the signer can complete the document?",
+    "options": [
+      {
+        "id": "A",
+        "text": "actionInputKey"
+      },
+      {
+        "id": "B",
+        "text": "requiredForExtension"
+      },
+      {
+        "id": "C",
+        "text": "extensionGroupId"
+      },
+      {
+        "id": "D",
+        "text": "extensionContract"
+      }
+    ],
+    "correct": "B",
+    "answerText": "requiredForExtension",
+    "explanation": "requiredForExtension is the boolean that indicates whether the field must pass verification to sign the document.",
+    "whyNotOthers": "B is right because requiredForExtension controls whether verification must succeed. The trap is A: actionInputKey is required too, but it names the input data key used for verification, not whether it must pass. C groups tabs that belong to the same model, and D names the template that defines the extension.",
+    "optionExplanations": {
+      "A": "actionInputKey identifies the input data key used for the verification request.",
+      "B": "Correct. When true, the field must pass verification before the document can be signed.",
+      "C": "extensionGroupId ties together tabs that belong to the same data model or concept.",
+      "D": "extensionContract indicates the template that defines the extension."
+    },
+    "trapOption": "A",
+    "importance": "LOW",
+    "concept": {
+      "title": "Connected fields extensionData",
+      "line": "Connected fields tabs carry extensionData from discovery; requiredForExtension decides whether verification must pass before signing."
+    }
+  },
+  {
+    "paper": "D",
+    "length": "short",
+    "style": "fact",
+    "domain": "eSignature Features and Web Forms",
+    "topic": "Empty identity verification list",
+    "stem": "In a new developer account, GET /restapi/v2.1/accounts/{accountId}/identity_verification returns an empty array. What does this indicate?",
+    "options": [
+      {
+        "id": "A",
+        "text": "No identity verification is configured for the account, so it must be enabled before testing."
+      },
+      {
+        "id": "B",
+        "text": "The access token lacks a scope, so the endpoint hides configurations the account already has."
+      },
+      {
+        "id": "C",
+        "text": "Workflows are listed only after an envelope with identity verification has been sent."
+      },
+      {
+        "id": "D",
+        "text": "The v2 endpoint must be used, because v2.1 lists phone authentication workflows only."
+      }
+    ],
+    "correct": "A",
+    "answerText": "No identity verification is configured for the account, so it must be enabled before testing.",
+    "explanation": "Docusign states that if IDV is not configured for the account, the identity_verification call returns an empty array; ID Verification is not enabled by default in developer accounts.",
+    "whyNotOthers": "A is right because an empty array means there is no configuration to return. The trap is B: a missing scope would produce an authorization error, not a silently empty list. C reverses the order (the workflowId is needed before sending), and D fails because identity verification by workflowId is a v2.1 feature.",
+    "optionExplanations": {
+      "A": "Correct. Empty means no identity verification configuration; IDV is not on by default in demo.",
+      "B": "Authorization problems return an error status, not an empty successful list.",
+      "C": "The workflowId is needed to send an envelope with verification, so it must be listed beforehand.",
+      "D": "identityVerification.workflowId is a REST v2.1 feature; v2 is not the fix."
+    },
+    "trapOption": "B",
+    "importance": "MEDIUM",
+    "concept": {
+      "title": "IDV must be configured first",
+      "line": "IdentityVerifications:list returns an empty array when IDV is not configured; IDV is not enabled by default in developer accounts."
+    }
+  },
+  {
+    "paper": "D",
+    "length": "long",
+    "style": "fact",
+    "domain": "eSignature Features and Web Forms",
+    "topic": "Authentication methods compared",
+    "stem": "Corvid Mutual is choosing recipient authentication for high-value claim settlement releases sent to claimants in the United States, Canada and Germany. The claims platform is being built against a Docusign developer account first and will go live in about four months, after a pilot with one regional claims office. Claimants log in to the claims portal before they are sent the release. The risk team wants a short list of facts before it picks a method. Which two statements are accurate? (Select two)",
+    "options": [
+      {
+        "id": "A",
+        "text": "Phone authentication confirms the claimant's legal identity against a government record before the documents open."
+      },
+      {
+        "id": "B",
+        "text": "Recording authenticationMethod on the recipient makes Docusign enforce the claims portal login before signing."
+      },
+      {
+        "id": "C",
+        "text": "Knowledge-based authentication relies on US public records, so it does not suit the Canadian and German claimants."
+      },
+      {
+        "id": "D",
+        "text": "Every authentication method, including ID Verification, is enabled by default in the developer environment for testing."
+      },
+      {
+        "id": "E",
+        "text": "Phone authentication, knowledge-based authentication and ID Verification each carry a per-use fee in production."
+      }
+    ],
+    "correct": "C,E",
+    "correctAnswers": [
+      "C",
+      "E"
+    ],
+    "answerText": "Knowledge-based authentication relies on US public records, so it does not suit the Canadian and German claimants.; Phone authentication, knowledge-based authentication and ID Verification each carry a per-use fee in production.",
+    "explanation": "KBA uses US public-record questions, so it only fits US recipients, and phone, KBA and ID Verification all incur per-use fees. The clue 'Canada and Germany' rules KBA out for most claimants.",
+    "whyNotOthers": "C and E are right. The trap is D: every method except ID Verification is enabled in the developer environment; IDV must be requested from Docusign. A overstates phone authentication, which proves access to a phone number, not legal identity, and B describes a record on the certificate that Docusign does not enforce.",
+    "optionExplanations": {
+      "A": "Phone authentication proves access to the phone number by a code; it is not a government ID check.",
+      "B": "authenticationMethod only records the app's own authentication; nothing is enforced by Docusign.",
+      "C": "Correct. KBA questions come from US public records, so non-US claimants cannot use it.",
+      "D": "ID Verification is the one method not enabled by default in the developer environment.",
+      "E": "Correct. Phone, KBA and IDV each incur a per-use fee."
+    },
+    "trapOption": "D",
+    "importance": "HIGH",
+    "decode": {
+      "needs": "Know the limits and costs of each recipient authentication method.",
+      "clues": [
+        "'United States, Canada and Germany' -> KBA is US only",
+        "'developer account first' -> IDV not enabled by default in demo",
+        "'log in to the claims portal' -> authenticationMethod only records it"
+      ]
+    },
+    "concept": {
+      "title": "Authentication trade-offs",
+      "line": "Access code is free and light; phone proves phone access; KBA is US only; IDV checks government ID, is not on in demo; phone/KBA/IDV cost per use."
+    }
+  },
+  {
+    "paper": "D",
+    "length": "long",
+    "style": "design",
+    "domain": "eSignature Features and Web Forms",
+    "topic": "Two applicants on an embedded web form",
+    "stem": "Granary Bank opens joint savings accounts on a tablet in the branch. A banker starts an embedded instance of a template-based web form configured for two recipients, primary applicant and co-applicant, and the bank expects both applicants, sitting together, to fill in the form on the same tablet and then sign one account agreement. The configuration's Initiate signing session from email setting is off, and the branch Wi-Fi is reliable. Branch staff are measured on how quickly accounts are opened. What should the team plan for?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Create the instance with two clientUserId values, one per applicant, so that the tablet shows each applicant's part of the form in turn before signing."
+      },
+      {
+        "id": "B",
+        "text": "Create one embedded instance per applicant on the tablet, so that each one fills in the form there and both sign the same account agreement afterwards."
+      },
+      {
+        "id": "C",
+        "text": "Turn on Initiate signing session from email, which lets both applicants complete the form and then sign together on the tablet in one session."
+      },
+      {
+        "id": "D",
+        "text": "Only the primary applicant completes the embedded instance on the tablet; the co-applicant reaches the form through a link in an envelope email."
+      }
+    ],
+    "correct": "D",
+    "answerText": "Only the primary applicant completes the embedded instance on the tablet; the co-applicant reaches the form through a link in an envelope email.",
+    "explanation": "An embedded instance is completed by a single user in the embedded view; additional recipients access the form through a link in the envelope email. The clue 'both applicants... on the same tablet' is the expectation the team must correct.",
+    "whyNotOthers": "D is right because embedded delivery covers only the primary recipient. The trap is B: each web form instance generates its own envelope, so two instances produce two agreements, not one. A fails because clientUserId identifies one primary user per instance, and C switches the signing to email, which moves signing off the tablet rather than adding the co-applicant.",
+    "optionExplanations": {
+      "A": "clientUserId identifies the single primary user of an embedded instance; there is no second one.",
+      "B": "Each instance generates its own envelope, so the applicants would sign two separate agreements.",
+      "C": "That setting sends the submitter a signing link by email; it does not bring other recipients into the embedded session.",
+      "D": "Correct. Only the primary recipient uses the embedded view; additional recipients get an envelope email."
+    },
+    "trapOption": "B",
+    "importance": "HIGH",
+    "decode": {
+      "needs": "Embedded instance serves only the primary recipient; others get an envelope email.",
+      "clues": [
+        "'tablet in the branch' -> embedded instance",
+        "'two recipients... same tablet' -> only the primary recipient is embedded",
+        "'sign one account agreement' -> one instance, one envelope",
+        "'Wi-Fi is reliable' -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "Embedded web forms: one user",
+      "line": "An embedded web form instance is completed by one primary user; other recipients reach the form and envelope by email, one envelope per instance."
+    }
+  },
+  {
+    "paper": "D",
+    "length": "short",
+    "style": "fact",
+    "domain": "eSignature Features and Web Forms",
+    "topic": "Token for the ID Evidence API",
+    "stem": "Which call returns the bearer token that an app passes to the ID Evidence API to read a recipient's verification events?",
+    "options": [
+      {
+        "id": "A",
+        "text": "POST /oauth/token with an identity evidence scope added to the JWT assertion"
+      },
+      {
+        "id": "B",
+        "text": "POST .../envelopes/{envelopeId}/recipients/{recipientIdGuid}/identity_proof_token"
+      },
+      {
+        "id": "C",
+        "text": "GET .../accounts/{accountId}/identity_verification to read the configuration's workflowId"
+      },
+      {
+        "id": "D",
+        "text": "GET .../envelopes/{envelopeId}/recipients with include_extended set to true"
+      }
+    ],
+    "correct": "B",
+    "answerText": "POST .../envelopes/{envelopeId}/recipients/{recipientIdGuid}/identity_proof_token",
+    "explanation": "EnvelopeRecipients:createRecipientProofFileResourceToken (POST .../identity_proof_token) returns a resource token valid for 2 minutes, which is the bearer token for ID Evidence events and media calls.",
+    "whyNotOthers": "B is right because the ID Evidence API takes a resource token issued per recipient. The trap is A: an OAuth access token is needed to request the resource token, but it is not itself accepted by the ID Evidence API for this purpose. C returns workflow IDs for sending, and D lists recipients (useful to find the recipientIdGuid) but issues no token.",
+    "optionExplanations": {
+      "A": "The OAuth token is only used to request the resource token; there is no special evidence scope flow here.",
+      "B": "Correct. identity_proof_token issues the 2-minute resource token for that recipient.",
+      "C": "IdentityVerifications:list returns workflow IDs used when sending, not an evidence token.",
+      "D": "EnvelopeRecipients:list gives the recipientIdGuid but no token."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "concept": {
+      "title": "ID Evidence resource tokens",
+      "line": "Read ID Evidence with a per-recipient resource token from identity_proof_token, valid 2 minutes, not with the OAuth access token."
+    }
+  },
+  {
+    "paper": "D",
+    "length": "long",
+    "style": "design",
+    "domain": "Agreement Manager API",
+    "topic": "Refreshing a known set of agreements",
+    "stem": "Every morning, Saltmarsh Logistics' treasury dashboard refreshes 30 strategic supplier agreements whose Agreement Manager ids it already stores, showing each one's parties, expiration date and payment terms. The hourly API limit is shared with four other integrations, so the architect wants as few calls as possible. Agreements are never added to or removed from this list during the quarter, and the dashboard is read-only and shows one tile per agreement. Which approach fits?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Call GetAgreementsList once with an id filter listing the 30 stored ids with the in operator, and read parties and provisions from the records."
+      },
+      {
+        "id": "B",
+        "text": "Call GetAgreement once for each of the 30 stored ids, so each dashboard tile reads the parties and provisions of exactly one agreement record."
+      },
+      {
+        "id": "C",
+        "text": "Call GetAgreementsList with no filter and keep only the 30 stored ids, because the list call cannot filter by agreement id at all."
+      },
+      {
+        "id": "D",
+        "text": "Call CreateAgreementSummary for each of the 30 stored ids and read the expiration date and payment terms from each returned summary."
+      }
+    ],
+    "correct": "A",
+    "answerText": "Call GetAgreementsList once with an id filter listing the 30 stored ids with the in operator, and read parties and provisions from the records.",
+    "explanation": "GetAgreementsList accepts an id filter with a comma-separated list and the in operator, and list records include parties and provisions, so one call (plus paging if needed) covers 'as few calls as possible'.",
+    "whyNotOthers": "A is right because the list call filters by id with the in operator and its records include parties and provisions. The trap is B: GetAgreement per id would work and maps neatly to one tile per agreement, but 30 calls are not 'as few calls as possible'. C ignores the id filter and reads the whole repository, and D returns AI prose rather than the structured fields a dashboard needs.",
+    "optionExplanations": {
+      "A": "Correct. One filtered list call returns the 30 agreements with parties and provisions.",
+      "B": "Works and returns the same parties and provisions, but it costs 30 calls against a shared hourly limit, while one filtered list call returns all 30 records.",
+      "C": "GetAgreementsList does support an id filter (= or in with comma-separated UUIDs).",
+      "D": "Summaries are AI-written overviews, not structured provision values, and need 30 POST calls."
+    },
+    "trapOption": "B",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "One GetAgreementsList call with an id in-filter.",
+      "clues": [
+        "'ids it already stores' -> id filter",
+        "'as few calls as possible' -> one list call, not 30 gets",
+        "'parties, expiration date and payment terms' -> provisions in list records",
+        "'one tile per agreement', 'never added or removed during the quarter' -> red herrings"
+      ]
+    },
+    "concept": {
+      "title": "Filter the list by id",
+      "line": "To read a known set of agreements efficiently, filter GetAgreementsList on id with the in operator; list records include parties and provisions."
+    }
+  },
+  {
+    "paper": "D",
+    "length": "long",
+    "style": "design",
+    "domain": "Agreement Manager API",
+    "topic": "AI summary versus provisions",
+    "stem": "Ashgrove Health's procurement assistant shows buyers a short AI-written overview of each supplier contract. It also blocks purchase orders when a contract has expired or its payment terms exceed 60 days. The product owner proposes using one source for both features to keep the code simple. Legal reminds the team that blocking decisions must rest on data that contract reviewers can confirm, and that an AI overview is not a statement of the binding terms. Which design fits?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Use CreateAgreementSummary for both features, and parse the expiration date and payment terms out of the summary text with the assistant's own language model."
+      },
+      {
+        "id": "B",
+        "text": "Use GetAgreement provisions for both features, and compose the buyer overview from those provisions instead of requesting any Docusign AI summary."
+      },
+      {
+        "id": "C",
+        "text": "Use CreateAgreementSummary only for the overview, and base the blocking rules on the expiration_date and payment_terms_due_date provisions."
+      },
+      {
+        "id": "D",
+        "text": "Drive the blocking rules from GetAgreement provisions, and get the overview with a GET request to .../agreements/{agreementId}/summary for each contract."
+      }
+    ],
+    "correct": "C",
+    "answerText": "Use CreateAgreementSummary only for the overview, and base the blocking rules on the expiration_date and payment_terms_due_date provisions.",
+    "explanation": "CreateAgreementSummary gives an AI overview that may not capture all details or legal nuances, while provisions are structured values that reviewers can confirm or correct in the UI, which matches 'blocking decisions must rest on data that reviewers can confirm'.",
+    "whyNotOthers": "C is right because each feature uses the source built for it. The trap is D: provisions for the rules is correct, but there is no GET summary endpoint; the overview comes from the POST CreateAgreementSummary. A builds blocking rules on unconfirmed AI prose, and B drops the AI-written overview the buyers asked for.",
+    "optionExplanations": {
+      "A": "Parsing AI prose bases blocking decisions on text that is not a reviewed statement of terms.",
+      "B": "Meets the rule but no longer gives buyers the AI-written overview the feature requires.",
+      "C": "Correct. Summary for reading, structured provisions for decisions.",
+      "D": "There is no GET summary endpoint; the summary is created with POST .../ai/actions/summarize."
+    },
+    "trapOption": "D",
+    "importance": "HIGH",
+    "decode": {
+      "needs": "Summary via CreateAgreementSummary; rules on GetAgreement provisions.",
+      "clues": [
+        "'AI-written overview' -> CreateAgreementSummary (POST)",
+        "'blocks purchase orders' -> structured provisions",
+        "'data that contract reviewers can confirm' -> provisions, reviewable in the UI"
+      ]
+    },
+    "concept": {
+      "title": "Summaries inform, provisions decide",
+      "line": "Use CreateAgreementSummary for human-readable overviews and structured provisions from GetAgreement for automated business rules."
+    }
+  },
+  {
+    "paper": "D",
+    "length": "short",
+    "style": "fact",
+    "domain": "Agreement Manager API",
+    "topic": "Term length filter format",
+    "stem": "A GetAgreementsList request must return only agreements with a term of three years or more. In which format does the provisions.term_length filter expect its value?",
+    "options": [
+      {
+        "id": "A",
+        "text": "An integer number of months, such as 36"
+      },
+      {
+        "id": "B",
+        "text": "An integer number of days, such as 1095"
+      },
+      {
+        "id": "C",
+        "text": "A plain-language duration, such as 3 years"
+      },
+      {
+        "id": "D",
+        "text": "An ISO 8601 duration, such as P3Y"
+      }
+    ],
+    "correct": "D",
+    "answerText": "An ISO 8601 duration, such as P3Y",
+    "explanation": "term_length filters take an ISO 8601 duration string such as P1Y or P3Y, combined with operators like gte.",
+    "whyNotOthers": "D is right because Agreement Manager stores durations as ISO 8601 (for example term_length P3Y, renewal_notice_period P90D). The trap is A: 36 months is the same length, but the filter does not take integers. B and C are likewise not the expected format.",
+    "optionExplanations": {
+      "A": "Durations are not expressed as integer months.",
+      "B": "Durations are not expressed as integer days.",
+      "C": "Plain-language text is not accepted as a duration filter.",
+      "D": "Correct. ISO 8601 durations such as P3Y, used with operators such as gte."
+    },
+    "trapOption": "A",
+    "importance": "LOW",
+    "concept": {
+      "title": "ISO 8601 durations",
+      "line": "Agreement Manager durations such as term_length and renewal_notice_period use ISO 8601 duration strings like P3Y or P90D."
+    }
+  },
+  {
+    "paper": "D",
+    "length": "short",
+    "style": "fact",
+    "domain": "Agreement Manager API",
+    "topic": "Agreement data in developer accounts",
+    "stem": "How long do agreement documents stored in Agreement Manager persist in a Docusign developer account?",
+    "options": [
+      {
+        "id": "A",
+        "text": "They are purged every month, like eSignature envelopes in the developer environment."
+      },
+      {
+        "id": "B",
+        "text": "They persist until an administrator deletes the developer account."
+      },
+      {
+        "id": "C",
+        "text": "They are purged 30 days after AI extraction has completed for them."
+      },
+      {
+        "id": "D",
+        "text": "They persist only until the integration key passes Go-Live review."
+      }
+    ],
+    "correct": "B",
+    "answerText": "They persist until an administrator deletes the developer account.",
+    "explanation": "Unlike eSignature documents in the developer environment, documents stored in Agreement Manager (Navigator) are not purged monthly; they persist until the admin deletes the account.",
+    "whyNotOthers": "B is right per the Navigator concepts documentation. The trap is A: monthly purging applies to eSignature envelopes in demo, not to Agreement Manager documents. C and D describe retention rules that do not exist.",
+    "optionExplanations": {
+      "A": "Monthly purging is the eSignature demo behaviour, explicitly not Agreement Manager's.",
+      "B": "Correct. Agreement Manager documents in demo persist until the admin deletes the account.",
+      "C": "No such 30-day retention rule exists.",
+      "D": "Go-Live copies the integration key to production; it does not delete demo data."
+    },
+    "trapOption": "A",
+    "importance": "LOW",
+    "concept": {
+      "title": "Demo agreement data persists",
+      "line": "Agreement Manager documents in a developer account are not purged monthly like eSignature envelopes; they stay until the account is deleted."
+    }
+  }
+]

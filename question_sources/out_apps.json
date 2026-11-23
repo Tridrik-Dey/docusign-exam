@@ -1,0 +1,791 @@
+[
+  {
+    "paper": "A",
+    "length": "long",
+    "domain": "App Center and Extension Apps",
+    "topic": "Choosing connected fields vs data verification",
+    "stem": "Meridian Mutual, an insurer, sends renewal agreements from eSignature. Its developer Kwame must check, while the policyholder is filling in the envelope, that the policy number, the vehicle VIN and the named driver together match one record in Meridian's own policy administration system, and show the signer a custom message telling them what to fix. A colleague suggests reusing the address-validation extension already installed for mailing addresses. Meridian also runs Maestro workflows for claims, but those are out of scope here. Which extension type and extension point should Kwame use?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Data verification extension, invoked at the eSignature Add Fields view and signing"
+      },
+      {
+        "id": "B",
+        "text": "Data IO extension, invoked from a read step in a Maestro workflow"
+      },
+      {
+        "id": "C",
+        "text": "Connected fields extension, invoked at the eSignature Add Fields view and signing"
+      },
+      {
+        "id": "D",
+        "text": "Connected fields extension, invoked from an extension step in a Maestro workflow"
+      }
+    ],
+    "correct": "C",
+    "answerText": "Connected fields extension, invoked at the eSignature Add Fields view and signing",
+    "explanation": "The data is a proprietary multi-property policy record in Meridian's own system of record and must be checked 'while the policyholder is filling in the envelope', which is exactly the connected fields extension at the eSignature Add Fields and signing extension point.",
+    "whyNotOthers": "C is right because connected fields verify any data against your own system of record during eSignature preparation and signing, and the response can carry custom messages. The trap is A: data verification has the same extension point but only verifies specific predefined data types (bank account, email, phone, SSN, postal address, business FEIN), not a proprietary policy record. B is a Maestro-only extension and D fails because connected fields are not supported in Maestro workflows.",
+    "optionExplanations": {
+      "A": "Right extension point, but data verification extensions verify fixed data types such as bank account or postal address, not a custom policy record in Meridian's own system.",
+      "B": "Data IO reads and writes a system of record from Maestro workflow steps; it is not invoked while a signer fills in an eSignature envelope.",
+      "C": "Correct. Connected fields verify custom data against the organization's system of record at the eSignature Add Fields and signing extension point and can return custom guidance messages.",
+      "D": "Right extension type, wrong extension point: connected fields are not currently supported in Maestro workflows."
+    },
+    "trapOption": "A",
+    "importance": "HIGH",
+    "basedOn": [
+      29,
+      31,
+      35,
+      45
+    ]
+  },
+  {
+    "paper": "A",
+    "length": "long",
+    "domain": "App Center and Extension Apps",
+    "topic": "Refreshing a connected fields data model",
+    "stem": "Priya's private connected fields app has been accepted by her company's production account for three months and works well. Last week the back-end team added a new LoanPurpose property to the verifiable Loan concept in their Concerto model, and the extension test for Get Type Definitions now returns it correctly. However, in the eSignature Add Fields view, preparers still see the old list of App Fields without LoanPurpose. Nothing in the manifest changed, and the connection's OAuth tokens are still valid. What should Priya do so that preparers see the new field?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Resubmit the extension app for Docusign review so that the updated data model is approved"
+      },
+      {
+        "id": "B",
+        "text": "Refresh the extension app's connection in the App Center so Docusign calls Get Type Names and Get Type Definitions again"
+      },
+      {
+        "id": "C",
+        "text": "Delete the app from the account and re-add the account ID, then ask the administrator to accept it again"
+      },
+      {
+        "id": "D",
+        "text": "Add LoanPurpose to the actionReferences of the connected fields extension in the manifest"
+      }
+    ],
+    "correct": "B",
+    "answerText": "Refresh the extension app's connection in the App Center so Docusign calls Get Type Names and Get Type Definitions again",
+    "explanation": "The data model changed 'after the extension app was connected', so the account still holds the old type definitions; refreshing the connection keeps it intact and makes Docusign execute Get Type Names and Get Type Definitions to retrieve the latest model.",
+    "whyNotOthers": "B is right because Docusign reads the Concerto data model only when a connection is created or refreshed. The trap is C: removing and re-sharing would force a reconnect, but it is disruptive (admins are not notified of removal and the app is in use) and unnecessary when a refresh does the same. A fails because a data model change on the external service is not a manifest change that needs review, and D fails because actionReferences list actions, not data model properties.",
+    "optionExplanations": {
+      "A": "Review evaluates the registered app; the data model lives in the external service's responses and is picked up on connection refresh, not by re-review.",
+      "B": "Correct. Refreshing the connection in the App Center keeps it intact and makes Docusign re-run Get Type Names and Get Type Definitions to load the new property.",
+      "C": "This would eventually reload the model, but it removes an app that is in use without notifying the admin; a connection refresh is the intended fix.",
+      "D": "actionReferences in an extension point to action definitions such as Verify; data model properties are never listed there."
+    },
+    "trapOption": "C",
+    "importance": "MEDIUM",
+    "basedOn": [
+      29,
+      30,
+      21
+    ]
+  },
+  {
+    "paper": "A",
+    "length": "short",
+    "domain": "App Center and Extension Apps",
+    "topic": "Manifest references between objects",
+    "stem": "When Docusign validates an extension app manifest, which value must exactly match the name of an entry in the connections object?",
+    "options": [
+      {
+        "id": "A",
+        "text": "The connectionsReference value inside each action definition"
+      },
+      {
+        "id": "B",
+        "text": "Each entry of the actionReferences array inside an extension"
+      },
+      {
+        "id": "C",
+        "text": "The template identifier of each action definition"
+      },
+      {
+        "id": "D",
+        "text": "The params.uri value of each action definition"
+      }
+    ],
+    "correct": "A",
+    "answerText": "The connectionsReference value inside each action definition",
+    "explanation": "Each action points to the auth credentials it uses through connectionsReference, and that value must match a defined connection name, which is why connection names must be unique.",
+    "whyNotOthers": "A is right because the action-to-connection link is made by connectionsReference. The trap is B: actionReferences is also a reference by name, but it links an extension to actions, not to connections. C names the Docusign-defined action contract and D is the external endpoint URL, neither of which refers to a connection.",
+    "optionExplanations": {
+      "A": "Correct. connectionsReference in an action links it to the connection (auth credentials) defined in the connections object.",
+      "B": "actionReferences links an extension to its action definitions, one level away from connections.",
+      "C": "The action template is a Docusign-predefined identifier of the action contract, not a connection name.",
+      "D": "params.uri is the external platform endpoint the action calls, not a reference to a connection."
+    },
+    "trapOption": "B",
+    "importance": "HIGH",
+    "basedOn": [
+      21,
+      30,
+      34
+    ]
+  },
+  {
+    "paper": "A",
+    "length": "long",
+    "domain": "App Center and Extension Apps",
+    "topic": "Infrastructure for an extension app (multi)",
+    "stem": "Harbor Logistics wants an extension app that writes signed bills of lading into its 15-year-old document repository. The repository exposes a SOAP endpoint that accepts and returns XML, sits inside the corporate network, and only accepts traffic from approved addresses. The team already uses OAuth 2.0 through Okta, which can issue tokens to Docusign with the right client ID, client secret, authorization URL and token URL. Some employees run browser ad blockers. Which two infrastructure tasks are needed so Docusign can call the service and admins can install the app? (Select two)",
+    "options": [
+      {
+        "id": "A",
+        "text": "Add Docusign's origins to the CORS allowed origins list in Apps and Keys"
+      },
+      {
+        "id": "B",
+        "text": "Build and host an API proxy that maps Docusign's JSON action contract to the SOAP/XML interface"
+      },
+      {
+        "id": "C",
+        "text": "Add a CNAME record so the repository is reachable under a docusign.com subdomain"
+      },
+      {
+        "id": "D",
+        "text": "Change firewall (and ad blocker) configuration so Docusign can reach the service and the app can be installed"
+      },
+      {
+        "id": "E",
+        "text": "Submit a Go-Live request for an integration key that points to the repository"
+      }
+    ],
+    "correct": "B,D",
+    "correctAnswers": [
+      "B",
+      "D"
+    ],
+    "answerText": "Build and host an API proxy that maps Docusign's JSON action contract to the SOAP/XML interface; Change firewall (and ad blocker) configuration so Docusign can reach the service and the app can be installed",
+    "explanation": "The service speaks XML that does not conform to the Docusign action contract, so an API proxy is needed, and it only 'accepts traffic from approved addresses', so firewall and ad blocker configuration must allow Docusign requests and App Center installation.",
+    "whyNotOthers": "B and D are right: Docusign lists an API proxy (when the API does not match the action contract) and network firewall/ad blocker changes as the infrastructure an extension app may need. The trap is A: CORS in Apps and Keys lets a browser single-page app call the eSignature API, it does nothing for server-to-server calls from Docusign to your service. C is not a Docusign requirement, and E belongs to API integrations using integration keys, not to extension apps, which are approved through review and publishing.",
+    "optionExplanations": {
+      "A": "CORS settings in Apps and Keys let a browser app call Docusign APIs; they do not let Docusign reach an external service.",
+      "B": "Correct. An API proxy translates Docusign's action requests and responses to the XML/SOAP format the repository understands.",
+      "C": "No DNS CNAME entry is required for extension apps; reachability is a firewall issue, not a naming issue.",
+      "D": "Correct. Firewall and ad blocker changes may be needed so Docusign can send requests to the API service and users can install the app.",
+      "E": "Go-Live promotes an integration key for API integrations; extension apps go through Developer Console review and publishing instead."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "basedOn": [
+      24,
+      26,
+      41,
+      25
+    ]
+  },
+  {
+    "paper": "A",
+    "length": "long",
+    "domain": "App Center and Extension Apps",
+    "topic": "Sharing an approved private app",
+    "stem": "Lena works for a regional credit union that is not a Docusign partner. Her extension app verifies member numbers against the credit union's core banking system and must be installable only by the credit union's three production accounts. She built and tested it in her developer account, which the Developer Console has already installed it into, and the review has just finished with the app in Approved status. Her manager asks her to 'make it live in the same way as the public apps we use'. What should Lena do next?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Click the button that makes the app available to all customers, then limit it with publicationRegions"
+      },
+      {
+        "id": "B",
+        "text": "Submit a Go-Live request so the app's integration key is promoted to the three production accounts"
+      },
+      {
+        "id": "C",
+        "text": "Add the account IDs of the developer account and the demo accounts the testers used"
+      },
+      {
+        "id": "D",
+        "text": "Publish it privately by adding each production account ID (GUID) with an alias, then wait for each admin to accept it"
+      }
+    ],
+    "correct": "D",
+    "answerText": "Publish it privately by adding each production account ID (GUID) with an alias, then wait for each admin to accept it",
+    "explanation": "The app is for 'only the credit union's three production accounts' and the org is 'not a Docusign partner', so it is a private app: after approval she adds each production account ID (GUID), and each account shows Pending until its admin accepts the app in the App Center.",
+    "whyNotOthers": "D is right because private distribution is shared by listing production account IDs, and status stays Pending until the admin accepts. The trap is A: that is the public flow (which also requires partner status), and publicationRegions limits regions, not specific accounts. B confuses extension apps with API integration Go-Live, and C lists non-production accounts, while private apps are shared with production accounts.",
+    "optionExplanations": {
+      "A": "This is the public publishing flow; it exposes the app to every App Center customer, and publicationRegions applies to public apps only, by region, not by account.",
+      "B": "Go-Live is for integration keys of API integrations; extension apps become usable in production by being published after review.",
+      "C": "Private apps are shared with selected production accounts; the developer account already has the app for testing.",
+      "D": "Correct. For PRIVATE distribution she adds each production account ID (GUID) with an alias; status is Pending until that account's administrator accepts the app."
+    },
+    "trapOption": "A",
+    "importance": "HIGH",
+    "basedOn": [
+      32,
+      33,
+      27
+    ]
+  },
+  {
+    "paper": "A",
+    "length": "short",
+    "domain": "App Center and Extension Apps",
+    "topic": "Changes not allowed after an app is live",
+    "stem": "Once an extension app has been published and is live, which change can the developer NOT make by updating the app registration?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Change the params.uri endpoint of an existing action"
+      },
+      {
+        "id": "B",
+        "text": "Replace the screenshots and long description of the App Center listing"
+      },
+      {
+        "id": "C",
+        "text": "Rotate the client secret stored in the connection's settings"
+      },
+      {
+        "id": "D",
+        "text": "Switch the distribution from PRIVATE to PUBLIC"
+      }
+    ],
+    "correct": "D",
+    "answerText": "Switch the distribution from PRIVATE to PUBLIC",
+    "explanation": "After an extension app has been published to make it live, its distribution type (public or private) cannot be changed, and regions where it is currently available cannot be removed.",
+    "whyNotOthers": "D is right because distribution type is locked once the app is live. The trap is A: changing an endpoint sounds risky, but updating registration details to follow changes in the API service is explicitly supported. B (listing content) and C (connection credentials) are also normal registration updates.",
+    "optionExplanations": {
+      "A": "Updating action endpoints is a supported registration update, for example when the API service changes.",
+      "B": "Listing text and images can be updated through the App Center Listing settings or the manifest.",
+      "C": "Connection settings such as client ID and client secret can be updated in the registration.",
+      "D": "Correct. After publishing, the distribution type cannot be changed (nor can regions where the app is available be removed)."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "basedOn": [
+      27,
+      32
+    ]
+  },
+  {
+    "paper": "A",
+    "length": "long",
+    "domain": "App Center and Extension Apps",
+    "topic": "Storing completed files from a workflow",
+    "stem": "VaultCo sells a secure document vault and wants Docusign customers to drop their completed agreements into it automatically as the last step of their Maestro workflows, next to steps that already push deal status into Salesforce. VaultCo's architect proposes reusing the record-writing logic they built for the CRM integration, because 'a file is just another record'. A second engineer found an older sample built on the file archive extension and wants to copy it. Which extension should VaultCo build for this new app?",
+    "options": [
+      {
+        "id": "A",
+        "text": "File output cloud storage extension (File IO), used from a Maestro workflow step"
+      },
+      {
+        "id": "B",
+        "text": "Data IO extension with a Create Record action that writes the agreement into the vault"
+      },
+      {
+        "id": "C",
+        "text": "File archive extension, because it is the extension Docusign recommends for new storage apps"
+      },
+      {
+        "id": "D",
+        "text": "Connected fields extension, used after the final signer completes the envelope"
+      }
+    ],
+    "correct": "A",
+    "answerText": "File output cloud storage extension (File IO), used from a Maestro workflow step",
+    "explanation": "The requirement is to store completed agreement files from a Maestro workflow step, which is the file output cloud storage extension; the docs say file output cloud storage is for new apps and file archive is legacy.",
+    "whyNotOthers": "A is right because writing files to a cloud storage system from a workflow is the File IO (file output cloud storage) extension. The trap is B: Data IO reads and writes structured records in a system of record, it does not deliver document files to storage. C fails because file archive is the legacy option, not the recommended one for new apps, and D verifies field values during signing and is not supported in Maestro.",
+    "optionExplanations": {
+      "A": "Correct. The file output cloud storage extension writes files to a cloud storage system and is invoked from Maestro workflows; it is the choice for new apps.",
+      "B": "Data IO actions such as Create Record handle structured record data in a system of record, not storing agreement documents.",
+      "C": "File archive is the legacy extension; Docusign recommends file output cloud storage for new apps.",
+      "D": "Connected fields verify signer-entered values against a system of record during signing; they do not store files and are not supported in Maestro."
+    },
+    "trapOption": "B",
+    "importance": "HIGH",
+    "basedOn": [
+      4,
+      23
+    ]
+  },
+  {
+    "paper": "A",
+    "length": "long",
+    "domain": "App Center and Extension Apps",
+    "topic": "Sending an envelope with connected fields by API (multi)",
+    "stem": "Tomas maintains a loan origination portal that creates envelopes through the eSignature REST API. His company has installed and connected a private connected fields app that verifies account numbers against its ledger. Preparers who use the eSignature web app already see the App Fields, but Tomas must now add the same verified fields to envelopes his portal sends without any manual preparation, and keep his existing JSON SIM Connect listener. Which two steps belong to his API flow? (Select two)",
+    "options": [
+      {
+        "id": "A",
+        "text": "Call TabInfo:GetConnectedFieldsTabGroups to retrieve the connected fields tab definitions for the installed app"
+      },
+      {
+        "id": "B",
+        "text": "Call the app's Get Type Definitions endpoint directly from the portal to build the tabs"
+      },
+      {
+        "id": "C",
+        "text": "Place the returned extension data in each tab's extensionData and then call Envelopes:create"
+      },
+      {
+        "id": "D",
+        "text": "Add the connected fields as a step in a Maestro workflow that the portal triggers"
+      },
+      {
+        "id": "E",
+        "text": "Create the envelope first and then call Get Type Names to attach the verification to it"
+      }
+    ],
+    "correct": "A,C",
+    "correctAnswers": [
+      "A",
+      "C"
+    ],
+    "answerText": "Call TabInfo:GetConnectedFieldsTabGroups to retrieve the connected fields tab definitions for the installed app; Place the returned extension data in each tab's extensionData and then call Envelopes:create",
+    "explanation": "The documented sequence for connected fields by API is TabInfo:GetConnectedFieldsTabGroups, then put the data in each tab's extensionData, then Envelopes:create.",
+    "whyNotOthers": "A and C are right because the Connected Fields API returns the tab groups for installed apps and the integration copies that data into each tab's extensionData before creating the envelope. The trap is B: Get Type Definitions is an action Docusign calls on the extension app when the connection is created or refreshed, not something the portal calls to build tabs. D fails because connected fields are not supported in Maestro, and E reverses the flow by attaching verification after creation.",
+    "optionExplanations": {
+      "A": "Correct. TabInfo:GetConnectedFieldsTabGroups retrieves the connected fields tab groups available from installed apps.",
+      "B": "Get Type Definitions is called by Docusign on the external service during connection or refresh; the integration uses the Connected Fields API instead.",
+      "C": "Correct. Each tab's extensionData carries the connected field information, and then Envelopes:create sends the envelope.",
+      "D": "Connected fields are not currently supported in Maestro workflows.",
+      "E": "Get Type Names is a Docusign-to-app action run at connect or refresh time; verification data must be on the tabs when the envelope is created."
+    },
+    "trapOption": "B",
+    "importance": "MEDIUM",
+    "basedOn": [
+      29,
+      16,
+      6
+    ]
+  },
+  {
+    "paper": "A",
+    "length": "short",
+    "domain": "App Center and Extension Apps",
+    "topic": "Test prerequisites in the Developer Console",
+    "stem": "In the Developer Console, which prerequisite is required before running functional tests but is NOT required before running integration tests?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Setting up an API proxy if the external API does not match the Docusign contract"
+      },
+      {
+        "id": "B",
+        "text": "Successful connection test and successful extension tests for each extension"
+      },
+      {
+        "id": "C",
+        "text": "An account with the authorization provider whose credentials you supply in the test"
+      },
+      {
+        "id": "D",
+        "text": "A registered extension app in the Developer Console"
+      }
+    ],
+    "correct": "B",
+    "answerText": "Successful connection test and successful extension tests for each extension",
+    "explanation": "Functional tests require a successful connection test and successful extension tests for every extension; integration tests are those connection and extension tests themselves.",
+    "whyNotOthers": "B is right because functional tests build on passed integration tests. The trap is A: an API proxy, when needed, is required for both integration and functional tests. C is also required for both, and D is required for every test type, including the App Center preview.",
+    "optionExplanations": {
+      "A": "Required for both integration and functional tests (not for App Center preview), so it is not what distinguishes them.",
+      "B": "Correct. A successful connection test and extension tests for each extension are prerequisites only for functional tests.",
+      "C": "Credentials for the authorization provider are needed for both integration and functional tests.",
+      "D": "Registration is required for integration tests, functional tests and the App Center preview alike."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "basedOn": [
+      28,
+      33
+    ]
+  },
+  {
+    "paper": "B",
+    "length": "long",
+    "domain": "App Center and Extension Apps",
+    "topic": "Choosing data verification for a standard data type",
+    "stem": "Corvid Supply onboards new vendors with an eSignature template. Its compliance lead, Ines, needs the vendor's business entity and federal employer identification number (FEIN) checked against authoritative records while the vendor fills in the agreement, with signing blocked until the value is corrected. Corvid has no internal registry of FEINs and does not want to model its own data types; a provider exists whose API supports Docusign's business entity verification contract. Corvid's CRM sync runs in Maestro separately. Which extension should Ines use?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Connected fields extension with a custom Concerto model of the vendor record"
+      },
+      {
+        "id": "B",
+        "text": "Data verification extension for business entity (FEIN), used in eSignature"
+      },
+      {
+        "id": "C",
+        "text": "Data IO extension that searches the provider's records from a Maestro step"
+      },
+      {
+        "id": "D",
+        "text": "Connected fields extension invoked from the CRM sync workflow in Maestro"
+      }
+    ],
+    "correct": "B",
+    "answerText": "Data verification extension for business entity (FEIN), used in eSignature",
+    "explanation": "The data is a standard verifiable type (business FEIN), checked 'while the vendor fills in the agreement', and Corvid has 'no internal registry' and no wish to model data types, which points to the data verification extension at the eSignature extension point.",
+    "whyNotOthers": "B is right because data verification extensions verify specific common data types, including business FEIN, in eSignature. The trap is A: connected fields also verify during signing, but they are meant for custom data in your own system of record and require a custom Concerto data model, which Corvid explicitly does not want. C and D place the check in Maestro, which is not where signers fill in envelopes, and connected fields are not supported in Maestro.",
+    "optionExplanations": {
+      "A": "Connected fields work at the same point but are designed for custom data against your own system of record, needing a custom data model Corvid does not have.",
+      "B": "Correct. Business FEIN verification is one of the data verification extensions and runs in eSignature while the signer completes fields.",
+      "C": "Data IO reads and writes a system of record from Maestro steps; it does not verify values while a vendor fills in an envelope.",
+      "D": "Connected fields are not supported in Maestro workflows, and the check must happen during signing."
+    },
+    "trapOption": "A",
+    "importance": "HIGH",
+    "basedOn": [
+      31,
+      45,
+      29
+    ]
+  },
+  {
+    "paper": "B",
+    "length": "long",
+    "domain": "App Center and Extension Apps",
+    "topic": "Reading a system of record in Maestro",
+    "stem": "Aster Health is designing a Maestro patient intake workflow. Before the web form step, the workflow must look up the patient in Aster's proprietary records platform and prefill the form; after signing, it must write the updated insurance details back. A consultant proposes connected fields because 'they already map to our system of record and support autofill values'. Another engineer suggests the bank account verification extension already installed for billing. Which extension type should Aster's developer build to meet the requirement?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Connected fields extension, because it can return autofill values from the system of record"
+      },
+      {
+        "id": "B",
+        "text": "Data verification extension, because it can check the patient data before prefilling"
+      },
+      {
+        "id": "C",
+        "text": "File output cloud storage extension, writing the updated data back as a file"
+      },
+      {
+        "id": "D",
+        "text": "Data IO extension, invoked by read and write steps in the Maestro workflow"
+      }
+    ],
+    "correct": "D",
+    "answerText": "Data IO extension, invoked by read and write steps in the Maestro workflow",
+    "explanation": "The lookup and the write-back both happen inside a Maestro workflow against a system of record, which is the Data IO extension; connected fields are not supported in Maestro.",
+    "whyNotOthers": "D is right because Data IO reads data from and writes data to a system of record from Maestro read and write steps. The trap is A: connected fields do map to a system of record and can autofill, but only inside eSignature envelopes, and they are not supported in Maestro workflows. B verifies a fixed data type rather than reading and writing records, and C stores files, not field data.",
+    "optionExplanations": {
+      "A": "Connected fields autofill only in eSignature envelopes and are not currently supported in Maestro workflows.",
+      "B": "Data verification checks a specific data type such as a bank account; it does not read or write patient records.",
+      "C": "File output writes documents to cloud storage; it does not update structured fields in a system of record.",
+      "D": "Correct. Data IO reads from and writes to a system of record and is invoked from Maestro workflow steps."
+    },
+    "trapOption": "A",
+    "importance": "HIGH",
+    "basedOn": [
+      23,
+      4,
+      29
+    ]
+  },
+  {
+    "paper": "B",
+    "length": "long",
+    "domain": "App Center and Extension Apps",
+    "topic": "Switching the external environment (multi)",
+    "stem": "Daniel's extension app is registered once in the Developer Console and points at his company's staging API. Integration tests pass. Before submitting the app for public review, he must point the same registration at the production API, which uses a different OAuth client and different hostnames, while keeping the same extension types, actions and App Center listing. He will edit the downloaded manifest and upload it again. Which two sets of values must he change? (Select two)",
+    "options": [
+      {
+        "id": "A",
+        "text": "The connection's clientId, clientSecret and authorization settings in customConfig"
+      },
+      {
+        "id": "B",
+        "text": "The template identifier of each action, so it targets the production contract"
+      },
+      {
+        "id": "C",
+        "text": "The publicationRegions list, so the app is installable in production"
+      },
+      {
+        "id": "D",
+        "text": "The params.uri of each action (and capability) so requests go to production URLs"
+      },
+      {
+        "id": "E",
+        "text": "The connectionsReference of each action, so it points to a new production connection name"
+      }
+    ],
+    "correct": "A,D",
+    "correctAnswers": [
+      "A",
+      "D"
+    ],
+    "answerText": "The connection's clientId, clientSecret and authorization settings in customConfig; The params.uri of each action (and capability) so requests go to production URLs",
+    "explanation": "Docusign's guidance for switching environments is to update the connection settings (clientId, clientSecret and authorization settings in customConfig) and the params.uri of each action and capability; public apps must have production URLs before review.",
+    "whyNotOthers": "A and D are right because only credentials/authorization settings and endpoint URLs are environment-specific. The trap is E: connectionsReference would only change if he renamed or added a connection, but he is editing the existing connection's values. B is a Docusign-predefined contract identifier that does not differ by environment, and C controls in which regions the public app can be installed, not which API it calls.",
+    "optionExplanations": {
+      "A": "Correct. Environment-specific credentials and authorization settings live in the connection's customConfig.",
+      "B": "Action templates are Docusign-defined contract identifiers; they are the same for staging and production.",
+      "C": "publicationRegions controls where a public app can be installed, not which external API it calls.",
+      "D": "Correct. params.uri holds the endpoint URL for each action and capability and must point to production.",
+      "E": "He updates the existing connection's values, so the connection name and every connectionsReference can stay the same."
+    },
+    "trapOption": "E",
+    "importance": "MEDIUM",
+    "basedOn": [
+      25,
+      30,
+      21,
+      34
+    ]
+  },
+  {
+    "paper": "B",
+    "length": "long",
+    "domain": "App Center and Extension Apps",
+    "topic": "Regional availability of a public app",
+    "stem": "Northwind Signals, a Docusign partner, has an approved extension app that verifies phone numbers using a carrier data provider. Its licence with that provider covers only North America and Australia, so customer accounts in other regions must not be able to install the app. Northwind expects thousands of customer accounts and cannot list them individually. The product manager also asks whether the OAuth scopes in the connection could be narrowed to block other regions. How should Northwind control availability?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Set distribution to PRIVATE and add the account ID of every customer account in those regions"
+      },
+      {
+        "id": "B",
+        "text": "Narrow the connection's OAuth scopes so installs from other regions fail"
+      },
+      {
+        "id": "C",
+        "text": "Set distribution to PUBLIC and choose only the permitted regions in publicationRegions"
+      },
+      {
+        "id": "D",
+        "text": "Publish to the App Center for all regions and reject unwanted installs in the API proxy"
+      }
+    ],
+    "correct": "C",
+    "answerText": "Set distribution to PUBLIC and choose only the permitted regions in publicationRegions",
+    "explanation": "The app is for 'thousands of customer accounts' from a Docusign partner, so it is public, and publicationRegions (public apps only) controls from which regions the app can be installed in the production App Center.",
+    "whyNotOthers": "C is right because publicationRegions restricts where a public app can be installed. The trap is A: private distribution does limit access, but only to individually listed production accounts, which Northwind says it cannot maintain. B fails because OAuth scopes govern what Docusign may access in the external API, not who may install, and D lets everyone install and then breaks their envelopes instead of controlling availability.",
+    "optionExplanations": {
+      "A": "Private apps are shared with individually listed account IDs, which does not scale to thousands of customers.",
+      "B": "OAuth scopes define access to the external API, not which Docusign accounts can install the app.",
+      "C": "Correct. For public apps, publicationRegions defines the regions in which the app can be installed in production.",
+      "D": "This makes the app installable everywhere and fails at runtime rather than controlling availability in the App Center."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "basedOn": [
+      27,
+      32
+    ]
+  },
+  {
+    "paper": "B",
+    "length": "long",
+    "domain": "App Center and Extension Apps",
+    "topic": "Concerto decorators for connected fields",
+    "stem": "Ravi's connected fields app verifies wire transfers against his bank's ledger. The Get Type Definitions response defines a TransferAuthorization concept marked as verifiable, with properties AccountNumber, RoutingNumber and Memo. In the Add Fields view all three appear under App Fields, but none shows an asterisk, so preparers keep sending envelopes without AccountNumber and the Verify call never has enough data. The connection test and the Get Type Names extension test both pass. Which change to the data model fixes this?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Add the IsRequiredForVerifyingType decorator to the AccountNumber and RoutingNumber properties"
+      },
+      {
+        "id": "B",
+        "text": "Add the VerifiableType decorator to the AccountNumber and RoutingNumber properties"
+      },
+      {
+        "id": "C",
+        "text": "Move AccountNumber and RoutingNumber into a separate concept returned by Get Type Names"
+      },
+      {
+        "id": "D",
+        "text": "Mark the Memo property as optional so the other two become required"
+      }
+    ],
+    "correct": "A",
+    "answerText": "Add the IsRequiredForVerifyingType decorator to the AccountNumber and RoutingNumber properties",
+    "explanation": "Properties with the IsRequiredForVerifyingType decorator appear with an asterisk because they are required to verify the object; the concept is already 'marked as verifiable', so the missing piece is the property-level required decorator.",
+    "whyNotOthers": "A is right because IsRequiredForVerifyingType marks a property as required for verifying the type, which shows the asterisk. The trap is B: VerifiableType is the decorator that makes an object verifiable from envelopes, it belongs on the concept (already done), not on individual properties to make them required. C would change the structure without marking anything required, and D does not make other properties required.",
+    "optionExplanations": {
+      "A": "Correct. IsRequiredForVerifyingType on a property marks it required for verification and shows it with an asterisk in Add Fields.",
+      "B": "VerifiableType marks an object (concept) as verifiable; it is already on TransferAuthorization and does not make properties required.",
+      "C": "Splitting the concept does not mark any property as required for verification.",
+      "D": "Making Memo optional does not add the required decorator to the other properties."
+    },
+    "trapOption": "B",
+    "importance": "MEDIUM",
+    "basedOn": [
+      29,
+      35
+    ]
+  },
+  {
+    "paper": "B",
+    "length": "short",
+    "domain": "App Center and Extension Apps",
+    "topic": "Receiving verification results",
+    "stem": "A back-office system must record the outcome of every connected fields verification that happens during signing. How should it receive the results?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Subscribe to the extension-executed event using the XML Aggregated message format"
+      },
+      {
+        "id": "B",
+        "text": "Poll Get Type Definitions on the extension app after each envelope completes"
+      },
+      {
+        "id": "C",
+        "text": "Implement a Connect listener for the extension-executed event using JSON SIM"
+      },
+      {
+        "id": "D",
+        "text": "Add an eventNotification for the recipient-completed event to each envelope"
+      }
+    ],
+    "correct": "C",
+    "answerText": "Implement a Connect listener for the extension-executed event using JSON SIM",
+    "explanation": "Verification results can be retrieved programmatically through the Connect extension-executed event, which is supported only with the JSON SIM event model; they also appear in envelope history and the certificate of completion.",
+    "whyNotOthers": "C is right because extension-executed is the event that carries verification results, and it is JSON SIM only. The trap is A: right event, but XML Aggregated is not supported for it. B calls a data model action that returns types, not results, and D signals that a recipient finished, not the verification outcome.",
+    "optionExplanations": {
+      "A": "Right event, wrong format: extension-executed is supported only with JSON SIM.",
+      "B": "Get Type Definitions returns the data model, not verification results.",
+      "C": "Correct. A Connect listener for extension-executed in JSON SIM receives the verification results.",
+      "D": "recipient-completed reports a recipient's completion, not the result of a connected fields verification."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "basedOn": [
+      6,
+      13,
+      29,
+      5
+    ]
+  },
+  {
+    "paper": "B",
+    "length": "long",
+    "domain": "App Center and Extension Apps",
+    "topic": "Review and publishing facts (multi)",
+    "stem": "Sofia leads a partner team preparing to submit its first public extension app, which archives data to a cloud service. During development the registration pointed to a sandbox host, and the team has run connection, extension and functional tests in its developer account. Marketing has already prepared the icon, four screenshots and the listing text, and the support team wants to know how much control it will keep over customer installs afterwards. A new team member drafts a checklist for the release. Which two statements on the checklist are accurate? (Select two)",
+    "options": [
+      {
+        "id": "A",
+        "text": "Once the review passes, the app automatically appears in the App Center for all customers"
+      },
+      {
+        "id": "B",
+        "text": "The review evaluates the business, technical, security and functional aspects of the app"
+      },
+      {
+        "id": "C",
+        "text": "The review requires a minimum number of successful eSignature API calls from the app"
+      },
+      {
+        "id": "D",
+        "text": "Production URLs must be in the registration before the public app is submitted for review"
+      },
+      {
+        "id": "E",
+        "text": "Account administrators are notified automatically if the team later removes the app from an account"
+      }
+    ],
+    "correct": "B,D",
+    "correctAnswers": [
+      "B",
+      "D"
+    ],
+    "answerText": "The review evaluates the business, technical, security and functional aspects of the app; Production URLs must be in the registration before the public app is submitted for review",
+    "explanation": "Docusign's review evaluates business, technical, security and functional aspects, and for a public app the production URLs must be supplied in the registration before submitting for review.",
+    "whyNotOthers": "B and D are right per the build and test guidance. The trap is A: after a successful review the app is only in Approved status, and the developer must still click Publish to App Center (and, for public apps, make it available). C invents a call quota, and E is the opposite of the documented warning that admins are not notified when an app is removed.",
+    "optionExplanations": {
+      "A": "Approval leaves the app in Approved status; the developer must still publish it to the App Center.",
+      "B": "Correct. The review covers business, technical, security and functional aspects.",
+      "C": "No minimum API call count is part of the extension app review.",
+      "D": "Correct. For a public app, supply production URLs in the registration before submitting it for review.",
+      "E": "The account administrator is not notified when an app is removed, which is why removal must be done carefully."
+    },
+    "trapOption": "A",
+    "importance": "HIGH",
+    "basedOn": [
+      28,
+      33
+    ]
+  },
+  {
+    "paper": "B",
+    "length": "long",
+    "domain": "App Center and Extension Apps",
+    "topic": "Extension app vs API integration",
+    "stem": "Quantis offers an identity-matching service. Its CTO wants Docusign customers to use the service inside their own envelopes and Maestro workflows, discovered and installed by account admins, with no code deployed or hosted by the customer. A solutions engineer proposes giving each customer a Quantis-built eSignature API integration with its own integration key, Go-Live review and JWT consent. Another suggests asking customers to register Connect webhooks pointing at Quantis. Which approach matches the CTO's goal?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Build an extension app registered in the Developer Console and published to the Docusign App Center"
+      },
+      {
+        "id": "B",
+        "text": "Build an eSignature API integration and promote its integration key to each customer's production account"
+      },
+      {
+        "id": "C",
+        "text": "Ask each customer to configure an account-level Connect listener that calls the Quantis service"
+      },
+      {
+        "id": "D",
+        "text": "Publish a Maestro workflow template that calls the Quantis API from an eSignature API step"
+      }
+    ],
+    "correct": "A",
+    "answerText": "Build an extension app registered in the Developer Console and published to the Docusign App Center",
+    "explanation": "The goal is functionality used 'inside their own envelopes and Maestro workflows, discovered and installed by account admins, with no code' on the customer side, which is what extension apps published to the App Center provide.",
+    "whyNotOthers": "A is right because extension apps execute on the Docusign platform, are installed from the App Center and work within the Docusign user experience, extending reach to Docusign's customer base. The trap is B: an API integration is self-contained and hosted by its developer, and Go-Live promotes an integration key, not an installable in-product feature. C only pushes event notifications out of Docusign after the fact, and D still requires per-customer building rather than an installable app.",
+    "optionExplanations": {
+      "A": "Correct. Extension apps are published to the App Center, installed by admins, and run inside envelopes and workflows.",
+      "B": "API integrations are self-contained apps hosted by their developers; they do not add installable features inside customers' Docusign experience.",
+      "C": "Connect sends event notifications outward; it does not add a service that runs inside envelopes or workflow steps.",
+      "D": "This still relies on each customer building workflows around a raw API call instead of an installable, reviewed app."
+    },
+    "trapOption": "B",
+    "importance": "HIGH",
+    "basedOn": [
+      22,
+      33
+    ]
+  },
+  {
+    "paper": "B",
+    "length": "short",
+    "domain": "App Center and Extension Apps",
+    "topic": "Action template identifier",
+    "stem": "In an extension app manifest, which element of an action determines its request and response contract and the extension points that can trigger it?",
+    "options": [
+      {
+        "id": "A",
+        "text": "The connectionsReference that points to the connection"
+      },
+      {
+        "id": "B",
+        "text": "The params.uri that names the external endpoint"
+      },
+      {
+        "id": "C",
+        "text": "The template identifier, which Docusign predefines"
+      },
+      {
+        "id": "D",
+        "text": "The extension's actionReferences array that lists it"
+      }
+    ],
+    "correct": "C",
+    "answerText": "The template identifier, which Docusign predefines",
+    "explanation": "An action's template identifier, predefined by Docusign, specifies the action contract: the request and response contract to be used and the extension points that trigger the action.",
+    "whyNotOthers": "C is right because the action contract is set by the action's template property. The trap is D: actionReferences ties actions to an extension, but the extension's own template sets the extension contract, not each action's request/response shape. A links to auth credentials and B only gives the endpoint URL.",
+    "optionExplanations": {
+      "A": "connectionsReference links the action to the auth credentials in a connection; it does not define the contract.",
+      "B": "params.uri is where the call goes, not what request/response shape it uses or which extension points trigger it.",
+      "C": "Correct. The action's Docusign-predefined template identifier sets the action contract and the extension points that trigger it.",
+      "D": "actionReferences only lists which actions belong to an extension; it does not define each action's contract."
+    },
+    "trapOption": "D",
+    "importance": "MEDIUM",
+    "basedOn": [
+      21,
+      34,
+      30
+    ]
+  }
+]

@@ -1,0 +1,1380 @@
+[
+  {
+    "paper": "E",
+    "length": "long",
+    "style": "design",
+    "domain": "App Center and Extension Apps",
+    "topic": "Bank account owner vs bank account verification",
+    "stem": "Harrow Commercial Lending pays out equipment loans by depositing funds into the borrower's business checking account. The loan agreement is sent from the eSignature web app, and the person signing types in the company's US account number and ABA routing number. The fraud team says it is not enough to know that the account exists and is open: before any money moves, they need confirmation that the individual signing actually holds that account or is an authorized signatory on it. The credit team also wants the envelope to keep its existing branding theme. Which approach meets the fraud team's requirement?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Add bank account verification fields from an installed data verification app (Verify.Version3.BankAccount) so the account number and routing number are checked against the provider while the borrower signs."
+      },
+      {
+        "id": "B",
+        "text": "Add bank account owner verification fields from an installed data verification app (Verify.Version1.BankAccountOwner) so the provider confirms during signing that the signer owns or may sign on the account."
+      },
+      {
+        "id": "C",
+        "text": "Add a Data IO read step to a Maestro workflow before signing that searches the bank-data provider for the account and saves the owner's name in a variable for the fraud team."
+      },
+      {
+        "id": "D",
+        "text": "Build a connected fields app with the Verify action so the account number and routing number are compared with records in the lender's own loan servicing system during signing."
+      },
+      {
+        "id": "E",
+        "text": "Require ID Verification for the signer so a government photo ID is checked before the agreement opens, which proves the signer is the account holder."
+      }
+    ],
+    "correct": "B",
+    "answerText": "Add bank account owner verification fields from an installed data verification app (Verify.Version1.BankAccountOwner) so the provider confirms during signing that the signer owns or may sign on the account.",
+    "explanation": "The deciding clue is that the fraud team needs to know the signer 'holds that account or is an authorized signatory', not just that the account is valid. That is the bank account owner verification extension (Verify.Version1.BankAccountOwner), used at the eSignature Add Fields view and signing.",
+    "whyNotOthers": "B is right because bank account owner verification confirms the owner or authorized signatory. The trap is A: bank account verification is also a bank-data check during signing, but it only validates the account details, which the fraud team said is not enough. C and D use the wrong extension (workflow data access or the lender's own records), and E proves identity, not account ownership. The branding theme is a red herring.",
+    "optionExplanations": {
+      "A": "Bank account verification only confirms that the account details are valid; the fraud team explicitly said that knowing the account exists is not enough.",
+      "B": "Correct. Bank account owner verification checks the identity of the account owner or authorized signatory, which is exactly the fraud team's need ('holds that account or is an authorized signatory'), and it supports US ABA routing numbers.",
+      "C": "Data IO reads a system of record from a Maestro workflow; it does not verify the signer against the account during signing, and the agreement is sent from the eSignature web app.",
+      "D": "Connected fields verify against the organization's own system of record; the lender's loan system cannot prove who owns an account at another bank.",
+      "E": "ID Verification proves who the signer is, not that this person owns or may sign on the stated bank account."
+    },
+    "trapOption": "A",
+    "importance": "HIGH",
+    "decode": {
+      "needs": "A data verification extension that confirms the signer owns or is an authorized signatory on a US bank account, during eSignature signing.",
+      "clues": [
+        "'holds that account or is an authorized signatory' -> bank account owner verification",
+        "'not enough to know the account exists' -> rules out plain bank account verification",
+        "'sent from the eSignature web app' -> extension point is Add Fields view and signing, not Maestro"
+      ]
+    },
+    "concept": {
+      "title": "Account validity vs account ownership",
+      "line": "Bank account verification checks the account details are valid; bank account owner verification checks the signer owns or may sign on the account."
+    }
+  },
+  {
+    "paper": "E",
+    "length": "long",
+    "style": "design",
+    "domain": "App Center and Extension Apps",
+    "topic": "Connected fields Verify response for a mismatch",
+    "stem": "Fenwick Mutual's private connected fields app checks a member number and date of birth against the society's membership ledger while members sign their annual renewal. When a member mistypes the date of birth, the back-end currently answers with HTTP 400 BAD_REQUEST and the text 'Date of birth does not match'. Members complain that the signing screen shows a generic failure instead of telling them what to fix. The service runs in the society's Azure tenant behind an API gateway. How should the back-end respond when its matching logic runs successfully but the values do not match?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Return HTTP 400 with a more descriptive message, because Docusign shows the message text of a 400 response to the signer in the signing screen as guidance on what to fix."
+      },
+      {
+        "id": "B",
+        "text": "Return HTTP 404 NOT_FOUND with a code and message, because no ledger record matches both the member number and the date of birth."
+      },
+      {
+        "id": "C",
+        "text": "Return HTTP 500 so that Docusign retries the Verify request up to three times, giving the member time to correct the value in the meantime."
+      },
+      {
+        "id": "D",
+        "text": "Return a normal Verify response with verified set to false, and supply verifyResponseMessage and verifyFailureReason that tell the member what to correct."
+      },
+      {
+        "id": "E",
+        "text": "Return a Verify response with verified set to true and suggested values that autofill the correct date of birth from the ledger."
+      }
+    ],
+    "correct": "D",
+    "answerText": "Return a normal Verify response with verified set to false, and supply verifyResponseMessage and verifyFailureReason that tell the member what to correct.",
+    "explanation": "The clue is 'its matching logic runs successfully but the values do not match': that is a verification result, so the back-end returns a Verify response with verified false and a verifyResponseMessage and verifyFailureReason, which Docusign displays in the signing UI.",
+    "whyNotOthers": "D is right because a mismatch is reported in the Verify response, not as an HTTP error. The trap is A: a descriptive 400 sounds like the fix, but the contract reserves 400, 404 and 500 for requests that could not be processed. B and C misuse error codes (C only causes retries), and E bypasses the control.",
+    "optionExplanations": {
+      "A": "HTTP 400, 404 and 500 are for errors that prevent the request from being processed; the docs say not to use them when the logic ran and found the values invalid.",
+      "B": "404 is for processing errors such as an unknown type; a non-matching value is a verification result, not an error.",
+      "C": "A 500 triggers retries of the same values and ends as a failed request; it gives the member no guidance.",
+      "D": "Correct. When the verification logic ran and found invalid values, the contract says to return a Verify response with verified false plus the message and failure reason, which the signing UI shows.",
+      "E": "Passing verification and autofilling the ledger's date of birth would defeat the check and expose member data to whoever typed the member number."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "Return verified=false with a response message and failure reason in the connected fields Verify response.",
+      "clues": [
+        "'matching logic runs successfully but values do not match' -> verification result, not an error",
+        "'show what to fix' -> verifyResponseMessage and verifyFailureReason",
+        "Azure tenant and API gateway -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "Invalid value is not an error",
+      "line": "When verification logic runs and values are invalid, return verified false with message and reason; HTTP 400/404/500 are only for processing errors."
+    }
+  },
+  {
+    "paper": "E",
+    "length": "long",
+    "style": "design",
+    "domain": "App Center and Extension Apps",
+    "topic": "Firewall planning for regions and environments (multi)",
+    "stem": "Larkspur Payroll, a Docusign partner, is preparing a public extension app that writes payroll setup data into its platform from Maestro workflows. The app will be offered to customers whose Docusign accounts are in the US and EU data centers. Larkspur runs separate development, test and production environments of its platform, each behind its own firewall that only admits approved source addresses. The product owner also wants a dark-mode version of the listing icon. Which two network actions should the infrastructure team take? (Select two)",
+    "options": [
+      {
+        "id": "A",
+        "text": "Add the Docusign endpoint IP addresses only to the production firewall, because demo-environment testing traffic comes from the Developer Console in the tester's browser."
+      },
+      {
+        "id": "B",
+        "text": "Allow the Docusign endpoint IP addresses listed for North America-based and demo accounts, and also those listed for European Union-based accounts."
+      },
+      {
+        "id": "C",
+        "text": "Allow only the European Union-based Docusign addresses, because Docusign sends requests from the data center region of the account that is calling the app."
+      },
+      {
+        "id": "D",
+        "text": "Enable CORS on the API service for the App Center domain so that installations and action calls from Docusign are not blocked by the browser."
+      },
+      {
+        "id": "E",
+        "text": "Add the Docusign endpoint IP addresses to the firewalls of the development, test and production environments, since each may receive requests from Docusign."
+      }
+    ],
+    "correct": "B,E",
+    "correctAnswers": [
+      "B",
+      "E"
+    ],
+    "answerText": "Allow the Docusign endpoint IP addresses listed for North America-based and demo accounts, and also those listed for European Union-based accounts.; Add the Docusign endpoint IP addresses to the firewalls of the development, test and production environments, since each may receive requests from Docusign.",
+    "explanation": "Docusign needs to reach every environment it will call ('development, test and production environments, each behind its own firewall'), and the allow-list must include North America/demo addresses plus the addresses for each extra production region ('US and EU data centers').",
+    "whyNotOthers": "B and E are right: allow NA/demo plus EU addresses, on every environment's firewall. The trap is A: it sounds efficient, but Developer Console tests are executed by Docusign servers against the dev and test environments. C forgets that US customers and demo testing use North America addresses, and D confuses browser CORS with network allow-listing. The dark-mode icon is a red herring.",
+    "optionExplanations": {
+      "A": "Integration and functional tests are sent by Docusign's servers, not the tester's browser, so development and test firewalls must allow Docusign too.",
+      "B": "Correct. North America and demo addresses are always needed (development, testing and US production users), and EU addresses are needed because the app will be offered to EU-based accounts.",
+      "C": "The region does decide which addresses are used, but US customers and all demo testing use the North America addresses, so EU alone is not enough.",
+      "D": "Docusign's calls to the API are server-to-server; CORS is a browser mechanism and does not open the firewall.",
+      "E": "Correct. The docs say to add the addresses to all firewalls in all environments that may receive requests from extension apps."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "Allow Docusign endpoint IPs for every region served (NA/demo always, plus EU) on every environment's firewall.",
+      "clues": [
+        "'accounts in the US and EU data centers' -> NA (incl. demo) and EU IP ranges",
+        "'separate development, test and production environments, each behind its own firewall' -> allow-list on all of them",
+        "'only admits approved source addresses' -> firewall allow-list, not CORS"
+      ]
+    },
+    "concept": {
+      "title": "Allow Docusign IPs everywhere needed",
+      "line": "Allow North America/demo Docusign IPs always, add each production region served, and configure every environment's firewall that Docusign calls."
+    }
+  },
+  {
+    "paper": "E",
+    "length": "short",
+    "style": "fact",
+    "domain": "App Center and Extension Apps",
+    "topic": "Sharing a private app with developer accounts",
+    "stem": "A private extension app is Live and shared with the company's production account. A contractor working in a separate Docusign developer account asks to install it there for testing. What applies?",
+    "options": [
+      {
+        "id": "A",
+        "text": "It cannot be shared with additional developer accounts; private sharing targets production accounts only."
+      },
+      {
+        "id": "B",
+        "text": "Add the contractor's developer account ID with an alias, just like a production account."
+      },
+      {
+        "id": "C",
+        "text": "It appears automatically in every developer account that belongs to the same organization."
+      },
+      {
+        "id": "D",
+        "text": "Publish it to the demo App Center as public for testing while keeping it private in production."
+      },
+      {
+        "id": "E",
+        "text": "The contractor's admin accepts it from a Pending notification in the demo App Center."
+      }
+    ],
+    "correct": "A",
+    "answerText": "It cannot be shared with additional developer accounts; private sharing targets production accounts only.",
+    "explanation": "Docs: a private app is automatically available in your own developer account, and you can share it (once published) with additional production accounts, but you cannot share it with additional developer accounts.",
+    "whyNotOthers": "A is right because private sharing is only for production accounts. The trap is B: adding an account ID with an alias is the real sharing mechanism, but only for production accounts. C, D and E invent sharing paths that do not exist.",
+    "optionExplanations": {
+      "A": "Correct. A private app is available automatically in your own developer account, and once published it can be shared with production accounts, but not with additional developer accounts.",
+      "B": "The account list for a private app takes production account IDs; additional developer accounts are not supported.",
+      "C": "Only the developer account that registered the app sees it automatically.",
+      "D": "An app has one distribution type for all versions; you cannot be public in demo and private in production.",
+      "E": "Pending and Accepted statuses apply to the production accounts on the sharing list, not to developer accounts."
+    },
+    "trapOption": "B",
+    "importance": "HIGH",
+    "decode": {
+      "needs": "Know the sharing scope of a private extension app.",
+      "clues": [
+        "'separate Docusign developer account' -> not a valid sharing target"
+      ]
+    },
+    "concept": {
+      "title": "Private sharing is production only",
+      "line": "A private app is visible in its own developer account and can be shared only with listed production accounts, never other developer accounts."
+    }
+  },
+  {
+    "paper": "E",
+    "length": "long",
+    "style": "design",
+    "domain": "App Center and Extension Apps",
+    "topic": "Retiring a Live extension app",
+    "stem": "Copperline, a Docusign partner, has a Live public extension app that archives agreements to a storage product it will shut down at year end. Leadership wants the App Center listing removed entirely, with no replacement version, and asks the developer to simply take it down from the Developer Console before the next billing cycle starts. The app currently has no Draft, In Review or Approved version. A separate team is building an unrelated app for the same storage brand. What should the developer do?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Cancel the publishing request on the Live version so that it reverts to Draft status, and then delete that Draft version from the App Versions page of the app."
+      },
+      {
+        "id": "B",
+        "text": "Delete the Live version from the My Apps kebab menu, which removes the listing and uninstalls the app from customer accounts."
+      },
+      {
+        "id": "C",
+        "text": "Reach out through the Docusign Developer Community for assistance, because a Live version cannot be deleted or unpublished in the Developer Console."
+      },
+      {
+        "id": "D",
+        "text": "Create a new version with distribution set to Private and an empty account list, then publish it so the public listing disappears."
+      },
+      {
+        "id": "E",
+        "text": "Publish a new version with publicationRegions set to an empty array so that no region can install the app any longer."
+      }
+    ],
+    "correct": "C",
+    "answerText": "Reach out through the Docusign Developer Community for assistance, because a Live version cannot be deleted or unpublished in the Developer Console.",
+    "explanation": "The clue is 'removed entirely, with no replacement version': Live versions cannot be deleted or unpublished in the Developer Console, so the developer must ask for help through the Developer Community.",
+    "whyNotOthers": "C is right because the Console cannot delete a Live version. The trap is A: cancelling publication is the correct move for a version In Review, Approved or Rejected, but not for a Live version. B only works for Drafts, D would change distribution after Live, and E fails validation and tries to remove regions. The unrelated app is a red herring.",
+    "optionExplanations": {
+      "A": "Cancelling publication reverts In Review, Approved or Rejected versions to Draft; it does not apply to a Live version.",
+      "B": "Delete is only possible for Draft versions; a Live version cannot be deleted.",
+      "C": "Correct. Live versions cannot be deleted, and the docs direct you to the Developer Community to remove a live app without replacing it.",
+      "D": "The distribution type cannot be changed once an app has been Live.",
+      "E": "An empty publicationRegions array causes a validation error, and regions cannot be removed from a published app."
+    },
+    "trapOption": "A",
+    "importance": "HIGH",
+    "decode": {
+      "needs": "Know that a Live extension app version cannot be deleted in the Developer Console.",
+      "clues": [
+        "'removed entirely, no replacement version' -> delete a Live app",
+        "'no Draft, In Review or Approved version' -> nothing to cancel or delete",
+        "'unrelated app for the same brand' -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "Live versions cannot be deleted",
+      "line": "Only Draft versions can be deleted; removing a Live app without replacement needs Docusign help via the Developer Community."
+    }
+  },
+  {
+    "paper": "E",
+    "length": "long",
+    "style": "design",
+    "domain": "App Center and Extension Apps",
+    "topic": "Retries and the idempotency key",
+    "stem": "Ashgrove Bank's connected fields app verifies wire-transfer authorization codes against its payments hub while customers sign. Every Verify call writes an audit entry that the compliance team reconciles each month. Auditors found occasional duplicate entries for the same signer and the same field values, always on days when the payments hub was slow to answer or returned an internal server error. The hub runs on-premises behind an API proxy, and the audit database has no unique constraints. How should the developer stop the duplicate audit entries?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Deduplicate on the envelope ID alone, because Docusign sends exactly one Verify request per envelope however often the signer edits the fields."
+      },
+      {
+        "id": "B",
+        "text": "Return HTTP 404 from the proxy whenever a duplicate arrives, so Docusign treats the request as complete and sends no further retries."
+      },
+      {
+        "id": "C",
+        "text": "Turn off automatic retries for the extension in the Developer Console integration settings, so a failed Verify request is never resent."
+      },
+      {
+        "id": "D",
+        "text": "Write the audit entries from a Connect listener for the extension-executed event instead, because Verify requests are retried but Connect never redelivers."
+      },
+      {
+        "id": "E",
+        "text": "Use the idempotencyKey in each Verify request to detect resubmissions, because Docusign resends the same key when it retries after an error or a timeout."
+      }
+    ],
+    "correct": "E",
+    "answerText": "Use the idempotencyKey in each Verify request to detect resubmissions, because Docusign resends the same key when it retries after an error or a timeout.",
+    "explanation": "The clue is that duplicates appear only when the hub is 'slow to answer or returned an internal server error': Docusign retries Verify up to three times on a 500 or timeout, reusing the same idempotencyKey so the external system can detect the resubmission.",
+    "whyNotOthers": "E is right because the idempotency key identifies retried Verify requests. The trap is A: it sounds like a simple dedupe, but Verify is sent again whenever the signer modifies a required field, so it would drop real events. B breaks the signer's result, C invents a setting, and D relies on a false claim about Connect.",
+    "optionExplanations": {
+      "A": "Verify runs again whenever the signer changes a required connected field value, so envelope ID alone would hide legitimate re-verifications.",
+      "B": "404 signals a processing error, and the signer would see a failure instead of the original verification result.",
+      "C": "There is no such setting; retries are part of Docusign's defined behaviour for connected fields actions.",
+      "D": "Connect also retries failed deliveries, and the question is about recognising Docusign's own Verify retries, which the idempotency key is designed for.",
+      "E": "Correct. On a 500 or no response, Docusign retries up to three times with the same idempotencyKey so the external system can recognise a resubmitted request."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "Use the Verify request's idempotencyKey to recognise Docusign retries after 500 errors or timeouts.",
+      "clues": [
+        "'slow to answer or internal server error' -> Docusign retry behaviour",
+        "'same signer and same values' duplicated -> resubmitted request",
+        "'behind an API proxy' -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "Retries reuse the idempotency key",
+      "line": "Docusign retries a failed or timed-out Verify up to three times with the same idempotencyKey so the back-end can detect resubmissions."
+    }
+  },
+  {
+    "paper": "E",
+    "length": "short",
+    "style": "fact",
+    "domain": "App Center and Extension Apps",
+    "topic": "Connection provider value in the manifest",
+    "stem": "In an extension app manifest, to which value is the provider property inside a connection's params set?",
+    "options": [
+      {
+        "id": "A",
+        "text": "OAUTH2"
+      },
+      {
+        "id": "B",
+        "text": "DOCUSIGN"
+      },
+      {
+        "id": "C",
+        "text": "CUSTOM"
+      },
+      {
+        "id": "D",
+        "text": "EXTERNAL"
+      },
+      {
+        "id": "E",
+        "text": "CLIENT_CREDENTIALS"
+      }
+    ],
+    "correct": "C",
+    "answerText": "CUSTOM",
+    "explanation": "In the connections params the developer sets clientId and clientSecret from the external platform, provider to CUSTOM, scopes, grantType and customConfig (tokenUrl, authorizationUrl and related settings).",
+    "whyNotOthers": "C is right. The trap is A: the connection uses OAuth 2, but that is expressed through grantType and customConfig, not provider. B, D and E are not valid provider values (E confuses provider with grantType).",
+    "optionExplanations": {
+      "A": "OAuth 2 is the protocol used, but it is not the provider value.",
+      "B": "The connection points to the external platform or identity provider, not Docusign.",
+      "C": "Correct. The manifest guidance says provider should be set to CUSTOM.",
+      "D": "Not a documented value for provider.",
+      "E": "Client credentials is a grantType value (client_credentials), not the provider."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "concept": {
+      "title": "Connection provider is CUSTOM",
+      "line": "An extension app connection sets provider to CUSTOM and holds clientId, clientSecret, scopes, grantType and customConfig URLs."
+    }
+  },
+  {
+    "paper": "E",
+    "length": "long",
+    "style": "design",
+    "domain": "App Center and Extension Apps",
+    "topic": "Separate registrations per test environment",
+    "stem": "Quarry Health's QA team and its development team want to test the same connected fields app at the same time: QA against the staging patient-index service and developers against a sandbox, each with its own OAuth client and hostnames. Re-editing a single registration every time a team switches has caused clashes, with each team breaking the other's tests mid-run. Both teams work in one Docusign developer account and share a Git repository, and the release manager wants no further lost test days. Which approach fits?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Keep one registration and add a second connection for the sandbox, then point each action's connectionsReference at whichever of the two connections the team needs for that day's test run."
+      },
+      {
+        "id": "B",
+        "text": "Keep one registration and rely on the automatic reinstall after each edit, scheduling test windows so that the two teams never edit it at the same time."
+      },
+      {
+        "id": "C",
+        "text": "Share the Live private app with a second developer account for the developers, so each team installs its own copy pointing at its own environment."
+      },
+      {
+        "id": "D",
+        "text": "Download the manifest and create a separate registration per environment, each with a unique name and its own clientId, clientSecret, customConfig and params.uri values."
+      },
+      {
+        "id": "E",
+        "text": "Keep one registration and list both hostnames in each action's params.uri, separated by commas, so Docusign falls back to the sandbox when staging fails."
+      }
+    ],
+    "correct": "D",
+    "answerText": "Download the manifest and create a separate registration per environment, each with a unique name and its own clientId, clientSecret, customConfig and params.uri values.",
+    "explanation": "The clue is 'at the same time' with different OAuth clients and hostnames: a registration supports one external environment, so the documented option is separate registrations per environment with a unique name and environment-specific connection and params.uri values.",
+    "whyNotOthers": "D is right because separate registrations let each team test its own environment concurrently. The trap is A: multiple connections sound neat, but a registration supports one environment's connection properties and switching is still an edit. B is valid only when teams test one after another, C relies on unsupported developer-account sharing, and E invents a fallback list. The shared Git repository is a red herring.",
+    "optionExplanations": {
+      "A": "A registration currently supports connection properties for a single external service environment, and changing connectionsReference is still an edit that clashes.",
+      "B": "This is the supported 'update the registration' method, but it cannot let both teams test at the same time, which is the requirement.",
+      "C": "Private apps cannot be shared with additional developer accounts, and a shared copy would still point at the same endpoints.",
+      "D": "Correct. Docusign documents separate registrations per environment, named to reflect the environment, as the alternative to editing one registration back and forth.",
+      "E": "params.uri holds a single endpoint URL; there is no fallback list."
+    },
+    "trapOption": "A",
+    "importance": "HIGH",
+    "decode": {
+      "needs": "Maintain separate extension app registrations (unique names) for each external environment.",
+      "clues": [
+        "'at the same time' -> editing one registration does not work",
+        "'each with its own OAuth client and hostnames' -> connection and params.uri differ per environment",
+        "'share a Git repository' -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "One registration, one environment",
+      "line": "A registration supports one external environment; to test environments in parallel, keep separate uniquely named registrations."
+    }
+  },
+  {
+    "paper": "E",
+    "length": "short",
+    "style": "fact",
+    "domain": "App Center and Extension Apps",
+    "topic": "Postal address verification actions",
+    "stem": "Besides the action that verifies an address, which other action does the postal address verification extension define?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Address Typeahead (Typeahead.Version1.PostalAddress)"
+      },
+      {
+        "id": "B",
+        "text": "Get Type Definitions (DataIO.Version6.GetTypeDefinitions)"
+      },
+      {
+        "id": "C",
+        "text": "Search Records (DataIO.Version6.SearchRecords)"
+      },
+      {
+        "id": "D",
+        "text": "Autofill Address (Verify.Version1.AddressAutofill)"
+      },
+      {
+        "id": "E",
+        "text": "List Directory Contents (FileIO.Version1.ListDirectoryContents)"
+      }
+    ],
+    "correct": "A",
+    "answerText": "Address Typeahead (Typeahead.Version1.PostalAddress)",
+    "explanation": "The postal address verification extension (template Verify.Version1.PostalAddress) has two actions: Verify Postal Address and Address Typeahead (Typeahead.Version1.PostalAddress).",
+    "whyNotOthers": "A is right. The trap is B: type definitions are used by extensions with a Concerto data model (connected fields, Data IO), while postal address verification has a fixed contract. C, D and E belong to other extensions or do not exist.",
+    "optionExplanations": {
+      "A": "Correct. The extension has two actions: Verify Postal Address and Address Typeahead.",
+      "B": "Get Type Definitions belongs to connected fields and Data IO, not the fixed postal address contract.",
+      "C": "Search Records is a Data IO action used by Maestro read and write steps.",
+      "D": "Not a real action; autofill suggestions are a connected fields Verify feature.",
+      "E": "This is an optional capability of the file output cloud storage extension."
+    },
+    "trapOption": "B",
+    "importance": "HIGH",
+    "concept": {
+      "title": "Postal address has typeahead",
+      "line": "Postal address verification defines Verify Postal Address and Address Typeahead; Concerto type actions belong to connected fields and Data IO."
+    }
+  },
+  {
+    "paper": "F",
+    "length": "long",
+    "style": "design",
+    "domain": "App Center and Extension Apps",
+    "topic": "Data IO search with no matching record",
+    "stem": "Mapleford Credit's Maestro onboarding workflow uses a Data IO app to look up an applicant in its loan origination system before showing a prefilled web form. For first-time applicants the lookup finds nothing, and the developer's endpoint answers with HTTP 404 and the message 'No record found'. Operations sees these runs flagged as errors even though a first-time applicant is the normal case, and the later write step that should add the applicant does not behave as designed. The endpoint runs on Kubernetes behind a load balancer. How should the Search Records endpoint answer when no applicant matches?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Return HTTP 404 with code NOT_FOUND and a message, because the Data IO contract reserves 404 for searches that match no record."
+      },
+      {
+        "id": "B",
+        "text": "Return a successful response with one placeholder record whose fields are blank, so the web form renders and the write step patches that placeholder."
+      },
+      {
+        "id": "C",
+        "text": "Return HTTP 500 so that Docusign retries the search, giving the origination system time to finish indexing the new applicant."
+      },
+      {
+        "id": "D",
+        "text": "Return HTTP 204 No Content, because Docusign reads an empty body as zero matches and then calls Create Record in the write step."
+      },
+      {
+        "id": "E",
+        "text": "Return a successful response with an empty records array, because under the Data IO contract a search that finds no matching record is not an error."
+      }
+    ],
+    "correct": "E",
+    "answerText": "Return a successful response with an empty records array, because under the Data IO contract a search that finds no matching record is not an error.",
+    "explanation": "The clue is that 'a first-time applicant is the normal case': no match is a valid search result, and the contract says to return an empty records array rather than 404. The write step then calls Create Record because its query finds no record to patch.",
+    "whyNotOthers": "E is right because an empty search is a normal result. The trap is A: 404 NOT_FOUND looks natural, but the contract explicitly says not to return it for a search with no matches. B misleads the write step into Patch Record, C causes pointless retries and errors, and D is not the documented response. Kubernetes is a red herring.",
+    "optionExplanations": {
+      "A": "The contract uses 404 for errors such as an unknown record ID in a request, and explicitly says not to return it for an empty search.",
+      "B": "A fake record would make the write step call Patch Record on a record that does not exist instead of Create Record.",
+      "C": "500 signals a processing failure; a first-time applicant will never appear, so retries only produce an error.",
+      "D": "The Search Records contract expects a records array in the response; 204 with no body is not the documented answer.",
+      "E": "Correct. The Data IO contract says a 404 should not be returned when Search Records finds no match; return an empty records array instead."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "Search Records returns an empty records array (not 404) when nothing matches.",
+      "clues": [
+        "'lookup finds nothing ... normal case' -> empty result, not an error",
+        "'write step should add the applicant' -> Create Record when the query finds no record",
+        "Kubernetes and load balancer -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "Empty search is not 404",
+      "line": "Data IO Search Records returns an empty records array when nothing matches; error codes are only for failed processing."
+    }
+  },
+  {
+    "paper": "F",
+    "length": "short",
+    "style": "fact",
+    "domain": "App Center and Extension Apps",
+    "topic": "Concerto enumeration rendering",
+    "stem": "A connected fields app's Get Type Definitions response includes a property whose Concerto type is an enumeration. How is that property rendered in eSignature envelopes?",
+    "options": [
+      {
+        "id": "A",
+        "text": "As a dropdown list"
+      },
+      {
+        "id": "B",
+        "text": "As radio buttons"
+      },
+      {
+        "id": "C",
+        "text": "As a text field with validation"
+      },
+      {
+        "id": "D",
+        "text": "As a checkbox group"
+      },
+      {
+        "id": "E",
+        "text": "It is not supported in envelopes"
+      }
+    ],
+    "correct": "B",
+    "answerText": "As radio buttons",
+    "explanation": "The data model reference states that Concerto enumerations are rendered in eSignature envelopes as radio buttons, while in Maestro read and write steps they are not supported.",
+    "whyNotOthers": "B is right. The trap is A: a dropdown is the usual way to show a list of values, but Docusign renders enumerations as radio buttons. E mixes up envelopes with Maestro steps, where enumerations are not supported; C and D are wrong control types.",
+    "optionExplanations": {
+      "A": "Plausible UI choice, but the data model page states radio buttons.",
+      "B": "Correct. Concerto enumerations are rendered in eSignature envelopes as radio buttons.",
+      "C": "Enumerations are not rendered as free text.",
+      "D": "Checkboxes would allow several values; an enumeration is one choice rendered as radio buttons.",
+      "E": "Enumerations are not supported in Maestro read and write steps, but they are supported in envelopes."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "concept": {
+      "title": "Enumerations render as radio buttons",
+      "line": "Concerto enumerations appear as radio buttons in eSignature envelopes and are not supported in Maestro read and write steps."
+    }
+  },
+  {
+    "paper": "F",
+    "length": "long",
+    "style": "design",
+    "domain": "App Center and Extension Apps",
+    "topic": "What the API proxy does with credentials",
+    "stem": "Bramwell Logistics will put an API proxy in front of its legacy freight system so that Docusign's Data IO requests and the system's responses match the Data IO contract. Bramwell's security architect asks what the proxy must do with the credentials on each incoming request, given that the extension app's connection uses Authorization Code Grant against Bramwell's own identity provider. The proxy will run on the same VM cluster as the company intranet and will be monitored by the network operations team. What should the design specify?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Validate an HMAC signature computed with a Connect secret key, because Docusign signs every extension action request in the same way that it signs Connect webhook messages."
+      },
+      {
+        "id": "B",
+        "text": "Validate a Docusign-issued JWT on each request against Docusign's public key, because Docusign signs every extension request with its own key."
+      },
+      {
+        "id": "C",
+        "text": "Accept requests without checking credentials, because the firewall allow-list of Docusign IP addresses already proves that the caller is Docusign."
+      },
+      {
+        "id": "D",
+        "text": "Validate the access token that Bramwell's identity provider issued during authorization, which each request carries, before forwarding the call to the freight system."
+      },
+      {
+        "id": "E",
+        "text": "Exchange the Docusign integration key found in each request for a freight-system session, then forward the call with that session token."
+      }
+    ],
+    "correct": "D",
+    "answerText": "Validate the access token that Bramwell's identity provider issued during authorization, which each request carries, before forwarding the call to the freight system.",
+    "explanation": "The clue is that the connection uses Authorization Code Grant against Bramwell's identity provider: Docusign sends that access token with each request, and the API proxy should validate it before passing the request to the freight system.",
+    "whyNotOthers": "D is right because the proxy validates the access token from the connection. The trap is A: HMAC sounds like the Docusign security answer, but it belongs to Connect webhooks. B invents a Docusign-signed JWT, C skips token validation, and E invents an integration key exchange. The VM cluster is a red herring.",
+    "optionExplanations": {
+      "A": "HMAC with a Connect key is how Connect messages are verified; extension requests carry the OAuth access token from the connection.",
+      "B": "Extension requests are authorized with the token from the app's own connection, not a Docusign-signed JWT.",
+      "C": "IP allow-listing is a network control; the docs still say the proxy should validate the token.",
+      "D": "Correct. Requests through a proxy include the access token returned by the external service or identity provider, and the proxy should validate it before passing the request on.",
+      "E": "Requests do not carry a Docusign integration key for exchange; they carry the access token from Bramwell's identity provider."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "API proxy validates the OAuth access token (from the external IdP) carried by each extension request.",
+      "clues": [
+        "'Authorization Code Grant against Bramwell's own identity provider' -> request carries that IdP's access token",
+        "'what to do with credentials on each request' -> validate the token before forwarding",
+        "'same VM cluster as the intranet' -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "Proxy validates the access token",
+      "line": "Extension requests through an API proxy carry the access token from the connection's authorization; the proxy validates it before forwarding."
+    }
+  },
+  {
+    "paper": "F",
+    "length": "long",
+    "style": "design",
+    "domain": "App Center and Extension Apps",
+    "topic": "Changing regions of a Live public app (multi)",
+    "stem": "Tidewell, a Docusign partner, has a Live public phone-verification extension app published for the United States and Canada. A new data licence now covers the European Union but, from next quarter, will no longer cover Canada. Product asks the developer to make the app installable by EU-based accounts and to stop Canadian accounts from installing it. Tidewell's API sits behind a firewall that admits only approved source addresses, and marketing also wants fresh screenshots. Which two statements describe what the developer can do? (Select two)",
+    "options": [
+      {
+        "id": "A",
+        "text": "Update the registration to add the EU region to publicationRegions; the update creates a new version that goes Live after Docusign review and publication."
+      },
+      {
+        "id": "B",
+        "text": "In the same update, remove Canada from publicationRegions so that the new Live version stops Canadian accounts from installing the app."
+      },
+      {
+        "id": "C",
+        "text": "Allow the Docusign endpoint IP addresses for European Union-based accounts on Tidewell's firewall so that requests from EU accounts reach the API."
+      },
+      {
+        "id": "D",
+        "text": "Omit publicationRegions from the updated manifest so the default of US applies, which drops Canada while keeping the US region."
+      },
+      {
+        "id": "E",
+        "text": "Change the distribution to Private and list the EU production accounts, since a Live app's regions cannot be changed in any way."
+      }
+    ],
+    "correct": "A,C",
+    "correctAnswers": [
+      "A",
+      "C"
+    ],
+    "answerText": "Update the registration to add the EU region to publicationRegions; the update creates a new version that goes Live after Docusign review and publication.; Allow the Docusign endpoint IP addresses for European Union-based accounts on Tidewell's firewall so that requests from EU accounts reach the API.",
+    "explanation": "The clues are 'make the app installable by EU-based accounts' (add a region, which is allowed after Live) and 'firewall that admits only approved source addresses' (allow EU Docusign IPs). Removing Canada is not supported in the Console.",
+    "whyNotOthers": "A and C are right: regions can be added in a new version, and the EU IP addresses must be allowed. The trap is B: removing a region looks like the obvious second half of the request, but published apps can add regions, not remove them. D misreads the default (only for new manifests) and E relies on changing distribution, which is locked after Live.",
+    "optionExplanations": {
+      "A": "Correct. Regions can be added to a published app; updating a Live app creates a new Draft version that is reviewed and then published.",
+      "B": "Regions cannot be removed from a published app in the Developer Console; it needs a case-by-case request through the Developer Community.",
+      "C": "Correct. Adding a region means allowing that region's Docusign IP addresses on the firewall.",
+      "D": "The US default applies only to a new manifest; on an update, omitting the property keeps the published value.",
+      "E": "Distribution cannot change after Live, and regions can be added."
+    },
+    "trapOption": "B",
+    "importance": "HIGH",
+    "decode": {
+      "needs": "Add a region via a new reviewed version and allow that region's Docusign IPs; regions cannot be removed after publishing.",
+      "clues": [
+        "'make installable by EU-based accounts' -> add EU to publicationRegions",
+        "'stop Canadian accounts' -> removal is not supported in the Console",
+        "'firewall that admits only approved addresses' -> allow EU Docusign IPs",
+        "'fresh screenshots' -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "Add regions, never remove",
+      "line": "After an app is Live you can add publicationRegions through a new version but cannot remove regions or change distribution."
+    }
+  },
+  {
+    "paper": "F",
+    "length": "long",
+    "style": "design",
+    "domain": "App Center and Extension Apps",
+    "topic": "App Center icon guidelines",
+    "stem": "Juniper Docs' marketing team supplied the App Center icon for the company's new extension app as an animated GIF with a transparent background, sized 300 x 120 pixels to match the corporate logo banner. The developer is about to submit the app for review and wants to avoid a rejection on listing assets. The team also plans to add three screenshots taken from its staging environment using realistic customer-style data, and legal has approved the listing text. What should the developer do with the icon?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Keep the animated GIF but pad it to a 1:1 aspect ratio, because animation and transparency are accepted by review as long as the image is square."
+      },
+      {
+        "id": "B",
+        "text": "Replace it with a transparent PNG at 300 x 120 pixels, because App Center rescales icons automatically and only animation causes a rejection."
+      },
+      {
+        "id": "C",
+        "text": "Replace it with a square 1:1 PNG, JPG or SVG of about 100 x 100 pixels with no transparency, supplied as Base64 in icon.data with its mediaType."
+      },
+      {
+        "id": "D",
+        "text": "Provide the icon as a public URL in icon.data so the App Center loads the current logo from Juniper's CDN without needing a new version."
+      },
+      {
+        "id": "E",
+        "text": "Upload the GIF as the first screenshot instead, because only screenshots are checked in review and the icon defaults to the publisher logo."
+      }
+    ],
+    "correct": "C",
+    "answerText": "Replace it with a square 1:1 PNG, JPG or SVG of about 100 x 100 pixels with no transparency, supplied as Base64 in icon.data with its mediaType.",
+    "explanation": "The listing guidelines recommend a 1:1 PNG, JPG or SVG at 100 x 100 pixels; GIF and transparent PNG files may not render well and will be rejected. In the manifest the image goes into icon.data as Base64 with icon.mediaType.",
+    "whyNotOthers": "C is right because it meets format, ratio and transparency guidance. The trap is A: making the image square fixes the ratio but keeps the GIF format and transparency that cause rejection. B keeps transparency, D puts a URL where Base64 is required, and E invents a default icon. The screenshots detail is a red herring.",
+    "optionExplanations": {
+      "A": "GIF and transparent images may not render well and will be rejected for publishing, whatever their shape.",
+      "B": "Transparent PNGs are also rejected, and the recommended aspect ratio is square.",
+      "C": "Correct. Best practices recommend PNG, JPG or SVG, 1:1, 100 x 100 pixels; GIF and transparent PNG files may be rejected. The manifest takes Base64 in icon.data plus icon.mediaType.",
+      "D": "icon.data must contain the Base64 representation of the image, not a URL.",
+      "E": "The icon is part of the listing and is reviewed; there is no default publisher-logo icon."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "Supply a square, non-transparent PNG/JPG/SVG icon (about 100 x 100) as Base64 in icon.data.",
+      "clues": [
+        "'animated GIF with transparent background' -> both are rejection causes",
+        "'300 x 120' -> not the recommended 1:1",
+        "'avoid a rejection on listing assets' -> App Center publishing guidelines"
+      ]
+    },
+    "concept": {
+      "title": "Icon format for App Center",
+      "line": "Use a square 100 x 100 PNG, JPG or SVG without transparency, Base64 encoded in icon.data; GIFs and transparent PNGs get rejected."
+    }
+  },
+  {
+    "paper": "F",
+    "length": "long",
+    "style": "design",
+    "domain": "App Center and Extension Apps",
+    "topic": "File output endpoints in a form-registered app",
+    "stem": "Rowan Vault's developer registered a new extension app using the form-based experience and selected File Input Output, then File Output Cloud Storage. On the integration details page she cannot find where to enter the URL of the write-file endpoint or of the optional drive-listing endpoint, so the extension tests cannot run. Her manager suggests switching to the file archive extension, which his team used two years ago in another product, because he remembers that the form handled everything. What should she do?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Switch the extension to file archive, because file archive actions can be fully defined in the form and it remains the recommended extension for storing completed files."
+      },
+      {
+        "id": "B",
+        "text": "Delete the registration and recreate it by editing the manifest, because an app created with the form can never be edited as a manifest afterward."
+      },
+      {
+        "id": "C",
+        "text": "Install the app into her developer account first, after which the endpoint URI fields for file output appear on the integration details page."
+      },
+      {
+        "id": "D",
+        "text": "Enter the endpoint URLs in the App Center listing's support URL field, which the form-based experience uses to route file output requests."
+      },
+      {
+        "id": "E",
+        "text": "Edit the app manifest to define the write-file action and any list-drives capability with their params.uri values, because the form does not yet support these endpoint details."
+      }
+    ],
+    "correct": "E",
+    "answerText": "Edit the app manifest to define the write-file action and any list-drives capability with their params.uri values, because the form does not yet support these endpoint details.",
+    "explanation": "The clue is 'form-based experience' plus 'File Output Cloud Storage': Docusign states that for this extension the actions and capabilities must be defined by editing the app manifest (template, name, connectionsReference and params.uri), as the form does not yet support it.",
+    "whyNotOthers": "E is right because file output endpoints are defined in the manifest. The trap is A: file archive is familiar and was form-friendly, but it is legacy and new apps should use file output cloud storage. B is unnecessary, C invents an unlock, and D confuses listing metadata with endpoints.",
+    "optionExplanations": {
+      "A": "File archive is legacy; new apps should use file output cloud storage.",
+      "B": "A form-registered app has a manifest that can be edited; there is no need to delete and recreate it.",
+      "C": "Installation does not unlock the fields; the form simply does not support defining file output endpoints yet.",
+      "D": "The support URL is listing metadata shown to customers; endpoints are defined in each action's params.uri.",
+      "E": "Correct. For file output cloud storage, actions and capabilities must be defined by editing the app manifest; the form-based UI does not yet support them."
+    },
+    "trapOption": "A",
+    "importance": "HIGH",
+    "decode": {
+      "needs": "Define file output cloud storage actions/capabilities by editing the app manifest.",
+      "clues": [
+        "'registered using the form-based experience' + 'File Output Cloud Storage' -> endpoints must be set in the manifest",
+        "'switch to file archive' -> legacy, not for new apps",
+        "'two years ago in another product' -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "File output needs manifest editing",
+      "line": "File output cloud storage actions and capabilities are defined in the app manifest; the form cannot set them, and file archive is legacy."
+    }
+  },
+  {
+    "paper": "F",
+    "length": "short",
+    "style": "fact",
+    "domain": "App Center and Extension Apps",
+    "topic": "Role of extension apps",
+    "stem": "Which statement best describes the role of an extension app on the Docusign IAM platform?",
+    "options": [
+      {
+        "id": "A",
+        "text": "It brings a third-party service into Docusign agreement processes, invoked at defined extension points such as signing or a Maestro step."
+      },
+      {
+        "id": "B",
+        "text": "It lets a third-party application call Docusign APIs to create and manage agreements from outside Docusign."
+      },
+      {
+        "id": "C",
+        "text": "It receives Docusign event notifications by webhook so external systems learn about envelope status changes."
+      },
+      {
+        "id": "D",
+        "text": "It embeds the Docusign signing session inside a third-party web page by using a recipient view URL."
+      },
+      {
+        "id": "E",
+        "text": "It packages Docusign templates and workflows so they can be copied between accounts through the App Center."
+      }
+    ],
+    "correct": "A",
+    "answerText": "It brings a third-party service into Docusign agreement processes, invoked at defined extension points such as signing or a Maestro step.",
+    "explanation": "Extension apps connect third-party services into Docusign (verify data, read and write a system of record, write files to storage), invoked at extension points, and are distributed through the App Center.",
+    "whyNotOthers": "A is right. The trap is B: both involve a third party and Docusign, but API integrations bring Docusign into your app, whereas extension apps bring your service into Docusign. C, D and E describe Connect, embedded signing and a non-existent template marketplace.",
+    "optionExplanations": {
+      "A": "Correct. Extension apps connect third-party services into Docusign and are invoked at extension points.",
+      "B": "That describes an API integration (Docusign into your app), the opposite direction.",
+      "C": "That is Docusign Connect.",
+      "D": "That is embedded signing through the eSignature API.",
+      "E": "The App Center distributes extension apps, not templates or workflows."
+    },
+    "trapOption": "B",
+    "importance": "HIGH",
+    "concept": {
+      "title": "Extension apps extend Docusign inward",
+      "line": "Extension apps bring external services into Docusign at extension points; API integrations bring Docusign into your own applications."
+    }
+  },
+  {
+    "paper": "F",
+    "length": "short",
+    "style": "fact",
+    "domain": "App Center and Extension Apps",
+    "topic": "App Center preview prerequisites",
+    "stem": "Which Developer Console testing feature needs only a registered extension app, with no API proxy or authorization provider account in place?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Connection test"
+      },
+      {
+        "id": "B",
+        "text": "Extension tests"
+      },
+      {
+        "id": "C",
+        "text": "Functional tests"
+      },
+      {
+        "id": "D",
+        "text": "App Center preview"
+      },
+      {
+        "id": "E",
+        "text": "Workflow publish check"
+      }
+    ],
+    "correct": "D",
+    "answerText": "App Center preview",
+    "explanation": "In the test prerequisites table, App Center preview requires only the registration; integration tests also need any API proxy and an account with the authorization provider, and functional tests additionally need passing connection and extension tests.",
+    "whyNotOthers": "D is right. The trap is A: the connection test is the first test you run, but it needs credentials from the authorization provider. B and C have even more prerequisites, and E is not an extension app test.",
+    "optionExplanations": {
+      "A": "Integration tests, including the connection test, need the authorization provider account (and a proxy if required).",
+      "B": "Extension tests are integration tests and need authorization and any proxy.",
+      "C": "Functional tests also need successful connection and extension tests.",
+      "D": "Correct. Registration is the only prerequisite for App Center preview.",
+      "E": "Not a Developer Console test type for extension apps."
+    },
+    "trapOption": "A",
+    "importance": "HIGH",
+    "concept": {
+      "title": "Preview needs only registration",
+      "line": "App Center preview needs only registration; integration tests need proxy and auth provider access; functional tests need passing integration tests."
+    }
+  },
+  {
+    "paper": "F",
+    "length": "long",
+    "style": "design",
+    "domain": "App Center and Extension Apps",
+    "topic": "Connected fields with autofill",
+    "stem": "Halden Wealth sends account-transfer forms from the eSignature web app; advisers in the branch prepare and send each one. Clients type their portfolio number, and the firm wants the form to check it against Halden's in-house client master while the client is signing, show a tailored message when it fails, and then fill in the client's registered address from the client master so the client does not retype it. Halden has no workflow licence, and the client master is reachable only by Halden. Which solution fits?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Build a private Data IO app with a read step that looks up the client in the client master and prefills the registered address before the agreement is sent for signing."
+      },
+      {
+        "id": "B",
+        "text": "Build a private connected fields app whose Verify response returns the result, a custom message and suggested values that autofill the address fields during signing."
+      },
+      {
+        "id": "C",
+        "text": "Install a postal address verification app so the address the client enters is checked and reformatted against an authoritative address source."
+      },
+      {
+        "id": "D",
+        "text": "Build a public connected fields app so that any adviser account can install it, exposing the client master through an API proxy."
+      },
+      {
+        "id": "E",
+        "text": "Use the eSignature API from the advisers' desktops to read the client master and prefill the address tabs when each envelope is created."
+      }
+    ],
+    "correct": "B",
+    "answerText": "Build a private connected fields app whose Verify response returns the result, a custom message and suggested values that autofill the address fields during signing.",
+    "explanation": "The clues are 'check it against Halden's in-house client master while the client is signing', 'tailored message' and 'fill in the registered address': connected fields return verification results, custom messages and autofill suggestions, and an internal system calls for private distribution.",
+    "whyNotOthers": "B is right because connected fields verify against the in-house system during signing and can autofill values. The trap is A: Data IO also reads the system of record to prefill data, but it runs in Maestro (no licence) and before signing. C checks the wrong thing, D uses the wrong distribution, and E does not verify during signing.",
+    "optionExplanations": {
+      "A": "Data IO runs in Maestro workflows, which Halden does not have, and it cannot react to the portfolio number the client types while signing.",
+      "B": "Correct. Connected fields verify any data against the organization's system of record during signing, return custom messages, and can return autofill values; private suits an in-house system.",
+      "C": "This verifies that an address exists and is deliverable; it does not check the portfolio number against Halden's client master.",
+      "D": "The connected fields part is right, but an in-house client master used only by Halden fits private distribution, not public.",
+      "E": "Advisers send from the web app, and prefilling at creation time does not verify what the client types while signing."
+    },
+    "trapOption": "A",
+    "importance": "HIGH",
+    "decode": {
+      "needs": "Private connected fields app: Verify during signing with custom messages and autofill suggestions.",
+      "clues": [
+        "'while the client is signing' -> eSignature signing extension point",
+        "'in-house client master' -> custom verification (connected fields), private distribution",
+        "'fill in the registered address' -> autofill values in the Verify response",
+        "'no workflow licence' -> rules out Data IO in Maestro"
+      ]
+    },
+    "concept": {
+      "title": "Connected fields verify and autofill",
+      "line": "Connected fields verify signer data against your own system during signing, show custom messages and can autofill values."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "long",
+    "style": "design",
+    "domain": "App Center and Extension Apps",
+    "topic": "When an extension app is part of the solution (multi)",
+    "stem": "Orrin Telecom's business analyst has listed five requirements for next year's agreement program, and the architect must flag those that are met by building an extension app rather than by Orrin's own systems calling Docusign. Orrin owns a proprietary customer-number database and an in-house contract vault, and already runs Maestro workflows for customer onboarding. The program sponsor wants a single page per requirement for the steering committee, and budget is approved for whichever approach is chosen. Which two requirements call for an extension app? (Select two)",
+    "options": [
+      {
+        "id": "A",
+        "text": "Send the billing ERP the form data of every completed envelope within seconds of completion, for all envelopes the account sends."
+      },
+      {
+        "id": "B",
+        "text": "Show the signing session inside Orrin's self-service portal so that the customer never leaves the website."
+      },
+      {
+        "id": "C",
+        "text": "While a customer signs, check the customer number they type against the proprietary customer database and stop completion if it does not match."
+      },
+      {
+        "id": "D",
+        "text": "As a step in the Maestro onboarding workflow, store the completed agreement in the in-house contract vault."
+      },
+      {
+        "id": "E",
+        "text": "Send 3,000 personalised tariff-change letters at once from a spreadsheet of customers."
+      }
+    ],
+    "correct": "C,D",
+    "correctAnswers": [
+      "C",
+      "D"
+    ],
+    "answerText": "While a customer signs, check the customer number they type against the proprietary customer database and stop completion if it does not match.; As a step in the Maestro onboarding workflow, store the completed agreement in the in-house contract vault.",
+    "explanation": "Extension apps bring an external service into a Docusign process at an extension point: checking typed values against the customer database during signing (connected fields) and saving the agreement to the vault from a Maestro step (file output). The others are Docusign-into-Orrin integrations.",
+    "whyNotOthers": "C and D are right because Docusign calls Orrin's services at an extension point. The trap is A: it also involves an external system and completed agreements, but Docusign is pushing events out to a listener, which is Connect. B is embedded signing and E is bulk send.",
+    "optionExplanations": {
+      "A": "Event-driven push of envelope data to an external system is Docusign Connect with a listener, not an extension app.",
+      "B": "This is embedded signing through the eSignature API.",
+      "C": "Correct. Verifying signer input against an in-house system during signing is a connected fields extension app.",
+      "D": "Correct. Writing workflow documents to a storage system from a Maestro step is the file output cloud storage extension.",
+      "E": "This is bulk send through the eSignature API or web app."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "Spot requirements where Docusign must call an external service at an extension point (signing, Maestro step).",
+      "clues": [
+        "'while a customer signs, check against proprietary database' -> connected fields",
+        "'step in the Maestro workflow, store in vault' -> file output cloud storage",
+        "'within seconds of completion, all envelopes' -> Connect, not an extension app"
+      ]
+    },
+    "concept": {
+      "title": "Extension app or API integration",
+      "line": "Use an extension app when Docusign must call your service inside signing or a workflow step; otherwise use APIs or Connect."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "short",
+    "style": "fact",
+    "domain": "App Center and Extension Apps",
+    "topic": "Regions in the demo App Center",
+    "stem": "A public extension app is Live with publicationRegions limited to the European Union. Who can install it from the demo App Center?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Only demo accounts whose region is the European Union"
+      },
+      {
+        "id": "B",
+        "text": "Only the developer account that registered the app"
+      },
+      {
+        "id": "C",
+        "text": "Nobody, because Live apps appear only in the production App Center"
+      },
+      {
+        "id": "D",
+        "text": "Only demo accounts added to an account allow-list by ID"
+      },
+      {
+        "id": "E",
+        "text": "Users of any demo account, regardless of region"
+      }
+    ],
+    "correct": "E",
+    "answerText": "Users of any demo account, regardless of region",
+    "explanation": "Globalization guidance: region restrictions apply only in the production App Center. In the demo App Center, published extension apps are available to all users, regardless of region.",
+    "whyNotOthers": "E is right. The trap is A: it applies the EU restriction everywhere, but the restriction is enforced only in production. B describes a Draft, C is false, and D describes private sharing.",
+    "optionExplanations": {
+      "A": "Region restrictions are enforced only on the production App Center.",
+      "B": "That is how an unpublished Draft behaves, not a Live public app.",
+      "C": "Published apps are also listed in the demo App Center.",
+      "D": "Account lists apply to private distribution, not public apps.",
+      "E": "Correct. Region restrictions apply only in the production App Center; in demo, published apps are available to all users."
+    },
+    "trapOption": "A",
+    "importance": "HIGH",
+    "concept": {
+      "title": "Regions enforced only in production",
+      "line": "publicationRegions limits installs only in the production App Center; the demo App Center shows published apps to all regions."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "short",
+    "style": "fact",
+    "domain": "App Center and Extension Apps",
+    "topic": "Verification extensions available in Web Forms",
+    "stem": "Which data verification extension can be invoked from a Docusign Web Form as well as from eSignature?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Postal address verification"
+      },
+      {
+        "id": "B",
+        "text": "Email address verification"
+      },
+      {
+        "id": "C",
+        "text": "Business FEIN verification"
+      },
+      {
+        "id": "D",
+        "text": "SSN verification"
+      },
+      {
+        "id": "E",
+        "text": "Bank account verification"
+      }
+    ],
+    "correct": "B",
+    "answerText": "Email address verification",
+    "explanation": "Per the supported extensions table, email address verification and phone verification are the data verification extensions whose extension points include Web Forms; the others are eSignature only.",
+    "whyNotOthers": "B is right. The trap is A: address checks seem natural on a web form, but postal address verification is listed only for eSignature. C, D and E are also eSignature only.",
+    "optionExplanations": {
+      "A": "Postal address verification is listed only for the eSignature Add Fields view and signing.",
+      "B": "Correct. Email and phone verification support both the eSignature Add Fields view and signing and Web Forms.",
+      "C": "FEIN verification is eSignature only.",
+      "D": "SSN verification is eSignature only.",
+      "E": "Bank account verification is eSignature only."
+    },
+    "trapOption": "A",
+    "importance": "HIGH",
+    "concept": {
+      "title": "Web Forms verify email and phone",
+      "line": "Only email and phone verification extensions run in Web Forms; other data verification extensions are eSignature only."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "long",
+    "style": "design",
+    "domain": "App Center and Extension Apps",
+    "topic": "Where connection authorization values come from",
+    "stem": "Pellham Insurance protects its policy API with the company's Okta tenant, and every caller must get a token from Okta before calling it. Pellham is registering a private connected fields app that checks policy numbers during signing, and the developer filling in the connection asks where the authorization values should come from. Pellham also has a Docusign integration key, configured for JWT, that its claims portal uses to send envelopes, and the security team insists on least privilege everywhere. Which values belong in the connection?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Okta's authorization URL, token URL and required scopes, plus a client ID and client secret from a client registered in Okta for Docusign to use."
+      },
+      {
+        "id": "B",
+        "text": "The claims portal's Docusign integration key and secret key, because Docusign authenticates to the policy API with its own registered credentials."
+      },
+      {
+        "id": "C",
+        "text": "Okta's URLs together with the RSA private key of the claims portal's integration key, because the connection obtains tokens with a JWT assertion."
+      },
+      {
+        "id": "D",
+        "text": "Docusign's account server endpoints for authorization and token, with the signature and extended scopes requested during installation."
+      },
+      {
+        "id": "E",
+        "text": "No authorization values, because a private app may rely on the Docusign IP allow-list alone to protect the policy API."
+      }
+    ],
+    "correct": "A",
+    "answerText": "Okta's authorization URL, token URL and required scopes, plus a client ID and client secret from a client registered in Okta for Docusign to use.",
+    "explanation": "The clue is 'every caller must get a token from Okta': the connection's authorization details (authorization URL, token URL, client ID, client secret, scopes) come from the identity provider, here Okta.",
+    "whyNotOthers": "A is right because the identity provider supplies the connection's authorization details. The trap is B: the integration key is Pellham's Docusign credential, but it authenticates Pellham to Docusign, not Docusign to Pellham. C and D mix in Docusign OAuth artefacts, and E drops authorization altogether. The JWT claims portal is a red herring.",
+    "optionExplanations": {
+      "A": "Correct. When an identity provider handles authorization, the connection uses that provider's authorization URL, token URL, client ID, client secret and scopes.",
+      "B": "The integration key identifies Pellham's app to Docusign; the connection needs credentials that Pellham's own identity provider issues.",
+      "C": "Connections use Authorization Code or Client Credentials grants with a client ID and secret, not Docusign JWT keys.",
+      "D": "Those endpoints and scopes are for calling Docusign APIs, not for Docusign calling Pellham's API.",
+      "E": "Private apps still need a connection with authorization; IP allow-listing is only a network control."
+    },
+    "trapOption": "B",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "Obtain the connection's OAuth values (auth URL, token URL, client ID/secret, scopes) from the external service or its identity provider.",
+      "clues": [
+        "'every caller must get a token from Okta' -> Okta is the authorization provider for the connection",
+        "'Docusign integration key configured for JWT' -> red herring, wrong direction",
+        "'checks policy numbers during signing' -> connected fields, private"
+      ]
+    },
+    "concept": {
+      "title": "Connection credentials come from your IdP",
+      "line": "The extension app connection uses the external service's or identity provider's auth URL, token URL, client ID, secret and scopes."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "long",
+    "style": "design",
+    "domain": "App Center and Extension Apps",
+    "topic": "Data IO property missing from the write step",
+    "stem": "Kestrel Housing's Data IO app exposes a Tenant concept to Maestro. Workflow designers can pick Tenant and its MoveInDate property in a read step, but MoveInDate never appears in the write step, so the date captured in the move-in web form cannot be sent back to the housing management system. MoveInDate is a DateTime in the Concerto model, and the housing system does allow the field to be changed. The housing system is hosted by a third-party provider in the same region. What should the developer change?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Add the IsRequiredForVerifyingType decorator to the MoveInDate property so that Maestro treats it as a required input field and offers it in the write step."
+      },
+      {
+        "id": "B",
+        "text": "Change MoveInDate to a String property, because Data IO cannot send DateTime values and only read steps support dates."
+      },
+      {
+        "id": "C",
+        "text": "Add an UpdateRecord action for Tenant to the manifest, because Patch Record only changes properties already populated on the record."
+      },
+      {
+        "id": "D",
+        "text": "Add a term decorator with a display name to MoveInDate, because write steps hide every property that lacks a display name."
+      },
+      {
+        "id": "E",
+        "text": "Change the Get Type Definitions response so MoveInDate's CRUD annotation marks it as creatable and updateable, since CRUD settings decide which steps show a field."
+      }
+    ],
+    "correct": "E",
+    "answerText": "Change the Get Type Definitions response so MoveInDate's CRUD annotation marks it as creatable and updateable, since CRUD settings decide which steps show a field.",
+    "explanation": "The clue is that the property shows in the read step but not in the write step: in the Data IO data model, CRUD operations determine which workflow steps objects and fields appear in (readable in read steps, updateable or creatable in write steps).",
+    "whyNotOthers": "E is right because write-step visibility follows the creatable/updateable setting. The trap is A: it is a real Concerto decorator, but it belongs to connected fields verification. B is false about dates, C names a non-existent action, and D confuses display names with step visibility. The hosting provider is a red herring.",
+    "optionExplanations": {
+      "A": "IsRequiredForVerifyingType is a connected fields decorator for verification, not a Data IO write control.",
+      "B": "Data IO supports date-time values; Docusign sends them in ISO 8601 UTC in Create Record, Patch Record and Search Records.",
+      "C": "There is no UpdateRecord action; Data IO uses Create Record and Patch Record for writes.",
+      "D": "Term decorators set display names; they do not control whether a property appears in write steps.",
+      "E": "Correct. For Data IO, CRUD operations on concepts and properties decide where they appear: readable in read steps, creatable or updateable in write steps."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "Mark the Data IO property as creatable/updateable in its Concerto definition so it appears in write steps.",
+      "clues": [
+        "'appears in read step but not write step' -> CRUD settings in the type definition",
+        "'housing system allows the field to be changed' -> the model, not the back-end, is the blocker",
+        "'hosted by a third-party provider' -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "CRUD settings control step visibility",
+      "line": "In Data IO type definitions, readable properties appear in read steps; creatable or updateable properties appear in write steps."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "long",
+    "style": "design",
+    "domain": "App Center and Extension Apps",
+    "topic": "App Center install blocked by an ad blocker",
+    "stem": "Wexford Group's private extension app went Live and was shared with two production accounts. Admins of the subsidiary, which sits on its own network, installed it without trouble. At head office, every install attempt ends with 'We encountered an unexpected error. Reload the page and try again.' Head office enforces a strict browser ad-blocking policy across its corporate network, and its account still shows Pending on the developer's sharing list. The help desk has already cleared browser caches twice. What is the most likely fix?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Add the Docusign endpoint IP addresses for North America to the firewall in front of Wexford's API service so the installation call can complete."
+      },
+      {
+        "id": "B",
+        "text": "Ask the developer to remove head office from the sharing list and add it again, because a Pending entry expires after 48 hours."
+      },
+      {
+        "id": "C",
+        "text": "Add the Optimizely addresses that the App Center uses, and ideally the Qualtrics domains, to the allowed list of head office's ad blocker."
+      },
+      {
+        "id": "D",
+        "text": "Ask the developer to re-run the connection test in the Developer Console, because production installs fail until a recent connection test passes."
+      },
+      {
+        "id": "E",
+        "text": "Ask Docusign to switch the app to public distribution, because private apps cannot be installed while the account's entry is Pending."
+      }
+    ],
+    "correct": "C",
+    "answerText": "Add the Optimizely addresses that the App Center uses, and ideally the Qualtrics domains, to the allowed list of head office's ad blocker.",
+    "explanation": "The clues are the exact message 'We encountered an unexpected error. Reload the page and try again', the strict ad-blocking policy, and the subsidiary on another network succeeding. Docusign documents that ad blockers must allow the Optimizely (and recommended Qualtrics) addresses to install or uninstall apps in the App Center.",
+    "whyNotOthers": "C is right because the error pattern and network-specific failure match an ad blocker. The trap is A: a firewall allow-list is the other network change in the docs, but it governs Docusign calling Wexford's API and would also have broken the subsidiary. B, D and E misread Pending status or invent prerequisites.",
+    "optionExplanations": {
+      "A": "Firewall problems block Docusign's calls to the API (for example 403, 502 or token exchange errors); they would also hit the subsidiary, which installed fine.",
+      "B": "Pending simply means the admin has not yet accepted the app; it does not expire.",
+      "C": "Correct. The documented symptom of a blocking ad blocker during App Center install or uninstall is exactly this error, and the fix is allow-listing these addresses.",
+      "D": "Developer Console tests run in the developer account and do not gate production installs.",
+      "E": "Installing is how the admin accepts a Pending private app, and distribution cannot change after Live."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "Allow the App Center's Optimizely (and Qualtrics) addresses in the ad blocker so admins can install the app.",
+      "clues": [
+        "'We encountered an unexpected error. Reload the page' -> ad blocker symptom",
+        "'subsidiary on its own network installed fine' -> network-specific, browser-side",
+        "'Pending' -> just means not yet accepted"
+      ]
+    },
+    "concept": {
+      "title": "Ad blockers can block installs",
+      "line": "If App Center installs fail with an unexpected error, allow the Optimizely and Qualtrics addresses in the network's ad blocker."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "short",
+    "style": "fact",
+    "domain": "App Center and Extension Apps",
+    "topic": "Extension app name rules",
+    "stem": "What is the maximum length of an extension app's name, which must also be unique?",
+    "options": [
+      {
+        "id": "A",
+        "text": "50 characters"
+      },
+      {
+        "id": "B",
+        "text": "64 characters"
+      },
+      {
+        "id": "C",
+        "text": "100 characters"
+      },
+      {
+        "id": "D",
+        "text": "30 characters"
+      },
+      {
+        "id": "E",
+        "text": "255 characters"
+      }
+    ],
+    "correct": "D",
+    "answerText": "30 characters",
+    "explanation": "The registration form and best practices state the app name must be unique and is limited to 30 characters; it appears in the App Center listing, Maestro step selection and the Add Fields view.",
+    "whyNotOthers": "D is right. The trap is A, a common limit in other systems; B, C and E are also above the 30-character limit.",
+    "optionExplanations": {
+      "A": "Too long; the documented limit is 30.",
+      "B": "Too long; the documented limit is 30.",
+      "C": "Too long; the documented limit is 30.",
+      "D": "Correct. The app name must be unique and is limited to 30 characters.",
+      "E": "Too long; the documented limit is 30."
+    },
+    "trapOption": "A",
+    "importance": "HIGH",
+    "concept": {
+      "title": "App name: unique, 30 characters",
+      "line": "An extension app name must be unique and at most 30 characters; it shows in App Center, Maestro steps and Add Fields."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "long",
+    "style": "design",
+    "domain": "App Center and Extension Apps",
+    "topic": "Test credentials on the review submission",
+    "stem": "Ellery Analytics is submitting its first public extension app for Docusign review. The app calls Ellery's risk-scoring API, which requires a user to sign in during authorization. On the submission form, a junior developer proposes entering the company's Docusign admin login so the reviewers can get in, and the team lead offers his own Ellery production login because it has the richest data. Connection, extension and functional tests passed last week in the developer account. What should go in the Test credentials field?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Credentials for a test-only Ellery account set up for the review, so reviewers can authorize against the risk-scoring service without anyone's personal login."
+      },
+      {
+        "id": "B",
+        "text": "The company's Docusign admin login, because the reviewers install the app into Ellery's own Docusign account and need its admin rights to test it end to end."
+      },
+      {
+        "id": "C",
+        "text": "The team lead's Ellery production login, because reviewers must see real customer data to judge the business and functional aspects."
+      },
+      {
+        "id": "D",
+        "text": "The connection's client ID and client secret, because reviewers authorize with Client Credentials Grant instead of signing in as a user."
+      },
+      {
+        "id": "E",
+        "text": "Nothing, because the Test credentials field is used only for private apps whose production accounts reviewers cannot access."
+      }
+    ],
+    "correct": "A",
+    "answerText": "Credentials for a test-only Ellery account set up for the review, so reviewers can authorize against the risk-scoring service without anyone's personal login.",
+    "explanation": "The submission form's Test credentials are 'typically username and password' for your own service, from a test-only account set up for the review, never personal credentials and not Docusign credentials. The clue is that the API 'requires a user to sign in during authorization'.",
+    "whyNotOthers": "A is right because reviewers need a dedicated test login for Ellery's service. The trap is B: reviewers do work in Docusign, but the field is for the external service's credentials. C exposes a personal production login, D uses a grant only allowed for private apps, and E skips information the reviewers need.",
+    "optionExplanations": {
+      "A": "Correct. Test credentials are for your own service, should belong to a test-only account created for this purpose, and must not be personal credentials or Docusign credentials.",
+      "B": "The field is for credentials to your own service, not Docusign credentials.",
+      "C": "Docusign says not to give your own private credentials; use a test-only account.",
+      "D": "The app uses a sign-in during authorization, and Client Credentials Grant is limited to private apps anyway.",
+      "E": "The field applies to the review of any submitted app and helps reviewers test it."
+    },
+    "trapOption": "B",
+    "importance": "HIGH",
+    "decode": {
+      "needs": "Provide a test-only account for your own service in the review submission's Test credentials field.",
+      "clues": [
+        "'requires a user to sign in during authorization' -> reviewers need credentials for Ellery's service",
+        "'Docusign admin login' -> wrong system",
+        "'his own production login' -> personal credentials are not allowed"
+      ]
+    },
+    "concept": {
+      "title": "Review needs test-only credentials",
+      "line": "On review submission, give credentials for a test-only account on your own service, never personal or Docusign credentials."
+    }
+  }
+]

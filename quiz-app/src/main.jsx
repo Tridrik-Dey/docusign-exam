@@ -9,12 +9,23 @@ import {
   RotateCcw,
   Search,
   Shuffle,
+  Timer,
+  CalendarDays,
   XCircle,
 } from 'lucide-react';
 import questions from './questions.json';
+import MockExam from './MockExam.jsx';
+import StudyPlan from './StudyPlan.jsx';
+import DecodeDrill from './DecodeDrill.jsx';
+import TopicTest from './TopicTest.jsx';
+import MistakesPage from './MistakesPage.jsx';
+import EmbedLab from './EmbedLab.jsx';
+import { ImportanceTag } from './importance.jsx';
 import './styles.css';
 
-const STORAGE_KEY = 'docusign-iam-quiz-state-v3';
+// v4: fresh start for the 16-22 Nov 2026 study plan (older progress is ignored)
+const STORAGE_KEY = 'docusign-iam-quiz-state-v4';
+const MODE_KEY = 'docusign-iam-mode-v2';
 
 function loadState() {
   try {
@@ -26,11 +37,13 @@ function loadState() {
       showIncorrectOnly: Boolean(saved.showIncorrectOnly),
       domain: saved.domain || 'All',
       query: saved.query || '',
+      importance: saved.importance || 'All',
     };
   } catch {
-    return { currentIndex: 0, answers: {}, submitted: {}, showIncorrectOnly: false, domain: 'All', query: '' };
+    return { currentIndex: 0, answers: {}, submitted: {}, showIncorrectOnly: false, domain: 'All', query: '', importance: 'All' };
   }
 }
+
 
 function saveState(state) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
@@ -40,7 +53,130 @@ function classNames(...parts) {
   return parts.filter(Boolean).join(' ');
 }
 
-function App() {
+function getCorrectIds(question) {
+  if (!question) return [];
+  if (Array.isArray(question.correctAnswers)) return question.correctAnswers;
+  return [question.correct];
+}
+
+function getSelectedIds(answer) {
+  if (!answer) return [];
+  return Array.isArray(answer) ? answer : [answer];
+}
+
+function answersEqual(answer, question) {
+  const selectedIds = getSelectedIds(answer).slice().sort();
+  const correctIds = getCorrectIds(question).slice().sort();
+  return selectedIds.length === correctIds.length && selectedIds.every((id, index) => id === correctIds[index]);
+}
+
+function answerLabel(question) {
+  const correctIds = getCorrectIds(question);
+  return `${correctIds.join(', ')}. ${question.answerText}`;
+}
+
+function Root() {
+  const [mode, setMode] = useState(() => {
+    try {
+      return localStorage.getItem(MODE_KEY) || 'plan';
+    } catch {
+      return 'plan';
+    }
+  });
+  function switchMode(next) {
+    setMode(next);
+    try {
+      localStorage.setItem(MODE_KEY, next);
+    } catch {
+      /* ignore */
+    }
+  }
+  function handlePlanAction(action) {
+    if (action.type === 'mock') {
+      switchMode('mock');
+      return;
+    }
+    if (action.type === 'embed') {
+      switchMode('embed');
+      return;
+    }
+    if (action.type === 'mistakes') {
+      try {
+        localStorage.setItem('docusign-iam-mistakes-domain', action.domain || 'All');
+      } catch {
+        /* ignore */
+      }
+      switchMode('mistakes');
+      return;
+    }
+    if (action.type === 'topic') {
+      try {
+        localStorage.setItem('docusign-iam-topic-pick', JSON.stringify({ domain: action.domain || 'All', size: action.size || 15 }));
+      } catch {
+        /* ignore */
+      }
+      switchMode('topic');
+      return;
+    }
+    if (action.type === 'drill') {
+      try {
+        localStorage.setItem('docusign-iam-drill-domain', action.domain || 'All');
+      } catch {
+        /* ignore */
+      }
+      switchMode('drill');
+      return;
+    }
+    // practice / review: preset the practice filters, then open practice mode
+    const state = loadState();
+    try {
+      saveState({
+        ...state,
+        domain: action.domain || 'All',
+        query: '',
+        currentIndex: 0,
+        importance: action.importance || 'All',
+        showIncorrectOnly: action.type === 'review',
+      });
+    } catch {
+      /* ignore */
+    }
+    switchMode('practice');
+  }
+  if (mode === 'mock') return <MockExam onExit={() => switchMode('plan')} />;
+  if (mode === 'embed') return <EmbedLab onPlan={() => switchMode('plan')} />;
+  if (mode === 'mistakes') {
+    let d = 'All';
+    try {
+      d = localStorage.getItem('docusign-iam-mistakes-domain') || 'All';
+    } catch {
+      /* ignore */
+    }
+    return <MistakesPage initialDomain={d} onPlan={() => switchMode('plan')} onAction={handlePlanAction} />;
+  }
+  if (mode === 'topic') {
+    let pick = {};
+    try {
+      pick = JSON.parse(localStorage.getItem('docusign-iam-topic-pick') || '{}');
+    } catch {
+      /* ignore */
+    }
+    return <TopicTest initialDomain={pick.domain} initialSize={pick.size} onPlan={() => switchMode('plan')} />;
+  }
+  if (mode === 'drill') {
+    let d = 'All';
+    try {
+      d = localStorage.getItem('docusign-iam-drill-domain') || 'All';
+    } catch {
+      /* ignore */
+    }
+    return <DecodeDrill initialDomain={d} onPlan={() => switchMode('plan')} />;
+  }
+  if (mode === 'practice') return <App onMockExam={() => switchMode('mock')} onPlan={() => switchMode('plan')} />;
+  return <StudyPlan practiceState={loadState()} onAction={handlePlanAction} />;
+}
+
+function App({ onMockExam, onPlan }) {
   const initial = useMemo(loadState, []);
   const [answers, setAnswers] = useState(initial.answers);
   const [submitted, setSubmitted] = useState(initial.submitted);
@@ -48,6 +184,7 @@ function App() {
   const [domain, setDomain] = useState(initial.domain);
   const [query, setQuery] = useState(initial.query);
   const [showIncorrectOnly, setShowIncorrectOnly] = useState(initial.showIncorrectOnly);
+  const [importance, setImportance] = useState(initial.importance);
 
   const domains = useMemo(() => ['All', ...Array.from(new Set(questions.map((q) => q.domain)))], []);
 
@@ -60,20 +197,25 @@ function App() {
         question.stem.toLowerCase().includes(q) ||
         question.topic.toLowerCase().includes(q) ||
         question.domain.toLowerCase().includes(q);
-      const isIncorrect = submitted[question.id] && answers[question.id] !== question.correct;
+      const isIncorrect = submitted[question.id] && !answersEqual(answers[question.id], question);
       const matchesIncorrect = !showIncorrectOnly || isIncorrect;
-      return matchesDomain && matchesQuery && matchesIncorrect;
+      const matchesImportance = importance === 'All' || question.importance === importance;
+      return matchesDomain && matchesQuery && matchesIncorrect && matchesImportance;
     });
-  }, [answers, domain, query, showIncorrectOnly, submitted]);
+  }, [answers, domain, query, showIncorrectOnly, submitted, importance]);
 
   const currentQuestion = filteredQuestions[Math.min(currentIndex, Math.max(filteredQuestions.length - 1, 0))];
   const selected = currentQuestion ? answers[currentQuestion.id] : null;
+  const selectedIds = getSelectedIds(selected);
+  const correctIds = getCorrectIds(currentQuestion);
+  const isMultiAnswer = correctIds.length > 1;
+  const hasSelection = currentQuestion ? (isMultiAnswer ? selectedIds.length === correctIds.length : selectedIds.length > 0) : false;
   const isSubmitted = currentQuestion ? submitted[currentQuestion.id] : false;
-  const isCorrect = currentQuestion ? answers[currentQuestion.id] === currentQuestion.correct : false;
+  const isCorrect = currentQuestion ? answersEqual(answers[currentQuestion.id], currentQuestion) : false;
 
   const stats = useMemo(() => {
     const answered = Object.keys(submitted).length;
-    const correct = questions.filter((q) => submitted[q.id] && answers[q.id] === q.correct).length;
+    const correct = questions.filter((q) => submitted[q.id] && answersEqual(answers[q.id], q)).length;
     const incorrect = answered - correct;
     return {
       answered,
@@ -92,6 +234,7 @@ function App() {
       showIncorrectOnly,
       domain,
       query,
+      importance,
       ...next,
     };
     if (next.currentIndex === undefined) state.currentIndex = currentIndex;
@@ -100,18 +243,29 @@ function App() {
     if (next.showIncorrectOnly === undefined) state.showIncorrectOnly = showIncorrectOnly;
     if (next.domain === undefined) state.domain = domain;
     if (next.query === undefined) state.query = query;
+    if (next.importance === undefined) state.importance = importance;
     saveState(state);
   }
 
   function selectAnswer(optionId) {
     if (!currentQuestion || isSubmitted) return;
-    const nextAnswers = { ...answers, [currentQuestion.id]: optionId };
+    let nextAnswer = optionId;
+    if (isMultiAnswer) {
+      const existing = new Set(selectedIds);
+      if (existing.has(optionId)) {
+        existing.delete(optionId);
+      } else if (existing.size < correctIds.length) {
+        existing.add(optionId);
+      }
+      nextAnswer = Array.from(existing).sort();
+    }
+    const nextAnswers = { ...answers, [currentQuestion.id]: nextAnswer };
     setAnswers(nextAnswers);
     commit({ answers: nextAnswers });
   }
 
   function submitAnswer() {
-    if (!currentQuestion || !selected) return;
+    if (!currentQuestion || !hasSelection) return;
     const nextSubmitted = { ...submitted, [currentQuestion.id]: true };
     setSubmitted(nextSubmitted);
     commit({ submitted: nextSubmitted });
@@ -127,6 +281,12 @@ function App() {
     setDomain(value);
     setCurrentIndex(0);
     commit({ domain: value, currentIndex: 0 });
+  }
+
+  function updateImportance(value) {
+    setImportance(value);
+    setCurrentIndex(0);
+    commit({ importance: value, currentIndex: 0 });
   }
 
   function updateQuery(value) {
@@ -149,7 +309,8 @@ function App() {
     setShowIncorrectOnly(false);
     setDomain('All');
     setQuery('');
-    saveState({ currentIndex: 0, answers: {}, submitted: {}, showIncorrectOnly: false, domain: 'All', query: '' });
+    setImportance('All');
+    saveState({ currentIndex: 0, answers: {}, submitted: {}, showIncorrectOnly: false, domain: 'All', query: '', importance: 'All' });
   }
 
   function jumpToRandom() {
@@ -189,12 +350,28 @@ function App() {
           ))}
         </select>
 
+        <label className="field-label" htmlFor="importance">Importance</label>
+        <select id="importance" className="select" value={importance} onChange={(event) => updateImportance(event.target.value)}>
+          <option value="All">All</option>
+          <option value="HIGH">Must know only</option>
+          <option value="MEDIUM">Important only</option>
+          <option value="LOW">Background only</option>
+        </select>
+
         <label className="field-label" htmlFor="search">Search</label>
         <div className="search-box">
           <Search size={16} />
           <input id="search" value={query} onChange={(event) => updateQuery(event.target.value)} placeholder="topic, section, keyword" />
         </div>
 
+        <button className="side-action plan-entry" onClick={onPlan}>
+          <CalendarDays size={17} />
+          Exam plan
+        </button>
+        <button className="side-action mock-entry" onClick={onMockExam}>
+          <Timer size={17} />
+          Mock exam (60 Q, 150 min)
+        </button>
         <button className={classNames('side-action', showIncorrectOnly && 'active')} onClick={toggleIncorrect}>
           <ListChecks size={17} />
           Review incorrect
@@ -229,13 +406,21 @@ function App() {
             </div>
 
             <section className="question-card">
-              <div className="topic">{currentQuestion.topic}</div>
+              <div className="topic-row">
+                <ImportanceTag level={currentQuestion.importance} />
+                <div className="topic">{currentQuestion.topic}</div>
+              </div>
               <p className="stem">{currentQuestion.stem}</p>
+              {isMultiAnswer && (
+                <div className="multi-note">
+                  Select {correctIds.length} answers. Selected {selectedIds.length} / {correctIds.length}.
+                </div>
+              )}
 
               <div className="options">
                 {currentQuestion.options.map((option) => {
-                  const optionCorrect = option.id === currentQuestion.correct;
-                  const optionSelected = selected === option.id;
+                  const optionCorrect = correctIds.includes(option.id);
+                  const optionSelected = selectedIds.includes(option.id);
                   return (
                     <button
                       key={option.id}
@@ -246,6 +431,7 @@ function App() {
                         isSubmitted && optionSelected && !optionCorrect && 'wrong'
                       )}
                       onClick={() => selectAnswer(option.id)}
+                      aria-pressed={optionSelected}
                     >
                       <span className="option-letter">{option.id}</span>
                       <span>{option.text}</span>
@@ -259,7 +445,7 @@ function App() {
                   <ArrowLeft size={18} />
                   Previous
                 </button>
-                <button className="submit-button" onClick={submitAnswer} disabled={!selected || isSubmitted}>
+                <button className="submit-button" onClick={submitAnswer} disabled={!hasSelection || isSubmitted}>
                   Check answer
                 </button>
                 <button className="nav-button" onClick={() => goToIndex(currentIndex + 1)} disabled={currentIndex >= filteredQuestions.length - 1}>
@@ -285,7 +471,7 @@ function App() {
               <div>
                 <strong>{isCorrect ? 'Correct' : 'Incorrect'}</strong>
                 <span>
-                  Correct answer: {currentQuestion.correct}. {currentQuestion.answerText}
+                  Correct answer: {answerLabel(currentQuestion)}
                 </span>
               </div>
             </div>
@@ -295,13 +481,21 @@ function App() {
               <p>{currentQuestion.explanation}</p>
             </div>
 
+            {currentQuestion.whyNotOthers && (
+              <div className="explanation-block why-not">
+                <h3>Why this answer and not the others</h3>
+                <p>{currentQuestion.whyNotOthers}</p>
+              </div>
+            )}
+
             <div className="explanation-block">
               <h3>Why each option fits or does not fit</h3>
               {currentQuestion.options.map((option) => (
-                <div key={option.id} className={classNames('option-analysis', option.id === currentQuestion.correct && 'right')}>
+                <div key={option.id} className={classNames('option-analysis', correctIds.includes(option.id) && 'right')}>
                   <div className="analysis-option-title">
                     <span>{option.id}</span>
                     <strong>{option.text}</strong>
+                    {currentQuestion.trapOption === option.id && <em className="trap-badge">TRAP</em>}
                   </div>
                   <p>{currentQuestion.optionExplanations[option.id]}</p>
                 </div>
@@ -319,4 +513,4 @@ function App() {
   );
 }
 
-createRoot(document.getElementById('root')).render(<App />);
+createRoot(document.getElementById('root')).render(<Root />);

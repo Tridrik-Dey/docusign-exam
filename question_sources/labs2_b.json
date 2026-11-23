@@ -1,0 +1,381 @@
+{
+  "workflow": {
+    "title": "Lab 5: Workflow Builder & Workflow API",
+    "weeks": "Keep-alive slots (10-15 min each); exercise 7 is an optional 30-45 min lab",
+    "goal": "Build and publish one small workflow (web form -> signature), then start it the three ways the exam asks about: manually, from a link and from an API call. Drive it through the Maestro API (aow_manage, trigger requirements, trigger, instance status, cancel vs pause/resume) and embed the instance URL, so that the scenario answers about start methods, embedding restrictions and instance management become things you have seen.",
+    "setup": [
+      "Use your developer (demo) account only. Workflows live under Agreements > Workflows (Workflow Builder / Maestro).",
+      "Your user needs the workflow permissions: Workflows: Create to build and publish, Workflows: Prepare to run published workflows.",
+      "Create a STANDALONE web form (Forms > Web Forms, not derived from a template) with fields such as fullName and email, and activate it. Note each field's Field name.",
+      "Create an eSignature template with one signer role and text fields named like the form fields (for example fullName) plus a signHere field.",
+      "API calls: Postman or the API Explorer with a token that has the scopes signature and aow_manage. Base path demo https://api-d.docusign.com/v1 (production https://api.docusign.com/v1). Use placeholders {accountId}, {workflowId}, {instanceId}, {accessToken}.",
+      "Reference code (read only, never copy keys or IDs from its config): d:/Docusign exam/docusign-node-quickstart/app/lib/maestro/examples/triggerWorkflow.js, pauseWorkflow.js, resumeWorkflow.js, cancelWorkflow.js, and ../workflowUtils.js (publish with isPreRunCheck and consentUrl).",
+      "The plan's Embedding lab page at http://127.0.0.1:5173 is used in exercise 5."
+    ],
+    "exercises": [
+      {
+        "title": "1. Build and publish: web form -> template -> signature",
+        "minutes": 15,
+        "steps": [
+          "Agreements > Workflows > Create Workflow > start from a blank canvas.",
+          "Set the start method to From an API call and add one participant role (for example Applicant) with name and email as start variables.",
+          "Add the step Collect Data with Web Forms and pick your standalone web form for the Applicant.",
+          "Add Prepare eSignature Template, pick your template and map the web form fields to the template fields.",
+          "Add Send Documents for Signature (Applicant signs), then Show a Confirmation Screen.",
+          "Save the draft (drafts are not saved automatically), then Review & Publish. Fix every error the check reports and publish."
+        ],
+        "api": "No API call: Workflow Builder UI. (Programmatic equivalent, for reading only: POST https://demo.services.docusign.net/aow-manage/v1.0/management/accounts/{accountId}/workflowDefinitions/{workflowId}/publish?isPreRunCheck=true, see workflowUtils.js.)",
+        "observe": [
+          "Whether the template-based web form you might try first is offered in the web form step: web forms derived from eSignature templates cannot be used in workflows; the form must be standalone.",
+          "The publish check lists errors that block publishing (missing mappings, unassigned participants).",
+          "After publishing, the workflow is visible to everyone on the account with workflow permissions."
+        ],
+        "examTraps": [
+          "Step order follows the business process: collect data -> (verify identity) -> prepare template -> send for signature -> archive/notify.",
+          "Prepare eSignature Template fits when one template covers every instance; document generation fits when content varies.",
+          "Publishing is blocked until all check errors are fixed; a consent error returns a consentUrl (exercise 7)."
+        ]
+      },
+      {
+        "title": "2. Start methods: manually vs from a link vs from an API call",
+        "minutes": 10,
+        "steps": [
+          "Duplicate the workflow twice (or export and import it) and set one copy to start Manually in Docusign and the other From a link; publish both.",
+          "Manual copy: on the Workflows list open the three-dot menu > Run Workflow, fill in the participant and start it.",
+          "Link copy: click the link icon, copy the URL and open it in a private browser window as if you were a website visitor.",
+          "Try to find a Run Workflow option or a link for the API-call workflow from exercise 1 and note what is and is not offered."
+        ],
+        "api": "No API call: Workflow Builder UI.",
+        "observe": [
+          "Manual start asks the sender for participant data, like sending from a template.",
+          "The link start needs no Docusign user: the participant who opens the link starts the instance (self-service intake).",
+          "Each started instance appears under View Instances for that workflow."
+        ],
+        "examTraps": [
+          "Client intake or account change request on a public website -> From a link.",
+          "Internal user starts the process for a known recipient -> Manually in Docusign (needs Workflows: Prepare).",
+          "Your application starts it, passing data -> From an API call (trigger_inputs).",
+          "Editing participants or steps of a published workflow changes only NEW instances; running instances are not modified."
+        ]
+      },
+      {
+        "title": "3. Token with aow_manage, list workflows, read trigger requirements",
+        "minutes": 15,
+        "steps": [
+          "Get an access token whose scope includes signature and aow_manage (for JWT add aow_manage to the scope of the assertion and grant consent again if needed).",
+          "Call GetWorkflowsList and find the workflow from exercise 1 and its id.",
+          "Call GetWorkflowTriggerRequirements for that workflowId.",
+          "Repeat the list call with a token WITHOUT aow_manage and note the error."
+        ],
+        "api": "GET https://api-d.docusign.com/v1/accounts/{accountId}/workflows\nGET https://api-d.docusign.com/v1/accounts/{accountId}/workflows/{workflowId}/trigger-requirements\nAuthorization: Bearer {accessToken}",
+        "observe": [
+          "The list shows each workflow with its id, name and status (the quickstart filters with status active).",
+          "Trigger requirements return the trigger event type (HTTP), the trigger_input_schema (field names and types, for example the participant name and email start variables) and a trigger url that carries mtid and mtsec query parameters generated at publish time.",
+          "Without aow_manage the call is refused (401/403), even though the same token works for eSignature."
+        ],
+        "examTraps": [
+          "Maestro uses the same OAuth tokens as eSignature, but the token must include the Maestro scope aow_manage.",
+          "Read trigger requirements BEFORE triggering: a wrong or missing input that does not match trigger_input_schema is a classic runtime error.",
+          "Maestro base path is api-d.docusign.com/v1 (demo) / api.docusign.com/v1 (prod), not {base_uri}/restapi."
+        ]
+      },
+      {
+        "title": "4. TriggerWorkflow and track the instance",
+        "minutes": 15,
+        "steps": [
+          "Call TriggerWorkflow with an instance_name and trigger_inputs that match the schema from exercise 3 (use your own email).",
+          "Save the instance id and the instance URL from the 201 response.",
+          "Call getWorkflowInstancesList, then getWorkflowInstance for your instance.",
+          "Complete the web form and signature from the email or the instance URL, then call getWorkflowInstance again.",
+          "Trigger once more with one required input left out and read the error."
+        ],
+        "api": "POST https://api-d.docusign.com/v1/accounts/{accountId}/workflows/{workflowId}/actions/trigger\n{\n  \"instance_name\": \"Lab5 instance 1\",\n  \"trigger_inputs\": {\n    \"applicantName\": \"{yourName}\",\n    \"applicantEmail\": \"{yourEmail}\"\n  }\n}\nGET https://api-d.docusign.com/v1/accounts/{accountId}/workflows/{workflowId}/instances\nGET https://api-d.docusign.com/v1/accounts/{accountId}/workflows/{workflowId}/instances/{instanceId}",
+        "observe": [
+          "The 201 response returns the new instance id and a workflow instance URL (the reference names them instance_id and instance_url; the SDK sample shows instanceId and workflowInstanceUrl).",
+          "getWorkflowInstance shows name, status, start and end times and started_by; the status changes after you complete the steps.",
+          "The same instance is visible in the UI under View Instances > View details, with completed, active and incomplete steps.",
+          "The trigger with a missing input fails instead of starting an instance (observe the status code and message)."
+        ],
+        "examTraps": [
+          "Trigger by API = GetWorkflowTriggerRequirements -> TriggerWorkflow (instance_name + trigger_inputs) -> instance id + URL.",
+          "To be told about progress instead of polling, subscribe with Connect to workflow-started, workflow-failed and workflow-completed (JSON SIM only).",
+          "getWorkflowInstance needs both workflowId and instanceId in the path."
+        ]
+      },
+      {
+        "title": "5. Embed the instance URL: redirect vs iframe",
+        "minutes": 15,
+        "steps": [
+          "Trigger a new instance (exercise 4) and copy the instance URL.",
+          "Open the Embedding lab page at http://127.0.0.1:5173, paste the URL and choose (1) full-page redirect.",
+          "Trigger another instance (do not reuse a completed one), paste its URL and choose (2) plain iframe.",
+          "Work through the web form and the signing step in each mode and note where the browser ends up when the workflow finishes.",
+          "Optional: compare with docusign-node-quickstart/app/views/pages/maestro-examples/eg001EmbedWorkflow.ejs (a plain iframe with the instance URL)."
+        ],
+        "api": "POST .../workflows/{workflowId}/actions/trigger (as in exercise 4), then use the returned instance URL:\nRedirect: window.location = instanceUrl\nIframe: <iframe src=\"{instanceUrl}\" width=\"800\" height=\"600\"></iframe>",
+        "observe": [
+          "Redirect: the user leaves your app and stays on the Docusign page after the workflow finishes.",
+          "Iframe: your page stays visible around the workflow and the user is still in your app at the end, so your app decides where to route next.",
+          "Observe whether the signing step inside the iframe opens in classic view (the documented restriction: focused view is not supported for Send Documents for Signature in embedded workflow instances).",
+          "Observe whether the browser console shows any framing error for your origin http://127.0.0.1:5173 (the Maestro docs do not document a frameAncestors setting for workflow instances)."
+        ],
+        "examTraps": [
+          "Embedding is supported only for workflows that start From a link or From an API call; with starting values in trigger_inputs, prefer From an API call.",
+          "All step types work embedded EXCEPT Collect Data from an ID; Verify Someone's Identity supports only Phone Authentication when embedded.",
+          "Do not embed a workflow that has no UI steps (for example one that only sends an email).",
+          "Embedded workflow instance: no focused view for the signature step; Docusign JS is for focused view signing and web forms, not for the workflow instance URL."
+        ]
+      },
+      {
+        "title": "6. Cancel one instance vs pause and resume the workflow",
+        "minutes": 15,
+        "steps": [
+          "Trigger two instances and leave both unfinished.",
+          "Call pauseNewWorkflowInstances for the workflow, then try TriggerWorkflow again and record the result.",
+          "Open one of the two running instances and check whether it can still be completed while the workflow is paused.",
+          "Call cancelWorkflowInstance for the other instance and read it with getWorkflowInstance.",
+          "Call resumePausedWorkflow and trigger once more.",
+          "In the UI, try to Unpublish while an instance is running, and note the rules."
+        ],
+        "api": "POST https://api-d.docusign.com/v1/accounts/{accountId}/workflows/{workflowId}/actions/pause\nPOST https://api-d.docusign.com/v1/accounts/{accountId}/workflows/{workflowId}/actions/resume\nPOST https://api-d.docusign.com/v1/accounts/{accountId}/workflows/{workflowId}/instances/{instanceId}/actions/cancel\n(no body needed)",
+        "observe": [
+          "Pause returns the workflow with status paused; resume returns status active.",
+          "While paused, new triggers are refused but already running instances keep running.",
+          "The canceled instance shows a canceled status; data collected so far is kept but no further steps run.",
+          "Unpublish is only possible for a paused workflow with no running instances; only unpublished workflows can be deleted, permanently."
+        ],
+        "examTraps": [
+          "Stop ONE stuck or wrong instance -> cancelWorkflowInstance; stop NEW starts (maintenance, incident) -> pauseNewWorkflowInstances, later resumePausedWorkflow.",
+          "Pause does not stop running instances; cancel does not affect other instances.",
+          "A paused workflow still counts toward the workflow quota and changes to it cannot be published; unpublished workflows do not count.",
+          "Move workflows demo -> production with export/import (templates and web forms referenced by the steps come along)."
+        ]
+      },
+      {
+        "title": "7. Optional (30-45 min): publish by API, consentUrl and runtime errors",
+        "minutes": 40,
+        "steps": [
+          "Run the Node quickstart Maestro example 1 (Trigger workflow) in your demo account with your own credentials in its config (never copy or print values that are already there). It creates a workflow from a template and publishes it.",
+          "Read workflowUtils.js publishWorkflow: it calls publish with isPreRunCheck=true and, on 'consent required', returns a consentUrl.",
+          "If the quickstart shows a consent page, open the consentUrl, grant consent, then publish again (without isPreRunCheck=true) and trigger.",
+          "Break it on purpose: uninstall or disconnect an extension app used by a workflow step (if you have one from Lab 6), or trigger with a token without aow_manage, and record each error message.",
+          "Optional: add an account-level Connect configuration (JSON SIM) with the Maestro events workflow-started, workflow-failed, workflow-completed pointed at webhook.site and watch one instance."
+        ],
+        "api": "POST https://demo.services.docusign.net/aow-manage/v1.0/management/accounts/{accountId}/workflowDefinitions/{workflowId}/publish?isPreRunCheck=true\n-> error with message 'consent required' and a consentUrl\n(grant consent, then call publish again without isPreRunCheck=true)",
+        "observe": [
+          "The pre-publication check runs before publishing and fails when consent is missing; the response includes consentUrl.",
+          "After consent the same publish succeeds and the workflow can be triggered.",
+          "Runtime errors map to causes: missing consent or scope, inputs that do not match trigger_input_schema, an extension app that is not installed or connected.",
+          "Connect Maestro events arrive only in JSON SIM format."
+        ],
+        "examTraps": [
+          "Publish fails with a consent error -> open consentUrl, grant consent, publish again (not: create a new integration key, not: change the start method).",
+          "Extension app steps in a workflow require the app to be installed and connected in the account (private apps only for the listed accounts).",
+          "Going live: publish the workflows the app invokes, make sure the extension apps used are published, and pass Go-Live for the integration key."
+        ]
+      }
+    ],
+    "cleanup": [
+      "Cancel any instances still running from the labs.",
+      "Pause, then unpublish the test workflows (unpublished workflows do not count toward the quota); delete only the ones you will never need.",
+      "Delete or disable any Connect configuration you created for Maestro events.",
+      "Remove tokens and IDs from Postman environments you plan to share."
+    ],
+    "takeaways": [
+      "Self-service from a website -> From a link; internal sender -> Manually in Docusign; your app with data -> From an API call.",
+      "API start = token with aow_manage -> GetWorkflowTriggerRequirements -> TriggerWorkflow(instance_name, trigger_inputs) -> instance id + URL.",
+      "Track with getWorkflowInstance (status, times, started_by) or Connect workflow-started/failed/completed (JSON SIM), not tight polling.",
+      "Cancel = one instance, data kept, no further steps; pause/resume = new instances only.",
+      "Embedded instance: redirect leaves the user at Docusign, iframe keeps them in your app; no Collect Data from an ID, phone-only IDV, no focused view for signing.",
+      "Publish runs a pre-check; a consent error returns consentUrl: grant consent, then publish again.",
+      "Workflow web form steps need standalone web forms; connected fields are not supported in Maestro.",
+      "Edits to a published workflow apply to new instances only; export/import moves workflows from demo to production."
+    ]
+  },
+  "extension_apps": {
+    "title": "Lab 6: App Center & Extension Apps",
+    "weeks": "Keep-alive slots (10-15 min each); exercise 3 is an optional 30-45 min lab",
+    "goal": "Register an extension app in the Developer Console both ways (form and manifest), connect it to a reference implementation, and run the console connection and extension tests followed by a functional test from eSignature or Maestro. Finish with the distribution and review decisions, so that public vs private, manifest structure and the register -> test -> review -> publish lifecycle are concrete.",
+    "setup": [
+      "Use your developer (demo) account and the Developer Console (Extension apps > My Extension Apps). Never register with production secrets.",
+      "Open the Docusign Reference Implementations page (developers.docusign.com/tools/reference-implementations): connected fields, Data IO, data verification and file output to cloud storage. Each has hosted manifest files that work without running anything locally.",
+      "For the optional local run: Git, Node.js and ngrok (or another HTTPS tunnel). Follow the README in the root of the reference implementation repository.",
+      "For functional tests: an eSignature template you can edit (connected fields test) and a standalone web form (Data IO workflow test).",
+      "Reference code for the API side of connected fields (read only, no credentials): d:/Docusign exam/docusign-node-quickstart/app/lib/connectedFields/examples/setConnectedFields.js."
+    ],
+    "exercises": [
+      {
+        "title": "1. Read a manifest: connections, extensions, actions",
+        "minutes": 10,
+        "steps": [
+          "Open the hosted manifest for the connected fields reference implementation (and, if time allows, the Data IO one).",
+          "Find the connections array: note name, type oauth2, params.provider CUSTOM, grantType, scopes and customConfig (authorizationUrl, tokenUrl, authorizationMethod, scopeSeparator).",
+          "Find extensions: note template and actionReferences.",
+          "Find actions: for each, note template, connectionsReference and params.uri.",
+          "Draw the links: extension.actionReferences -> action.name; action.connectionsReference -> connection.name."
+        ],
+        "api": "Manifest skeleton (shape only):\n{\n  \"name\": \"...\", \"distribution\": \"PRIVATE | PUBLIC\", \"publicationRegions\": [\"US\"],\n  \"connections\": [{\"name\": \"authentication\", \"type\": \"oauth2\",\n    \"params\": {\"provider\": \"CUSTOM\", \"clientId\": \"...\", \"clientSecret\": \"...\", \"grantType\": \"authorization_code\",\n      \"customConfig\": {\"authorizationUrl\": \"...\", \"tokenUrl\": \"...\", \"authorizationMethod\": \"header\", \"scopeSeparator\": \" \"}}}],\n  \"extensions\": [{\"name\": \"...\", \"template\": \"...\", \"actionReferences\": [\"verify\", \"get-type-names\", \"get-type-definitions\"]}],\n  \"actions\": [{\"name\": \"verify\", \"template\": \"ConnectedFields.Version1.Verify\", \"connectionsReference\": \"authentication\", \"params\": {\"uri\": \"https://{yourHost}/...\"}}]\n}",
+        "observe": [
+          "One manifest = one external platform connection; any number of extensions and actions.",
+          "The connected fields extension needs Verify plus the DataIO GetTypeNames and GetTypeDefinitions actions.",
+          "grantType is authorization_code or client_credentials; redirect_uri is generated by Docusign and must not be hard-coded."
+        ],
+        "examTraps": [
+          "connectionsReference (on actions) points to a connection name; actionReferences (on extensions) point to action names. Do not swap them.",
+          "params.uri is where Docusign calls YOUR endpoint (or API proxy); the endpoint must be reachable by Docusign over HTTPS.",
+          "If your API does not match the Docusign action contract, add an API proxy instead of rewriting the backend."
+        ]
+      },
+      {
+        "title": "2. Register twice: by editing the manifest vs the form-based experience",
+        "minutes": 15,
+        "steps": [
+          "Developer Console > Create App > By editing the manifest. Paste or upload the hosted connected fields manifest, give it a unique name (for example Lab6 CF manifest), click Validate, fix errors, Create App.",
+          "Create App > Using a form-based experience: app name, published by, support email, distribution type Private, extension Connected Fields (or Data Input Output). Create App.",
+          "In the form-based app open Integration Details: edit Connection (client ID, secret, authorization settings) and Extensions & Actions (Params URI per action).",
+          "Download the manifest of the form-based app from the kebab menu and compare it with the first one.",
+          "Note the App ID and the Draft status on My Extension Apps."
+        ],
+        "api": "No API call: Developer Console UI (Create App > By editing the manifest / Using a form-based experience).",
+        "observe": [
+          "The manifest editor validates in real time; validation errors block Create App.",
+          "The form-based app produces the same manifest structure (you can download it).",
+          "A duplicate app name is rejected: each extension app needs a unique name.",
+          "New apps start in Draft; statuses are Draft, In Review, Approved, Rejected, Live, Discontinued."
+        ],
+        "examTraps": [
+          "Both registration methods produce a manifest; the manifest route is better for copies per environment and source control.",
+          "Distribution can be changed only in Draft, Approved or Rejected status, not once Live; publicationRegions can be added later but not removed.",
+          "The connection settings support one external environment at a time: switch by editing the registration or keep one registration per environment."
+        ]
+      },
+      {
+        "title": "3. Optional (30-45 min): run the connected fields reference implementation behind ngrok",
+        "minutes": 40,
+        "steps": [
+          "Clone the connected fields reference implementation and follow its README: install dependencies, set its environment variables, start it locally.",
+          "Start ngrok for the local port and copy the https forwarding URL as {yourHost}.",
+          "Edit your manifest-based registration: set the authorization and token URLs and each action's params.uri to {yourHost} paths as the README describes; validate and save.",
+          "Run the connection and extension tests (exercise 4) against the local app and watch the requests arrive in the local console or the ngrok inspector (http://127.0.0.1:4040).",
+          "Restart ngrok (free plan gives a new URL) and see the tests fail until you update the registration."
+        ],
+        "api": "Docusign -> {yourHost}: OAuth authorize/token calls during the connection test, then POST to each action's params.uri (GetTypeNames, GetTypeDefinitions, Verify) with a JSON body defined by the action contract.",
+        "observe": [
+          "The local app receives Docusign's calls only because ngrok gives it a public HTTPS URL.",
+          "Get Type Definitions returns a Concerto data model; properties marked VerifiableType / IsRequiredForVerifyingType control which connected fields appear and which are required.",
+          "Changing the external URL means changing the registration (params.uri, auth URLs)."
+        ],
+        "examTraps": [
+          "Infrastructure question: Docusign must reach your endpoint -> public HTTPS, firewall allow-list or API proxy; a tunnel like ngrok is for development only.",
+          "Before submitting a public app for review, the registration must hold production URLs.",
+          "Data model changed after connecting -> refresh the connection in the App Center so Docusign re-runs GetTypeNames and GetTypeDefinitions."
+        ]
+      },
+      {
+        "title": "4. Console tests: install, connection test, extension tests",
+        "minutes": 15,
+        "steps": [
+          "Open the app > App Testing. If the banner says the app is not installed to your developer account, click Install app.",
+          "Connection row > Run Test: sign in with the authorization provider credentials (the reference implementation README gives test credentials).",
+          "For each extension row (GetTypeNames, GetTypeDefinitions, Verify) > Run Test: check the endpoint URL shown, supply request body values per the action contract, run it and read the response.",
+          "Run the connection test a second time and then look at the App Center connections for the app."
+        ],
+        "api": "Developer Console App Testing: Connection test (OAuth to the external service) -> Extension tests (POST to each params.uri with a contract-shaped body).",
+        "observe": [
+          "Extension tests are disabled until a connection test succeeds: they reuse that authorization.",
+          "The endpoint URL on the test page comes from params.uri and cannot be edited there; fix the registration instead.",
+          "Registration updates are applied automatically to the installed app; no reinstall is needed.",
+          "Repeated connection tests create extra connections, which later show up as duplicate entries in eSignature Add Fields."
+        ],
+        "examTraps": [
+          "Integration tests = connection test + extension tests (from the Docusign platform straight to your endpoints); they do not replace functional tests from the extension point.",
+          "Extension test fails but connection test passes -> wrong params.uri or a response that does not match the contract (consider an API proxy).",
+          "Connected fields missing in Add Fields -> app not installed/connected, or GetTypeNames/GetTypeDefinitions failed (data model error)."
+        ]
+      },
+      {
+        "title": "5. Functional test from eSignature: connected fields in an envelope",
+        "minutes": 15,
+        "steps": [
+          "eSignature > Templates > edit a template > Add Fields > Custom Fields > App Fields > your app.",
+          "Drag a required connected field onto the document (the required group is added); in Data Verification tick Must verify to sign.",
+          "Save, send an envelope from the template to yourself, open it from the email.",
+          "Enter valid values, then invalid ones, then change a value after success.",
+          "Optional API view: read setConnectedFields.js to see TabInfo:GetConnectedFieldsTabGroups -> extensionData on each text tab -> Envelopes:create."
+        ],
+        "api": "UI test. API equivalent: TabInfo:GetConnectedFieldsTabGroups (returns the tabs with extensionData for each installed connected fields app) -> copy extensionData into each tab -> POST {base_uri}/restapi/v2.1/accounts/{accountId}/envelopes.",
+        "observe": [
+          "A Verifying data message appears once all required connected fields are filled, then success or failure.",
+          "Invalid values fail verification; with Must verify to sign the signer cannot finish.",
+          "Changing a value triggers verification again.",
+          "Verification results also show in the envelope history and certificate of completion (and the Connect extension-executed event, JSON SIM only)."
+        ],
+        "examTraps": [
+          "Connected fields = verify signer-entered data against YOUR system of record during eSignature signing; they are not supported in Maestro.",
+          "If only optional connected fields are on the document, verification fails: include the required ones.",
+          "After changing the registration, create a new template or envelope (or follow connection best practices) before testing again."
+        ]
+      },
+      {
+        "title": "6. Functional test from Maestro: Data IO read and write",
+        "minutes": 15,
+        "steps": [
+          "Register the hosted Data IO reference manifest (as in exercise 2), install it and pass the connection test.",
+          "Create a workflow: start From within Maestro (manual), one participant, a Read from <app name> step, a Collect Data with Web Forms step (standalone form) and a Write to <app name> step, then Show a Confirmation Screen.",
+          "Map the read fields into the form and the form fields into the write step; publish and run one instance.",
+          "Check the external store (reference app) for the written record."
+        ],
+        "api": "UI test. Data IO actions invoked by Maestro: GetTypeNames and GetTypeDefinitions (on connect), SearchRecords (read step), CreateRecord / PatchRecord (write step).",
+        "observe": [
+          "The Read from / Write to step only appears when the app is installed and connected and GetTypeNames/GetTypeDefinitions succeeded.",
+          "The objects and fields offered in the step come from GetTypeNames and GetTypeDefinitions.",
+          "The form shows values read from the external system; the written record appears there after submit."
+        ],
+        "examTraps": [
+          "Read/write a system of record inside a workflow -> Data IO extension (extension point: Maestro workflows).",
+          "Store completed agreements in cloud storage from a workflow -> File output to cloud storage (file archive is legacy).",
+          "There is no UpdateRecord action: Data IO uses CreateRecord, PatchRecord and SearchRecords."
+        ]
+      },
+      {
+        "title": "7. Distribution and review: private vs public, what is checked",
+        "minutes": 10,
+        "steps": [
+          "Open App Center Listing in one of your apps: icon, screenshots (up to four), descriptions, publisher, terms/privacy/support URLs, distribution and regions.",
+          "Open App Center preview and compare it with the listing data.",
+          "Open Publish to App Center and read (do not submit) the review submission steps and the private-sharing screen (production account GUIDs, alias, Pending/Accepted).",
+          "Write one line for each: who can install a public app, who can install a private app, what happens when you remove a private app from an account."
+        ],
+        "api": "No API call: Developer Console (App Center Listing, App Center preview, Publish to App Center).",
+        "observe": [
+          "Review evaluates business, technical, security and functional aspects; you can track or cancel it and resubmit after fixes.",
+          "After approval: public apps need one more click to go live in the App Center; private apps need the allowed production account IDs.",
+          "Private share status stays Pending until the account admin accepts the app in the App Center, then Accepted.",
+          "Removing a private app from an account does not notify its administrator."
+        ],
+        "examTraps": [
+          "Verification against one organisation's internal data, or a customer-specific integration -> PRIVATE distribution.",
+          "A reusable connector for any customer, listed in the App Center -> PUBLIC (choose publicationRegions).",
+          "Lifecycle: register (form or manifest) -> connection + extension tests -> functional tests -> submit for review -> Approved -> publish (public listing or private accounts).",
+          "Private apps are shared with production account IDs (GUIDs), not with demo accounts or user emails."
+        ]
+      }
+    ],
+    "cleanup": [
+      "Delete the test connections you no longer need in the App Center (duplicates from repeated connection tests).",
+      "Delete or leave in Draft the lab extension apps; never submit lab apps for review.",
+      "Stop ngrok and the local reference app; remove any test secrets from the manifests you downloaded.",
+      "Pause and unpublish the Data IO test workflow; delete the connected fields test template if you will not reuse it."
+    ],
+    "takeaways": [
+      "Extension apps bring third-party services INTO Docusign at extension points; API integrations call Docusign from outside.",
+      "Connected fields and data verification -> eSignature (email/phone verification also in Web Forms); Data IO and file output -> Maestro workflows.",
+      "Manifest = connection(s) + extensions (actionReferences) + actions (connectionsReference, params.uri) + listing metadata + distribution.",
+      "Form-based and manifest registration are equivalent; use manifests for per-environment copies.",
+      "Integration tests (connection, then extension) before functional tests; fix params.uri in the registration, not on the test page.",
+      "Your endpoint must be public HTTPS (or behind an API proxy); ngrok is for development only, production URLs before review.",
+      "Private = listed production accounts (org-specific data); Public = all App Center customers in chosen regions.",
+      "Review checks business, technical, security and functional aspects; Approved apps still need Publish to App Center."
+    ]
+  }
+}

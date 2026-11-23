@@ -1,0 +1,895 @@
+[
+  {
+    "paper": "C",
+    "length": "long",
+    "style": "design",
+    "domain": "App Center and Extension Apps",
+    "topic": "Connection grant type for an internal-only app",
+    "stem": "Orchard Freight wants signers to have their shipment rate codes checked against the company's in-house rates service, which sits behind the corporate identity provider. The information security team allows only machine-to-machine access to that service: no person may ever sign in interactively to authorize a connection. The app will be used only by Orchard's own two production accounts and will never be offered to other companies. The service is written in Java and hosted in a private cloud. Which registration choices should the developer make?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Set the distribution to PUBLIC and choose the Client Credentials grant for the connection, limiting the publication regions to those where Orchard's accounts are hosted"
+      },
+      {
+        "id": "B",
+        "text": "Set the distribution to PRIVATE and choose the Authorization Code grant, asking the identity team for a service user that an admin signs in as once when connecting"
+      },
+      {
+        "id": "C",
+        "text": "Set the distribution to PRIVATE and choose the Client Credentials grant for the connection, then share the live app with Orchard's two production accounts"
+      },
+      {
+        "id": "D",
+        "text": "Set the distribution to PRIVATE and leave the connection unauthenticated, letting the rates service trust calls signed with Orchard's Docusign integration key"
+      }
+    ],
+    "correct": "C",
+    "answerText": "Set the distribution to PRIVATE and choose the Client Credentials grant for the connection, then share the live app with Orchard's two production accounts",
+    "explanation": "The connection grant type can be Authorization Code or Client Credentials, and Client Credentials can be selected only when the distribution is Private. 'Only machine-to-machine access' plus 'only Orchard's own accounts' therefore means Private with Client Credentials.",
+    "whyNotOthers": "C is right because Client Credentials gives the no-interactive-login connection the security team demands, and it is only available for privately distributed apps. The trap is A: Client Credentials is not available with PUBLIC distribution, and limiting regions does not change that. B breaks the rule that no person signs in interactively, and D is wrong because the connection is how Docusign obtains authorization to the external service; a Docusign integration key plays no part in it.",
+    "optionExplanations": {
+      "A": "Client Credentials can only be selected when the distribution type is Private, and a public listing is not what Orchard wants anyway.",
+      "B": "Authorization Code requires someone to sign in to authorize the connection, which the security team forbids.",
+      "C": "Correct. Private distribution unlocks the Client Credentials grant, which needs no interactive sign-in, and sharing limits use to Orchard's accounts.",
+      "D": "The connection holds the authorization details for the external service; a Docusign integration key does not authenticate Docusign's calls to it."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "A private extension app whose connection uses the Client Credentials grant",
+      "clues": [
+        "only machine-to-machine access, no person signs in -> Client Credentials grant",
+        "only our own two production accounts -> PRIVATE distribution",
+        "Java, private cloud -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "Client Credentials requires private distribution",
+      "line": "Extension app connections use Authorization Code or Client Credentials; Client Credentials is selectable only for privately distributed apps."
+    }
+  },
+  {
+    "paper": "C",
+    "length": "long",
+    "style": "design",
+    "domain": "App Center and Extension Apps",
+    "topic": "Read-only Data IO implementation",
+    "stem": "Beacon Staffing is building an onboarding workflow in which the candidate's profile is pulled from the company's HR platform to prefill an intake form before the offer letter is signed. The HR platform is the system of record, and the information security review will reject any app registration that declares the ability to write back to it: data may flow out of HR, never in. The workflow runs in the company's own account, and the HR vendor exposes a REST API. How should the developer implement the extension app?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Implement all five Data IO actions and have Create Record and Patch Record return an error, so that any write attempted at runtime is rejected by the HR platform"
+      },
+      {
+        "id": "B",
+        "text": "Implement Get Type Names, Get Type Definitions and Create Record, because the type actions describe the HR data and Create Record returns it to the workflow"
+      },
+      {
+        "id": "C",
+        "text": "Register a connected fields extension so the intake form fields are autofilled from the HR platform at the moment the candidate opens the form"
+      },
+      {
+        "id": "D",
+        "text": "Register a Data IO extension with the Data Read option, implementing only Search Records, Get Type Names and Get Type Definitions"
+      }
+    ],
+    "correct": "D",
+    "answerText": "Register a Data IO extension with the Data Read option, implementing only Search Records, Get Type Names and Get Type Definitions",
+    "explanation": "Data input can be implemented on its own: a read-only Data IO app implements only Search Records, Get Type Names and Get Type Definitions (Data Read in the form). Because the review rejects 'any registration that declares the ability to write', write actions must not be declared at all.",
+    "whyNotOthers": "D is right because Data IO supports read-only registration with just the three read actions, so no write capability is declared. The trap is A: erroring at runtime still declares the write actions, which the stated security review rejects. B misuses Create Record, which writes a new record rather than reading one, and C is wrong because connected fields work in eSignature envelopes, not in prefilling workflow forms from a system of record.",
+    "optionExplanations": {
+      "A": "Declaring all five actions declares write capability, which is exactly what the security review rejects; runtime errors do not change the registration.",
+      "B": "Create Record creates entries in the system of record; reading data uses Search Records.",
+      "C": "Connected fields verify and autofill eSignature envelope fields; reading a system of record into a workflow is the Data IO extension.",
+      "D": "Correct. Data input is a standalone capability: Search Records plus the two type actions (Data Read) read without declaring any write."
+    },
+    "trapOption": "A",
+    "importance": "HIGH",
+    "decode": {
+      "needs": "A Data IO extension registered for reading only",
+      "clues": [
+        "prefill an intake form inside the workflow from HR -> Data IO data read step",
+        "review rejects any registration declaring write -> do not implement Create or Patch Record",
+        "HR vendor exposes REST -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "Data IO can be read-only",
+      "line": "A read-only Data IO app implements only Search Records, Get Type Names and Get Type Definitions; writing requires all five actions."
+    }
+  },
+  {
+    "paper": "C",
+    "length": "short",
+    "style": "fact",
+    "domain": "App Center and Extension Apps",
+    "topic": "Data IO action when no record matches",
+    "stem": "A Maestro data write step runs, but its query finds no matching record in the system of record. Which Data IO action does Docusign invoke to store the data?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Patch Record"
+      },
+      {
+        "id": "B",
+        "text": "Create Record"
+      },
+      {
+        "id": "C",
+        "text": "Search Records"
+      },
+      {
+        "id": "D",
+        "text": "Get Type Definitions"
+      }
+    ],
+    "correct": "B",
+    "answerText": "Create Record",
+    "explanation": "Create Record runs when a data output step is executed and no query is provided or the query does not find a record to update.",
+    "whyNotOthers": "B is right because Create Record handles the 'nothing found' case of a write step. The trap is A: Patch Record runs only when the query finds an existing record. C is the lookup that came back empty, not the write, and D runs when a connection is established or refreshed.",
+    "optionExplanations": {
+      "A": "Patch Record updates an existing entry and runs only when the query finds a record.",
+      "B": "Correct. With no query or no match, the write step creates a new entry with Create Record.",
+      "C": "Search Records performs the lookup that found nothing; it does not store data.",
+      "D": "Get Type Definitions runs when a connection is created or refreshed to describe the data model."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "concept": {
+      "title": "Create versus Patch in Data IO",
+      "line": "A data write step patches the record its query finds; with no query or no match, it creates a new record."
+    }
+  },
+  {
+    "paper": "C",
+    "length": "long",
+    "style": "design",
+    "domain": "App Center and Extension Apps",
+    "topic": "Enforcing bank account verification during signing",
+    "stem": "Lakeside Credit Union sends auto loan disbursement forms in which the borrower types a US checking account number and ABA routing number. Compliance requires that the borrower cannot finish signing unless those details pass a check with the credit union's bank-data provider. Who owns the account is not part of this check, because identity is confirmed in a separate know-your-customer step earlier in the process. Loan officers send the forms from the eSignature web app, and each envelope also carries a rate disclosure PDF. Which two choices meet the requirement? (Select two)",
+    "options": [
+      {
+        "id": "A",
+        "text": "Select Must verify to sign on the verification fields so the borrower cannot complete the envelope until the bank-data check succeeds"
+      },
+      {
+        "id": "B",
+        "text": "Leave Must verify to sign unchecked, because verification still runs and prompts the borrower to correct invalid details before completing"
+      },
+      {
+        "id": "C",
+        "text": "Use the bank account owner verification extension so the provider confirms both the account details and that the borrower owns the account"
+      },
+      {
+        "id": "D",
+        "text": "Add a Data IO read step to a Maestro workflow that searches the bank-data provider for the account number before the envelope is sent out"
+      },
+      {
+        "id": "E",
+        "text": "Use bank account verification extension fields on the template so the account and routing number are checked as they are entered"
+      }
+    ],
+    "correct": "A,E",
+    "correctAnswers": [
+      "A",
+      "E"
+    ],
+    "answerText": "Select Must verify to sign on the verification fields so the borrower cannot complete the envelope until the bank-data check succeeds; Use bank account verification extension fields on the template so the account and routing number are checked as they are entered",
+    "explanation": "Bank account verification (Verify.Version3.BankAccount) checks the account and routing details in real time during signing, and Must verify to sign makes successful verification a condition of completing. 'Cannot finish signing unless' is the enforcement clue; 'who owns the account is not part of this check' rules out the owner extension.",
+    "whyNotOthers": "A and E are right: the bank account verification extension performs the check, and Must verify to sign enforces it. The trap is B: if Must verify to sign is left unchecked, verification still occurs but successful verification is not required to complete signing, so it only records rather than enforces. C adds an ownership check the stem explicitly excludes, and D runs in a Maestro workflow before sending, not while the borrower signs, and Data IO is not a verification extension.",
+    "optionExplanations": {
+      "A": "Correct. Must verify to sign requires successful verification of the supplied data before the signing process can be completed.",
+      "B": "Unchecked, verification still occurs, but completing the envelope no longer depends on it; the requirement is enforcement.",
+      "C": "Bank account owner verification also confirms ownership or authorized signatory, which the stem says is handled elsewhere and is not required.",
+      "D": "Data IO reads or writes a system of record in Maestro workflows; it does not check what the borrower types during signing.",
+      "E": "Correct. The bank account verification extension checks US ABA account details in real time as the recipient fills in the fields."
+    },
+    "trapOption": "B",
+    "importance": "HIGH",
+    "decode": {
+      "needs": "Bank account verification fields with Must verify to sign selected",
+      "clues": [
+        "cannot finish signing unless the check passes -> Must verify to sign",
+        "who owns the account is not part of the check -> bank account verification, not owner verification",
+        "sent from the web app, extra disclosure PDF -> red herrings"
+      ]
+    },
+    "concept": {
+      "title": "Must verify to sign enforces verification",
+      "line": "Data verification runs either way; selecting Must verify to sign makes successful verification a condition for completing signing."
+    }
+  },
+  {
+    "paper": "C",
+    "length": "long",
+    "style": "design",
+    "domain": "App Center and Extension Apps",
+    "topic": "Fixing an app that is in review",
+    "stem": "Amara submitted the first version of her company's extension app for Docusign review yesterday, and the Developer Console shows it as In Review. This morning QA found that one action still points at the old endpoint path in its params.uri. Amara wants the version that Docusign eventually approves and publishes to contain the corrected endpoint. Her manager suggests waiting until approval and fixing it afterwards to avoid delays, and the team has already prepared App Center screenshots. Which two steps should Amara take? (Select two)",
+    "options": [
+      {
+        "id": "A",
+        "text": "Create a new draft version that contains the fix alongside the In Review version, and ask Docusign to review the newer draft instead"
+      },
+      {
+        "id": "B",
+        "text": "Cancel the publishing request so the version reverts to Draft status, and then correct the params.uri value in the registration"
+      },
+      {
+        "id": "C",
+        "text": "Edit the params.uri value directly on the In Review version, because the reviewers always evaluate the most recently saved registration details"
+      },
+      {
+        "id": "D",
+        "text": "Resubmit the corrected version for review, because after cancelling, the version is a Draft that cannot be published unreviewed"
+      },
+      {
+        "id": "E",
+        "text": "Delete the In Review version and register a separate app with the corrected endpoint under the same app name before resubmitting"
+      }
+    ],
+    "correct": "B,D",
+    "correctAnswers": [
+      "B",
+      "D"
+    ],
+    "answerText": "Cancel the publishing request so the version reverts to Draft status, and then correct the params.uri value in the registration; Resubmit the corrected version for review, because after cancelling, the version is a Draft that cannot be published unreviewed",
+    "explanation": "A version that is In Review cannot be updated or deleted until the publishing process is cancelled, which reverts it to Draft; after updating it, it must be resubmitted for review before it can be published.",
+    "whyNotOthers": "B and D are right because cancelling returns the version to Draft so it can be edited, and the edited Draft must be resubmitted for review. The trap is A: you cannot create a new draft version while another version is in Draft, In Review, Approved or Rejected status. C fails because updating is prohibited in In Review, and E fails because deleting is also prohibited in In Review and app names must be unique.",
+    "optionExplanations": {
+      "A": "Only one version can be in Draft, In Review, Approved or Rejected at a time, so a new draft cannot be created alongside the In Review version.",
+      "B": "Correct. Cancelling the publishing process reverts the version to Draft, which is the only way to update it.",
+      "C": "Updating a version is prohibited while it is In Review; the version must first revert to Draft.",
+      "D": "Correct. After updating the reverted Draft, it must be resubmitted for review before it can be published.",
+      "E": "Deleting is prohibited in In Review, and a second registration with the same unique app name is not allowed."
+    },
+    "trapOption": "A",
+    "importance": "HIGH",
+    "decode": {
+      "needs": "Cancel publishing to return to Draft, edit, then resubmit",
+      "clues": [
+        "shows In Review and needs a fix -> cancel the publishing process first",
+        "the approved version must contain the fix -> resubmit for review",
+        "manager's wait-and-fix idea, screenshots ready -> red herrings"
+      ]
+    },
+    "concept": {
+      "title": "Cancel review to edit a version",
+      "line": "An In Review, Approved or Rejected version must be cancelled back to Draft to edit, then resubmitted for review."
+    }
+  },
+  {
+    "paper": "C",
+    "length": "short",
+    "style": "fact",
+    "domain": "App Center and Extension Apps",
+    "topic": "Extension points for phone verification",
+    "stem": "Which extension points support the phone verification extension?",
+    "options": [
+      {
+        "id": "A",
+        "text": "eSignature Add Fields view and Signing only"
+      },
+      {
+        "id": "B",
+        "text": "eSignature Add Fields view and Signing, and Maestro workflows"
+      },
+      {
+        "id": "C",
+        "text": "Web Forms only"
+      },
+      {
+        "id": "D",
+        "text": "eSignature Add Fields view and Signing, and Web Forms"
+      }
+    ],
+    "correct": "D",
+    "answerText": "eSignature Add Fields view and Signing, and Web Forms",
+    "explanation": "Phone verification, like email address verification, is supported at the eSignature Add Fields view and Signing and also in Web Forms.",
+    "whyNotOthers": "D is right because phone and email verification are the two data verification extensions that also work in Web Forms. The trap is A: that is the extension point for the other verification types such as bank account, SSN, FEIN and postal address. B swaps Web Forms for Maestro workflows, which are the extension point for Data IO and file output, and C drops eSignature.",
+    "optionExplanations": {
+      "A": "This is true for bank account, SSN, FEIN and postal address verification, but phone verification is also available in Web Forms.",
+      "B": "Maestro workflows are the extension point for Data IO and file output cloud storage; phone verification's second extension point is Web Forms.",
+      "C": "Phone verification also works in eSignature Add Fields view and Signing.",
+      "D": "Correct. Phone and email verification support eSignature Add Fields view and Signing plus Web Forms."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "concept": {
+      "title": "Email and phone verification reach Web Forms",
+      "line": "Email and phone verification work in eSignature and Web Forms; other data verification types are eSignature only."
+    }
+  },
+  {
+    "paper": "C",
+    "length": "long",
+    "style": "design",
+    "domain": "App Center and Extension Apps",
+    "topic": "Publishing publicly as a non-partner",
+    "stem": "Tessera Analytics, a small software vendor that has never joined the Docusign partner program, has built an address-cleansing extension app with a team of three developers. Its business goal is for any Docusign customer in the United States to discover the app while browsing the App Center and install it without contacting Tessera first. The app passes its connection, extension and functional tests in Tessera's developer account. The product owner wants the route that reaches that goal without having to re-register the app later. Which approach fits best?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Register the app with PUBLIC distribution and submit it for review; Docusign onboards Tessera into the partner program as part of that submission"
+      },
+      {
+        "id": "B",
+        "text": "Register the app with PRIVATE distribution now, then switch the distribution to PUBLIC after the first live release, once partner onboarding has been completed"
+      },
+      {
+        "id": "C",
+        "text": "Register the app with PRIVATE distribution and share the live app with each customer's production account as that customer asks to use it"
+      },
+      {
+        "id": "D",
+        "text": "Give each customer the app manifest so their administrator can register a copy in the Developer Console and install it in their own account"
+      }
+    ],
+    "correct": "A",
+    "answerText": "Register the app with PUBLIC distribution and submit it for review; Docusign onboards Tessera into the partner program as part of that submission",
+    "explanation": "Publishing a public app requires being a Docusign partner, and if you are not yet a partner Docusign works with you on partner program onboarding when you submit the app for review. 'Any customer can discover it in the App Center' means PUBLIC distribution.",
+    "whyNotOthers": "A is right because public distribution is what makes the app discoverable by every customer, and partner onboarding happens with the review submission. The trap is B: the distribution type cannot be changed once the app is Live, so this would force a new registration. C requires manual sharing (up to 20 production accounts, each admin approving) and gives no browsing discovery, and D is not how customers obtain apps; they install them from the App Center.",
+    "optionExplanations": {
+      "A": "Correct. Public distribution gives App Center discovery to all customers, and Docusign handles partner onboarding when a non-partner submits for review.",
+      "B": "Distribution cannot be modified once the app is Live, so switching later would mean registering a new app.",
+      "C": "Private apps are shared with a limited list of production accounts whose admins must approve them; customers cannot discover them by browsing.",
+      "D": "Customers install apps from the App Center; handing out a manifest to re-register is not the distribution model."
+    },
+    "trapOption": "B",
+    "importance": "HIGH",
+    "decode": {
+      "needs": "PUBLIC distribution, with partner onboarding at review submission",
+      "clues": [
+        "any customer can discover and install it -> PUBLIC distribution",
+        "never joined the partner program -> onboarding happens at review submission",
+        "without re-registering later -> distribution cannot change once Live",
+        "three developers -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "Public apps need the partner program",
+      "line": "Public App Center listing requires Docusign partnership; non-partners are onboarded when they submit for review, and distribution is fixed once Live."
+    }
+  },
+  {
+    "paper": "C",
+    "length": "short",
+    "style": "fact",
+    "domain": "App Center and Extension Apps",
+    "topic": "Private app sharing limit",
+    "stem": "When a private extension app becomes Live, with up to how many production accounts can the developer share it?",
+    "options": [
+      {
+        "id": "A",
+        "text": "5"
+      },
+      {
+        "id": "B",
+        "text": "10"
+      },
+      {
+        "id": "C",
+        "text": "20"
+      },
+      {
+        "id": "D",
+        "text": "50"
+      }
+    ],
+    "correct": "C",
+    "answerText": "20",
+    "explanation": "For a private extension app, the developer provides a list of up to 20 production accounts to share the live app with.",
+    "whyNotOthers": "C is right: private sharing is capped at 20 production accounts. The trap is B, a common guess for a small allow-list; A and D are not documented limits either.",
+    "optionExplanations": {
+      "A": "Not the documented limit; private apps can be shared with more accounts than this.",
+      "B": "Plausible but wrong; the documented limit is higher.",
+      "C": "Correct. A private app can be shared with up to 20 production accounts.",
+      "D": "Exceeds the documented limit for private sharing."
+    },
+    "trapOption": "B",
+    "importance": "LOW",
+    "concept": {
+      "title": "Private apps: up to 20 accounts",
+      "line": "A Live private extension app is shared with a list of up to 20 production accounts, each approved by its admin."
+    }
+  },
+  {
+    "paper": "C",
+    "length": "long",
+    "style": "design",
+    "domain": "App Center and Extension Apps",
+    "topic": "Testing an app served from a laptop",
+    "stem": "Kenji is prototyping a postal address verification app on his laptop before the hosting team provisions a server. The external provider's OAuth service is cloud hosted, so the connection test in the Developer Console succeeds, but every extension test fails because the endpoint cannot be reached. Each action's params.uri currently points at http://localhost:3000. His laptop runs Chrome with the corporate VPN switched off, and the provider's responses already match the Docusign action contract. What should Kenji do to keep testing locally?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Keep localhost in params.uri and run the extension tests from a browser on the same laptop, because the Developer Console sends the test requests from the browser"
+      },
+      {
+        "id": "B",
+        "text": "Expose the local service through a tunnel such as ngrok and put the public HTTPS tunnel URL in each action's params.uri, because Docusign's servers make the calls"
+      },
+      {
+        "id": "C",
+        "text": "Reinstall the app in his developer account after each change so that the updated params.uri values are picked up before he reruns the extension tests"
+      },
+      {
+        "id": "D",
+        "text": "Build an API proxy on the laptop that maps requests to the Docusign action contract, and point each action's params.uri at the proxy's localhost port"
+      }
+    ],
+    "correct": "B",
+    "answerText": "Expose the local service through a tunnel such as ngrok and put the public HTTPS tunnel URL in each action's params.uri, because Docusign's servers make the calls",
+    "explanation": "Extension tests are executed from the Docusign platform directly to the external endpoints, so Docusign servers need a public URL. Docusign recommends a tunnel such as ngrok to expose a locally running app while developing.",
+    "whyNotOthers": "B is right because a tunnel gives Docusign a public URL that reaches the laptop. The trap is A: extension tests are not sent from the browser but from the Docusign platform, so localhost is unreachable. C fails because registration updates are applied automatically to the installed app, and D is unnecessary because the responses already match the contract and a localhost proxy is still unreachable.",
+    "optionExplanations": {
+      "A": "Extension tests run from the Docusign platform to the endpoint, so localhost on Kenji's laptop is never reachable.",
+      "B": "Correct. A tunnel such as ngrok exposes the local app at a public URL that Docusign's servers can call.",
+      "C": "Updates to the registration are applied automatically to the installed version; reinstalling does not fix reachability.",
+      "D": "A proxy is needed only when the API does not match the action contract, and a localhost proxy is just as unreachable."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "A public URL (tunnel) for the locally running endpoints",
+      "clues": [
+        "connection test passes but extension tests cannot reach the endpoint -> endpoint not publicly reachable",
+        "before the hosting team provisions a server -> keep running locally, so tunnel",
+        "responses already match the contract -> no API proxy needed",
+        "Chrome, VPN off -> red herrings"
+      ]
+    },
+    "concept": {
+      "title": "Docusign must reach a public endpoint",
+      "line": "Docusign servers call extension endpoints directly, so local development needs a public tunnel URL such as ngrok."
+    }
+  },
+  {
+    "paper": "D",
+    "length": "long",
+    "style": "design",
+    "domain": "App Center and Extension Apps",
+    "topic": "Letting designers browse storage destinations",
+    "stem": "Northgate Archives sells a cloud vault and is building an extension app so customers can save completed agreements into it as a step in their Maestro workflows. Customer feedback is clear: when configuring the step, workflow designers want to pick the target drive and then browse to a folder, instead of typing a storage path by hand. Many of these customers also sync deal data with Salesforce. Northgate is a new app, not an update of an existing one. How should Northgate design the extension?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Use the file output cloud storage extension with only its required write-file action, because Maestro discovers the provider's drives and folders on its own"
+      },
+      {
+        "id": "B",
+        "text": "Use the file archive extension, because it is the file extension type that lets the workflow designer browse destinations in the storage provider"
+      },
+      {
+        "id": "C",
+        "text": "Use a Data IO extension whose Search Records action returns folders as records, so the designer can search for the destination while configuring the step"
+      },
+      {
+        "id": "D",
+        "text": "Use the file output cloud storage extension with its required write-file action plus the optional ListDrives and ListDirectoryContents capabilities"
+      }
+    ],
+    "correct": "D",
+    "answerText": "Use the file output cloud storage extension with its required write-file action plus the optional ListDrives and ListDirectoryContents capabilities",
+    "explanation": "File output cloud storage is the extension for new apps that write documents to cloud storage from Maestro workflows. Capabilities are optional extras; the List Drives capability returns the storage drives so the workflow preparer can select one, and List Directory Contents supports browsing folders.",
+    "whyNotOthers": "D is right because the required write action stores the file, and the optional capabilities give designers the drive and folder pickers they asked for. The trap is A: capabilities are optional, so without them nothing provides the drive list. B fails because file archive is the legacy extension that new apps should not use, and C misuses Data IO, which reads and writes system-of-record data rather than storing files.",
+    "optionExplanations": {
+      "A": "Capabilities are optional and must be implemented; without List Drives there is nothing for the designer to pick from.",
+      "B": "File archive is legacy; new extension apps should use file output cloud storage.",
+      "C": "Data IO moves structured data to and from a system of record; it is not the file storage extension.",
+      "D": "Correct. The write-file action is required, and the ListDrives and ListDirectoryContents capabilities let the preparer pick a drive and folder."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "File output cloud storage with ListDrives and ListDirectoryContents capabilities",
+      "clues": [
+        "save completed agreements as a workflow step -> file output cloud storage in Maestro",
+        "pick the drive and browse to a folder -> optional capabilities",
+        "new app -> not the legacy file archive extension",
+        "Salesforce sync -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "Capabilities add optional extension features",
+      "line": "Extensions require their contract actions; optional capabilities, like List Drives for file output, add features such as destination pickers."
+    }
+  },
+  {
+    "paper": "D",
+    "length": "short",
+    "style": "fact",
+    "domain": "App Center and Extension Apps",
+    "topic": "Default regions for a public app",
+    "stem": "A public extension app is published without any additional regions being specified. Which accounts can install it from the production App Center?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Only accounts based in the US"
+      },
+      {
+        "id": "B",
+        "text": "Accounts in every Docusign region"
+      },
+      {
+        "id": "C",
+        "text": "Only accounts the developer lists at publication"
+      },
+      {
+        "id": "D",
+        "text": "Only accounts in the developer's own region"
+      }
+    ],
+    "correct": "A",
+    "answerText": "Only accounts based in the US",
+    "explanation": "By default, published extension apps are available only to US customers on the production App Center; other regions must be added explicitly.",
+    "whyNotOthers": "A is right because availability defaults to the US. The trap is B: global availability is not the default, so regions beyond the US must be specified. C describes private distribution, and D is not how the default is defined.",
+    "optionExplanations": {
+      "A": "Correct. Published extension apps default to US customers only; other regions must be added.",
+      "B": "Additional regions must be specified explicitly; they are not included by default.",
+      "C": "Listing specific accounts is how private apps are shared, not public ones.",
+      "D": "The default is the US, not the developer's own region."
+    },
+    "trapOption": "B",
+    "importance": "MEDIUM",
+    "concept": {
+      "title": "Public apps default to US only",
+      "line": "A published public extension app is installable only by US accounts unless additional publication regions are specified."
+    }
+  },
+  {
+    "paper": "D",
+    "length": "long",
+    "style": "design",
+    "domain": "App Center and Extension Apps",
+    "topic": "Functional test for a Data IO app",
+    "stem": "Pinewood Insurance's QA lead must reproduce what a real end user will experience with the company's new Data IO extension app before it is submitted for review. The app reads policyholder details from the policy administration system to prefill a form and writes any changes back. Connection and extension tests have already passed in the developer account. The policy team keeps its standard forms as eSignature templates, and the QA lead has a budget of two days. Which approach should the QA lead take?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Add the app's fields to an eSignature template, send an envelope to herself, and fill in the fields as a signer would to trigger the read and write actions"
+      },
+      {
+        "id": "B",
+        "text": "Build a Maestro workflow with a web form derived from the policy eSignature template between a data read step and a data write step, then run an instance"
+      },
+      {
+        "id": "C",
+        "text": "Create and publish a Maestro workflow with a data read step, a standalone web form step and a data write step, then execute an instance of the workflow"
+      },
+      {
+        "id": "D",
+        "text": "Rerun the extension tests for Search Records, Create Record and Patch Record from App Testing, since they replay the end-user flow for each action"
+      }
+    ],
+    "correct": "C",
+    "answerText": "Create and publish a Maestro workflow with a data read step, a standalone web form step and a data write step, then execute an instance of the workflow",
+    "explanation": "Functional tests simulate the end-user experience, and for Data IO the supported functional test is a Maestro workflow test. The web form used in that workflow must be standalone; web forms derived from eSignature templates cannot be used in workflows.",
+    "whyNotOthers": "C is right because Data IO is tested functionally through a workflow instance with read, standalone web form and write steps. The trap is B: it uses the right test type, but a web form derived from an eSignature template cannot be used in a workflow. A fails because the envelope test is not supported for Data IO, and D fails because extension tests are integration tests that call endpoints directly rather than simulating the end user.",
+    "optionExplanations": {
+      "A": "The envelope functional test is not supported for Data IO; Data IO runs in Maestro workflows.",
+      "B": "Right test type, but web forms derived from eSignature templates cannot be used in workflows; the form must be standalone.",
+      "C": "Correct. A workflow instance with read, standalone web form and write steps is the Data IO functional test.",
+      "D": "Extension tests call endpoints from the Docusign platform directly; they do not simulate the end-user experience."
+    },
+    "trapOption": "B",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "A Maestro workflow functional test with a standalone web form",
+      "clues": [
+        "reproduce what a real end user will experience -> functional test, not integration test",
+        "reads to prefill a form and writes back -> Data IO read and write steps in Maestro",
+        "standard forms kept as eSignature templates -> template-derived web forms cannot be used in workflows",
+        "two-day budget -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "Data IO functional tests use workflows",
+      "line": "Data IO and file output are functionally tested in Maestro workflows; connected fields and data verification in envelopes."
+    }
+  },
+  {
+    "paper": "D",
+    "length": "long",
+    "style": "design",
+    "domain": "App Center and Extension Apps",
+    "topic": "Create-only Data IO app",
+    "stem": "Halcyon runs an append-only compliance ledger: entries are never edited once written. Its Maestro onboarding workflow must add one new ledger entry each time an onboarding finishes, and nothing is ever read back into the workflow. To cut development time, the developer proposes declaring as few Data IO actions as possible. The ledger exposes a JSON API that already matches the Docusign contracts, and the app will be private. The workflow already includes an identity verification step before signing. What should the developer implement?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Only Create Record, Get Type Names and Get Type Definitions, because a create-only extension never searches for or patches an existing record"
+      },
+      {
+        "id": "B",
+        "text": "All five Data IO actions, with full logic in Create Record, while Patch Record must still be defined but does not need to contain any code"
+      },
+      {
+        "id": "C",
+        "text": "Search Records, Get Type Names and Get Type Definitions with the Data Read option, and send each new entry in the body of the search request"
+      },
+      {
+        "id": "D",
+        "text": "Create Record, Patch Record, Get Type Names and Get Type Definitions, omitting Search Records because no existing entry is ever looked up"
+      }
+    ],
+    "correct": "B",
+    "answerText": "All five Data IO actions, with full logic in Create Record, while Patch Record must still be defined but does not need to contain any code",
+    "explanation": "Data output cannot be standalone because it uses the data input actions to find records, so writing requires all five Data IO actions. If the app only creates records, only Create Record needs a full implementation; Patch Record must still be defined but needs no code.",
+    "whyNotOthers": "B is right because a writing Data IO app must declare all five actions, with Patch Record allowed to be an empty definition for a create-only system. The trap is D: Search Records cannot be omitted because data output relies on the input actions. A omits both Search and Patch, and C is a read-only registration that cannot write at all.",
+    "optionExplanations": {
+      "A": "Writing requires all five actions; Search Records and Patch Record cannot be dropped.",
+      "B": "Correct. All five actions are declared; for create-only, Create Record is fully implemented and Patch Record can be an empty definition.",
+      "C": "Data Read registers a read-only app; Search Records does not create entries.",
+      "D": "Data output uses the data input actions to find records, so Search Records must be implemented."
+    },
+    "trapOption": "D",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "All five Data IO actions, with Patch Record as an empty definition",
+      "clues": [
+        "append-only ledger, entries never edited -> create-only, Patch Record needs no code",
+        "add one new entry per onboarding -> data output (write) requires all five actions",
+        "JSON API matches contracts, private app -> red herrings"
+      ]
+    },
+    "concept": {
+      "title": "Data IO writes need all five actions",
+      "line": "Data output cannot be standalone; a create-only app implements all five actions, with Patch Record defined but code-free."
+    }
+  },
+  {
+    "paper": "D",
+    "length": "short",
+    "style": "fact",
+    "domain": "App Center and Extension Apps",
+    "topic": "Deleting an extension app version",
+    "stem": "In which status can an extension app version be deleted directly in the Developer Console?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Draft"
+      },
+      {
+        "id": "B",
+        "text": "Rejected"
+      },
+      {
+        "id": "C",
+        "text": "Approved"
+      },
+      {
+        "id": "D",
+        "text": "Live"
+      }
+    ],
+    "correct": "A",
+    "answerText": "Draft",
+    "explanation": "An extension app version can only be deleted when it is in Draft status.",
+    "whyNotOthers": "A is right: only Draft versions can be deleted. The trap is B: a Rejected version must first have its publishing request cancelled so it reverts to Draft. C has the same restriction, and a Live version cannot be deleted at all.",
+    "optionExplanations": {
+      "A": "Correct. Deletion is allowed only in Draft status.",
+      "B": "Rejected is still part of the review process; cancel publishing to revert to Draft before deleting.",
+      "C": "Approved versions must be cancelled back to Draft before they can be deleted.",
+      "D": "Live versions cannot be deleted; removing a live app requires help through the Developer Community."
+    },
+    "trapOption": "B",
+    "importance": "LOW",
+    "concept": {
+      "title": "Only Draft versions can be deleted",
+      "line": "Delete only Draft versions; cancel publishing to revert In Review, Approved or Rejected versions; Live versions cannot be deleted."
+    }
+  },
+  {
+    "paper": "D",
+    "length": "long",
+    "style": "fact",
+    "domain": "App Center and Extension Apps",
+    "topic": "Private distribution facts",
+    "stem": "Ridgeview Health has contracted Coastal Integrators, a Docusign partner, to build an extension app that checks patient record numbers against the hospital's proprietary clinical system while forms are signed. Only Ridgeview's US production accounts will ever use it, so it will be a private app. Coastal's project manager writes down the assumptions for the rollout plan, noting that the hospital's own IT team also wants to try the app in its developer account. Which two assumptions are correct? (Select two)",
+    "options": [
+      {
+        "id": "A",
+        "text": "Because the app is private, it can be published without any Docusign review, since that review applies only to apps listed for all customers"
+      },
+      {
+        "id": "B",
+        "text": "Docusign must still approve the private app before publication, although the approval guidelines are less stringent than for public apps"
+      },
+      {
+        "id": "C",
+        "text": "After publication, Coastal can also share the private app with the hospital's developer accounts so the IT team can try it there"
+      },
+      {
+        "id": "D",
+        "text": "If other hospitals ask for the app later, Coastal can switch the Live app's distribution to public without registering it again"
+      },
+      {
+        "id": "E",
+        "text": "An administrator of each shared production account must approve the private app before any user there can install and use it"
+      }
+    ],
+    "correct": "B,E",
+    "correctAnswers": [
+      "B",
+      "E"
+    ],
+    "answerText": "Docusign must still approve the private app before publication, although the approval guidelines are less stringent than for public apps; An administrator of each shared production account must approve the private app before any user there can install and use it",
+    "explanation": "Private extension apps still need Docusign approval before publication (with less stringent guidelines), and each production account's administrator must approve the shared app before its users can install it.",
+    "whyNotOthers": "B and E are right: review still applies to private apps, and account admins approve shared private apps. The trap is C: private apps can be shared with additional production accounts but not with additional developer accounts. A is wrong because publishing still requires approval, and D is wrong because distribution cannot be changed once the app is Live.",
+    "optionExplanations": {
+      "A": "Private apps are not visible to all customers, but Docusign still must approve them before publication.",
+      "B": "Correct. Private apps go through Docusign approval, with guidelines less stringent than for public apps.",
+      "C": "Private apps can be shared with additional production accounts, not with additional developer accounts.",
+      "D": "Distribution type cannot be modified once the app is Live.",
+      "E": "Correct. An administrator of each production account must approve the private app before anyone in the account can use it."
+    },
+    "trapOption": "C",
+    "importance": "HIGH",
+    "decode": {
+      "needs": "Private distribution rules: review, admin approval, production accounts only",
+      "clues": [
+        "only the hospital's own production accounts -> private distribution",
+        "built by a contracted partner -> partners can build private apps for customers",
+        "IT team wants it in its developer account -> private apps cannot be shared with other developer accounts"
+      ]
+    },
+    "concept": {
+      "title": "Private apps: review plus admin approval",
+      "line": "Private apps still pass Docusign review, are shared only with production accounts, and each account admin must approve them."
+    }
+  },
+  {
+    "paper": "D",
+    "length": "long",
+    "style": "design",
+    "domain": "App Center and Extension Apps",
+    "topic": "Planning integration tests",
+    "stem": "Lucia is preparing the Developer Console integration testing plan for her team's connected fields app, which verifies customer IDs against their CRM. The CRM's OAuth server and API are both reachable on public HTTPS endpoints, and the app has been installed to her developer account. The plan will be reviewed by an architect who often asks why the order matters. She will change the registration several times while testing, and the CRM team wants the results by Friday. Which two statements belong in her plan? (Select two)",
+    "options": [
+      {
+        "id": "A",
+        "text": "After every change to the registration, uninstall and reinstall the app in the developer account so the tests use the updated values"
+      },
+      {
+        "id": "B",
+        "text": "Run the extension tests before configuring the connection, because they only check that each action endpoint answers on its configured URL"
+      },
+      {
+        "id": "C",
+        "text": "Run the connection test first, signing in with the authorization provider's credentials, because extension tests reuse that authorization"
+      },
+      {
+        "id": "D",
+        "text": "Treat passing extension tests as proof of the signer's experience, because they call the endpoints from inside a test envelope"
+      },
+      {
+        "id": "E",
+        "text": "Expect extension tests to call each action's params.uri from the Docusign platform and confirm the response format"
+      }
+    ],
+    "correct": "C,E",
+    "correctAnswers": [
+      "C",
+      "E"
+    ],
+    "answerText": "Run the connection test first, signing in with the authorization provider's credentials, because extension tests reuse that authorization; Expect extension tests to call each action's params.uri from the Docusign platform and confirm the response format",
+    "explanation": "A connection test obtains authorization using the provider credentials you supply, and extension tests use that authorization, so the connection test must pass first. Extension tests call each action's endpoint from the Docusign platform and confirm the response format.",
+    "whyNotOthers": "C and E are right because they describe the required order and what extension tests actually check. The trap is A: updates to the registration are applied automatically to the installed version, so no reinstall is needed. B reverses the required order, and D confuses integration tests with functional tests, which are the ones that exercise envelopes or workflows.",
+    "optionExplanations": {
+      "A": "Registration updates are applied automatically to the installed app; reinstalling is unnecessary.",
+      "B": "A successful connection test is required before extension tests can run.",
+      "C": "Correct. The connection test obtains authorization with the provider credentials, and extension tests reuse it.",
+      "D": "Extension tests call endpoints directly; the signer experience is checked by functional tests.",
+      "E": "Correct. Extension tests send requests to each params.uri from the Docusign platform and check the response format."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "The integration test order and what each test checks",
+      "clues": [
+        "why the order matters -> extension tests reuse the connection test's authorization",
+        "will change the registration several times -> updates apply automatically, no reinstall",
+        "public HTTPS endpoints -> red herring here, endpoints are reachable"
+      ]
+    },
+    "concept": {
+      "title": "Connection test before extension tests",
+      "line": "Connection tests obtain authorization that extension tests reuse; registration updates apply automatically to the installed app."
+    }
+  },
+  {
+    "paper": "D",
+    "length": "short",
+    "style": "fact",
+    "domain": "App Center and Extension Apps",
+    "topic": "Extension template value for Data IO",
+    "stem": "In an app manifest for a Data IO app, which value belongs in extensions.template?",
+    "options": [
+      {
+        "id": "A",
+        "text": "DataIO.Version6.SearchRecords"
+      },
+      {
+        "id": "B",
+        "text": "DataIO.Version6.GetTypeDefinitions"
+      },
+      {
+        "id": "C",
+        "text": "DataIO.Version6.DataInputOutput"
+      },
+      {
+        "id": "D",
+        "text": "FileIO.Version1.FileOutputCloudStorage"
+      }
+    ],
+    "correct": "C",
+    "answerText": "DataIO.Version6.DataInputOutput",
+    "explanation": "For a Data IO app registered by manifest, extensions.template is DataIO.Version6.DataInputOutput; values such as DataIO.Version6.SearchRecords go in actions.template.",
+    "whyNotOthers": "C is right because the extension contract for Data IO is DataIO.Version6.DataInputOutput. The trap is A: SearchRecords is an action contract value used in actions.template, not the extension template. B is also an action value, and D is the extension template for file output cloud storage.",
+    "optionExplanations": {
+      "A": "This is an action contract value used in actions.template.",
+      "B": "This is an action contract value used in actions.template.",
+      "C": "Correct. DataIO.Version6.DataInputOutput is the Data IO extension contract set in extensions.template.",
+      "D": "This is the extension template for file output cloud storage, not Data IO."
+    },
+    "trapOption": "A",
+    "importance": "LOW",
+    "concept": {
+      "title": "Extension template versus action template",
+      "line": "extensions.template names the extension contract; actions.template names an action contract, such as DataIO.Version6.SearchRecords."
+    }
+  },
+  {
+    "paper": "D",
+    "length": "long",
+    "style": "design",
+    "domain": "App Center and Extension Apps",
+    "topic": "Updating a live public app",
+    "stem": "Brightline, a Docusign partner, has a Live public extension app installed by about 300 customer accounts. Product management wants to add a phone verification extension to the same app. Customers must keep using the current app without interruption while the change goes through, and should not have to do anything to receive the new version. Brightline's sales team also wants to announce the feature at a conference next month, and the support desk is preparing a short help article. Which approach should Brightline follow?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Edit the Live version in place; registration changes to a Live app apply immediately to installed accounts, so customers get the new extension with no further review"
+      },
+      {
+        "id": "B",
+        "text": "Delete the Live version and register a new app that contains both extensions, then ask the 300 customers to install the new listing from the App Center"
+      },
+      {
+        "id": "C",
+        "text": "Update the registration, which creates a new Draft version; after review and publishing, the old version is Discontinued and each customer admin reinstalls the new one"
+      },
+      {
+        "id": "D",
+        "text": "Update the registration to create a new Draft version; once reviewed and published, the old version is Discontinued and installs upgrade automatically"
+      }
+    ],
+    "correct": "D",
+    "answerText": "Update the registration to create a new Draft version; once reviewed and published, the old version is Discontinued and installs upgrade automatically",
+    "explanation": "Updating a Live app's registration creates a new Draft version that must be reviewed and published. On publication the new version becomes Live, the previous one becomes Discontinued, and accounts that had it installed are automatically upgraded.",
+    "whyNotOthers": "D is right because versioning keeps the current Live version running during review and upgrades installed accounts automatically. The trap is C: it describes the same flow but wrongly requires admins to reinstall, which contradicts 'should not have to do anything'. A skips the new version and review, and B is impossible because a Live version cannot be deleted and would force customers to reinstall.",
+    "optionExplanations": {
+      "A": "Updating a Live app creates a new Draft version that must pass review; nothing changes in place.",
+      "B": "Live versions cannot be deleted, and customers would have to reinstall a new listing.",
+      "C": "Same versioning flow, but installed accounts are upgraded automatically; admins do not need to reinstall.",
+      "D": "Correct. The new version goes through review and publishing, the old one becomes Discontinued, and installed accounts are upgraded automatically."
+    },
+    "trapOption": "C",
+    "importance": "HIGH",
+    "decode": {
+      "needs": "Extension app versioning: new Draft, review, publish, automatic upgrade",
+      "clues": [
+        "add an extension to a Live app -> update registration, new Draft version",
+        "keep using it without interruption -> Live version stays until the new one is published",
+        "should not have to do anything -> installed accounts are upgraded automatically",
+        "conference next month -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "Live app updates create new versions",
+      "line": "Updating a Live app creates a Draft version; once published, the old version is Discontinued and installs upgrade automatically."
+    }
+  }
+]

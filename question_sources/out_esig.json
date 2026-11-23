@@ -1,0 +1,856 @@
+[
+  {
+    "paper": "A",
+    "length": "long",
+    "domain": "eSignature API",
+    "topic": "Embedded signing: createRecipient matching",
+    "stem": "Priya builds a patient-intake portal for Harbor Clinics. Her server creates each envelope with status sent and a signer whose name is \"Dr. Maria Lopez\", email maria.lopez@harbor.example and clientUserId \"pt-1001\". The portal also stores an internal patient number and a returnUrl that is already registered as a redirect URI. When the patient clicks Sign, the portal calls EnvelopeViews:createRecipient with email maria.lopez@harbor.example, userName \"Maria Lopez\", clientUserId \"pt-1001\", authenticationMethod \"none\" and the returnUrl, and Docusign rejects the request saying the recipient cannot be found. What should Priya change?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Send userName exactly as the signer name used at envelope creation, \"Dr. Maria Lopez\""
+      },
+      {
+        "id": "B",
+        "text": "Add the signer's recipientId to the request, because createRecipient locates the signer by recipientId"
+      },
+      {
+        "id": "C",
+        "text": "Set authenticationMethod to \"email\", because \"none\" is not accepted for an embedded recipient"
+      },
+      {
+        "id": "D",
+        "text": "Recreate the envelope with status created, because a view cannot be requested for a sent envelope"
+      }
+    ],
+    "correct": "A",
+    "answerText": "Send userName exactly as the signer name used at envelope creation, \"Dr. Maria Lopez\"",
+    "explanation": "createRecipient finds the embedded signer by matching email, userName and clientUserId against the values set at envelope creation. Here the clue is userName \"Maria Lopez\" versus the creation name \"Dr. Maria Lopez\", so the lookup fails.",
+    "whyNotOthers": "A is right because all three identity values must match the envelope recipient exactly. The trap is B: recipientId identifies a recipient inside the envelope, but the documented required matching values are email, userName and clientUserId, and the name mismatch would still break the lookup. C fails because authenticationMethod only records how your app authenticated the user. D fails because embedded signing requires status sent.",
+    "optionExplanations": {
+      "A": "Correct. email, userName and clientUserId must match the recipient defined in Envelopes:create; the name differs only by the \"Dr.\" prefix.",
+      "B": "recipientId is not one of the documented matching values; adding it does not fix the userName mismatch.",
+      "C": "authenticationMethod only records your app's authentication on the certificate; it is not why the recipient is not found.",
+      "D": "Embedded signing requires the envelope to be sent; a draft (created) envelope cannot be signed."
+    },
+    "trapOption": "B",
+    "importance": "HIGH",
+    "basedOn": [
+      17,
+      20,
+      37
+    ]
+  },
+  {
+    "paper": "A",
+    "length": "long",
+    "domain": "eSignature API",
+    "topic": "Embedded signing: URL lifetime",
+    "stem": "MedLink's tablet check-in app creates an envelope for each patient with a clientUserId when the front desk registers them at 8 a.m., and in the same job it calls EnvelopeViews:createRecipient and caches the returned URL in the patient's record. The clinic uses focused view, Docusign JS loads correctly, and Connect already reports envelope status. Patients reach the signing station anywhere from 10 minutes to 3 hours later, and almost all of them get an expired-session error when the cached URL opens. Which change fixes the problem with the least rework?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Ask Docusign to extend the recipient view lifetime by passing a longer session timeout in the returnUrl query string"
+      },
+      {
+        "id": "B",
+        "text": "Void each envelope at the station and create a new envelope plus a new signing URL for the patient"
+      },
+      {
+        "id": "C",
+        "text": "Keep the 8 a.m. envelope, but call createRecipient only when the patient taps Start at the station"
+      },
+      {
+        "id": "D",
+        "text": "Create the envelope at 8 a.m. in draft status and change it to sent when the patient reaches the station"
+      }
+    ],
+    "correct": "C",
+    "answerText": "Keep the 8 a.m. envelope, but call createRecipient only when the patient taps Start at the station",
+    "explanation": "The signing URL expires after about 5 minutes and is single-use, so it must be requested only when the user is ready to sign. The envelope itself does not expire in hours, so only the createRecipient call needs to move.",
+    "whyNotOthers": "C is right because the clue is that the URL is cached at 8 a.m. and opened up to hours later. The trap is B: a new envelope plus URL would work but discards valid envelopes and adds needless calls; only the URL is stale. A fails because the returnUrl only controls where the user goes afterwards. D fails because the draft status was never the problem; the cached URL would still expire.",
+    "optionExplanations": {
+      "A": "The returnUrl is only the redirect destination; it cannot extend the short URL lifetime.",
+      "B": "It works but is wasteful: the envelope is still valid, only the short-lived URL expired.",
+      "C": "Correct. Generate the recipient view URL only when the signer is ready; reuse the existing sent envelope.",
+      "D": "Envelope status is not the cause; a URL generated early would still expire before use."
+    },
+    "trapOption": "B",
+    "importance": "HIGH",
+    "basedOn": [
+      43,
+      20
+    ]
+  },
+  {
+    "paper": "A",
+    "length": "short",
+    "domain": "eSignature API",
+    "topic": "Embedded signing: required envelope parameters",
+    "stem": "When you call Envelopes:create for a signer who will sign inside your application, which two values are always required in that request for embedded signing? (Select two)",
+    "options": [
+      {
+        "id": "A",
+        "text": "returnUrl on the signer object"
+      },
+      {
+        "id": "B",
+        "text": "Envelope status set to sent"
+      },
+      {
+        "id": "C",
+        "text": "frameAncestors on the envelope definition"
+      },
+      {
+        "id": "D",
+        "text": "A non-null clientUserId on the signer"
+      },
+      {
+        "id": "E",
+        "text": "emailNotification set to suppress the email"
+      }
+    ],
+    "correct": "B,D",
+    "correctAnswers": [
+      "B",
+      "D"
+    ],
+    "answerText": "Envelope status set to sent; A non-null clientUserId on the signer",
+    "explanation": "Docusign University states that two parameters are always required when creating an envelope for embedded signing: status (sent) and clientUserId on the recipient.",
+    "whyNotOthers": "B and D are right: status sent lets the signer act immediately, and any non-null clientUserId marks the recipient as embedded. The trap is A: returnUrl is required, but on the later createRecipient call, not on Envelopes:create. C also belongs to createRecipient (focused view only), and E does not make a recipient embedded.",
+    "optionExplanations": {
+      "A": "returnUrl is supplied on EnvelopeViews:createRecipient, not on Envelopes:create.",
+      "B": "Correct. Embedded signing requires an envelope status of sent so the signer can act right away.",
+      "C": "frameAncestors is a createRecipient parameter used only for focused view.",
+      "D": "Correct. Any non-null clientUserId tells Docusign the recipient will sign embedded.",
+      "E": "Turning off email does not make the recipient embedded; clientUserId does."
+    },
+    "trapOption": "A",
+    "importance": "HIGH",
+    "basedOn": [
+      17,
+      37,
+      20
+    ]
+  },
+  {
+    "paper": "A",
+    "length": "long",
+    "domain": "eSignature API",
+    "topic": "Composite templates: sequence and role mapping",
+    "stem": "Tomas at Northwind HR sends one envelope per new hire containing a generated offer letter plus two server templates, Benefits and Tax Forms. Each server template defines a role named \"employee\" with its tabs. In each composite template object he adds the server template and an inline template that maps the new hire to roleName \"employee\". Envelopes are created, but the new hire receives the documents with none of the template tabs, and the inline recipient appears as an extra recipient with no fields. In his JSON every inline template has sequence 1 and every server template has sequence 2. What should Tomas change?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Move the inline recipients into a separate composite template object placed after the server template objects"
+      },
+      {
+        "id": "B",
+        "text": "Switch to the template reference model and list both template IDs with templateRoles for \"employee\""
+      },
+      {
+        "id": "C",
+        "text": "Supply the offer letter with the inline template's documents property instead of the document property"
+      },
+      {
+        "id": "D",
+        "text": "Give each server template a lower sequence than the inline template in the same composite template object"
+      }
+    ],
+    "correct": "D",
+    "answerText": "Give each server template a lower sequence than the inline template in the same composite template object",
+    "explanation": "Templates in a composite template object are applied in sequence order and, for attributes, later sequences overwrite earlier ones. The server template must have the lower sequence so the \"employee\" role exists before the inline template maps a recipient to it; the clue is inline = 1, server = 2.",
+    "whyNotOthers": "D is right because the role must be established first. The trap is B: template reference is simpler, but it cannot combine multiple templates in one envelope. A fails because role mapping happens inside one composite template object, so a separate object would not bind to these roles. C is unrelated to tab mapping and goes against the best practice of using the composite document property.",
+    "optionExplanations": {
+      "A": "Role mapping happens within the same composite template object; a separate object would not attach the recipient to these roles.",
+      "B": "The template reference model cannot combine multiple templates (plus a generated document) in one envelope.",
+      "C": "Best practice is the composite object's document property; moving the document does not fix role mapping.",
+      "D": "Correct. Attributes apply in sequence order (last in wins), so the server template must come first to create the role."
+    },
+    "trapOption": "B",
+    "importance": "HIGH",
+    "basedOn": [
+      11
+    ]
+  },
+  {
+    "paper": "A",
+    "length": "long",
+    "domain": "eSignature API",
+    "topic": "Anchor tabs: unique anchor strings",
+    "stem": "Kestrel Lending generates loan agreements as PDFs whose clauses vary in length, so the signature line moves between pages 3 and 5. The direct documents model is used, and there is no template. A developer sets anchorString \"Borrower Signature\" with anchorUnits inches and anchorXOffset 1. Testing shows the signature tab now follows the moving signature line, but every envelope also gets a second signature tab on page 1, where the table of contents lists the \"Borrower Signature\" section. Which approach fixes this while keeping the placement dynamic?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Replace the anchors with xPosition and yPosition values calculated for page 3, the most common page"
+      },
+      {
+        "id": "B",
+        "text": "Add a unique hidden anchor string such as /sn1/ only at the signature line and anchor to it"
+      },
+      {
+        "id": "C",
+        "text": "Keep \"Borrower Signature\" and set anchorIgnoreIfNotPresent to true to suppress the extra match"
+      },
+      {
+        "id": "D",
+        "text": "Move the tab definition into a server template so its fixed tab placement is reused for every loan"
+      }
+    ],
+    "correct": "B",
+    "answerText": "Add a unique hidden anchor string such as /sn1/ only at the signature line and anchor to it",
+    "explanation": "An anchor tab is placed at every occurrence of anchorString in the documents, so a phrase that also appears in the table of contents creates a second tab. A unique string (for example /sn1/, often in white text) placed only at the signature line keeps the dynamic placement and removes the duplicate.",
+    "whyNotOthers": "B is right because the deciding clue is the second occurrence of the phrase on page 1. The trap is C: anchorIgnoreIfNotPresent only controls whether a missing anchor string causes an error; it does not reduce multiple matches. A and D both go back to fixed positions, which break when the text moves between pages.",
+    "optionExplanations": {
+      "A": "Fixed xPosition and yPosition break when the signature line moves between pages 3 and 5.",
+      "B": "Correct. Anchor tabs are added at each occurrence of the string, so use a string that appears only at the signature line.",
+      "C": "anchorIgnoreIfNotPresent only decides whether a missing string is an error; it does not remove extra matches.",
+      "D": "Fixed template placement has the same problem as absolute coordinates when the content shifts."
+    },
+    "trapOption": "C",
+    "importance": "MEDIUM",
+    "basedOn": [
+      12
+    ]
+  },
+  {
+    "paper": "A",
+    "length": "short",
+    "domain": "eSignature API",
+    "topic": "Voiding an envelope",
+    "stem": "In an Envelopes:update request, which body permanently cancels a sent envelope that no recipient has finished signing?",
+    "options": [
+      {
+        "id": "A",
+        "text": "status set to voided, with a voidedReason value"
+      },
+      {
+        "id": "B",
+        "text": "status set to correct, with a lock duration in seconds"
+      },
+      {
+        "id": "C",
+        "text": "status set to deleted, with a voidedReason value"
+      },
+      {
+        "id": "D",
+        "text": "status set to created, with a voidedReason value"
+      }
+    ],
+    "correct": "A",
+    "answerText": "status set to voided, with a voidedReason value",
+    "explanation": "Voiding is done with Envelopes:update, setting status to voided and giving a voidedReason. Voiding is permanent and ends the lifecycle for all recipients.",
+    "whyNotOthers": "A is right because voided is the documented permanent cancel. The trap is B: correct status puts the envelope on a temporary hold (lock) and does not cancel it. C uses deleted, which is not the cancel status. D tries to move a sent envelope back to draft, which does not cancel it.",
+    "optionExplanations": {
+      "A": "Correct. status voided plus voidedReason permanently terminates the envelope for all recipients.",
+      "B": "Correct status and locks are temporary holds; they do not cancel the envelope.",
+      "C": "deleted is not the status used to cancel an in-process envelope; voided is.",
+      "D": "created is the draft state, not a cancellation of a sent envelope."
+    },
+    "trapOption": "B",
+    "importance": "HIGH",
+    "basedOn": [
+      8
+    ]
+  },
+  {
+    "paper": "A",
+    "length": "long",
+    "domain": "eSignature API",
+    "topic": "Locking an in-process envelope",
+    "stem": "Orion Insurance sends policy renewals through its claims app. Sometimes an underwriter must change the premium field on a renewal that is already out for signature, and while the change is being made nobody may sign the old value. After the edit, the same envelope must continue to the same signer without being re-sent. The team already has Connect for status and must not create duplicate envelopes. Which approach should the developer implement?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Void the envelope with a voidedReason, update the tab, then change the status back to sent"
+      },
+      {
+        "id": "B",
+        "text": "Call EnvelopeRecipients:update to replace the signer, which pauses signing until the change is done"
+      },
+      {
+        "id": "C",
+        "text": "Set the envelope back to created status, update the tab, then set the status to sent again"
+      },
+      {
+        "id": "D",
+        "text": "Create an envelope lock with EnvelopeLocks:create, update the tab with EnvelopeRecipientTabs:update, then release the lock"
+      }
+    ],
+    "correct": "D",
+    "answerText": "Create an envelope lock with EnvelopeLocks:create, update the tab with EnvelopeRecipientTabs:update, then release the lock",
+    "explanation": "A lock (correct status) temporarily prevents recipients from acting for a set duration or until it is released, which fits \"nobody may sign the old value\" while the envelope stays the same. The tab is then changed with EnvelopeRecipientTabs:update.",
+    "whyNotOthers": "D is right because the requirement is a temporary hold on the same envelope. The trap is A: voiding stops signing, but it is permanent and voided is a terminal status, so the envelope cannot be changed or resumed. B replaces a recipient rather than holding the envelope. C is not the documented way to put a sent envelope on hold; locking is.",
+    "optionExplanations": {
+      "A": "voided is terminal: no further changes can be made and the envelope cannot be sent again.",
+      "B": "EnvelopeRecipients:update replaces a recipient; it is not a hold mechanism for editing.",
+      "C": "The documented way to hold a sent envelope while editing is a lock, not moving it back to draft.",
+      "D": "Correct. Locks are temporary (lockType, app name, duration in seconds); tabs are updated with EnvelopeRecipientTabs:update."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "basedOn": [
+      8,
+      43
+    ]
+  },
+  {
+    "paper": "A",
+    "length": "long",
+    "domain": "eSignature API",
+    "topic": "Request URL: base URI and account ID",
+    "stem": "Lena's JWT integration works perfectly in the demo environment, where she hard-coded https://demo.docusign.net/restapi as the base path and put the user GUID from her JWT sub claim in the accounts segment of the URL. After go-live, the production account's users sit on a different server pod, and every Envelopes:create call fails even though tokens are issued correctly. Her integration key, consent and RSA key pair are all fine. Which change correctly builds the production request URL?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Keep the base path but replace the user GUID with the integration key in the accounts segment"
+      },
+      {
+        "id": "B",
+        "text": "Change only the host to www.docusign.net and keep the user GUID in the accounts segment"
+      },
+      {
+        "id": "C",
+        "text": "Call /oauth/userinfo and use the returned base_uri plus /restapi/v2.1/accounts/{account_id}/envelopes"
+      },
+      {
+        "id": "D",
+        "text": "Use the account base URI from Apps and Keys and keep the JWT sub value as the account identifier"
+      }
+    ],
+    "correct": "C",
+    "answerText": "Call /oauth/userinfo and use the returned base_uri plus /restapi/v2.1/accounts/{account_id}/envelopes",
+    "explanation": "The request URL is {base_uri}/restapi/v2.1/accounts/{accountId}/envelopes, and both base_uri and the API account ID come from the userinfo endpoint after authentication. The clue is that she used the user GUID (sub) as the account and hard-coded a demo host.",
+    "whyNotOthers": "C is right because it fixes both errors: the pod-specific base URI and the account ID. The trap is D: the account base URI is correct to use, but the JWT sub is a user ID, not the account ID. A uses the integration key, which identifies the app, not the account. B guesses a host and still uses the user GUID.",
+    "optionExplanations": {
+      "A": "The integration key identifies the app, not the account in the URL path.",
+      "B": "Production base URIs depend on the account's server, and the user GUID is still the wrong identifier.",
+      "C": "Correct. userinfo returns base_uri and account_id; build {base_uri}/restapi/v2.1/accounts/{account_id}/envelopes.",
+      "D": "The sub claim is the user ID; the path needs the API account ID."
+    },
+    "trapOption": "D",
+    "importance": "HIGH",
+    "basedOn": [
+      36,
+      9
+    ]
+  },
+  {
+    "paper": "A",
+    "length": "long",
+    "domain": "eSignature API",
+    "topic": "Focused view: frameAncestors and messageOrigins",
+    "stem": "Delta Bank's onboarding site, https://open.deltabank.example, uses focused view with Docusign JS loaded from js.docusign.com and is now going live in production. In testing on demo, the createRecipient request used frameAncestors [\"https://open.deltabank.example\", \"https://apps-d.docusign.com\"] and messageOrigins [\"https://apps-d.docusign.com\"]. The signer has a clientUserId, the envelope is sent, no ID verification is used, and the security team insists that no demo-environment value remains anywhere in the production configuration. Which two values must the production createRecipient request contain? (Select two)",
+    "options": [
+      {
+        "id": "A",
+        "text": "frameAncestors [\"https://open.deltabank.example\", \"https://apps-d.docusign.com\"]"
+      },
+      {
+        "id": "B",
+        "text": "frameAncestors [\"https://open.deltabank.example\", \"https://apps.docusign.com\"]"
+      },
+      {
+        "id": "C",
+        "text": "messageOrigins [\"https://apps.docusign.com\"]"
+      },
+      {
+        "id": "D",
+        "text": "frameAncestors [\"https://open.deltabank.example/\", \"https://apps.docusign.com/\"]"
+      },
+      {
+        "id": "E",
+        "text": "messageOrigins [\"https://open.deltabank.example\"]"
+      }
+    ],
+    "correct": "B,C",
+    "correctAnswers": [
+      "B",
+      "C"
+    ],
+    "answerText": "frameAncestors [\"https://open.deltabank.example\", \"https://apps.docusign.com\"]; messageOrigins [\"https://apps.docusign.com\"]",
+    "explanation": "For focused view, frameAncestors must list your site's origin plus https://apps.docusign.com in production (apps-d in demo), and messageOrigins is a single-element array with https://apps.docusign.com in production.",
+    "whyNotOthers": "B and C are right for production. The trap is A: that is the demo value and still names apps-d.docusign.com. D fails because frameAncestors accepts origins only, with no path or trailing slash. E fails because messageOrigins names the Docusign origin that sends the messages, not your own site.",
+    "optionExplanations": {
+      "A": "apps-d.docusign.com is for the developer (demo) environment, not production.",
+      "B": "Correct. Your site's origin plus https://apps.docusign.com for production.",
+      "C": "Correct. messageOrigins is https://apps.docusign.com in production.",
+      "D": "Origins must not include a path or a trailing slash.",
+      "E": "messageOrigins identifies the Docusign domain that sends the message, not your site."
+    },
+    "trapOption": "A",
+    "importance": "HIGH",
+    "basedOn": [
+      1,
+      20
+    ]
+  },
+  {
+    "paper": "A",
+    "length": "short",
+    "domain": "eSignature API",
+    "topic": "Template reference model",
+    "stem": "In the template reference model, which property of the Envelopes:create body assigns a real person to a recipient role defined in the template?",
+    "options": [
+      {
+        "id": "A",
+        "text": "recipients.signers, matched to the template by recipientId"
+      },
+      {
+        "id": "B",
+        "text": "templateRoles, matched to the template by roleName"
+      },
+      {
+        "id": "C",
+        "text": "inlineTemplates, matched to the template by sequence"
+      },
+      {
+        "id": "D",
+        "text": "compositeTemplates.serverTemplates, matched by templateId"
+      }
+    ],
+    "correct": "B",
+    "answerText": "templateRoles, matched to the template by roleName",
+    "explanation": "The template reference model uses templateId plus templateRoles; each templateRoles entry gives name and email and is matched to the template role by roleName.",
+    "whyNotOthers": "B is right because templateRoles with roleName is how the template reference model fills roles. The trap is A: recipients.signers belongs to the direct documents model and does not map to template roles by recipientId. C and D are composite template constructs, not part of the template reference model.",
+    "optionExplanations": {
+      "A": "recipients.signers is the direct documents model structure, not role mapping for a template.",
+      "B": "Correct. templateRoles entries are matched to template roles by roleName.",
+      "C": "inlineTemplates and sequence belong to the composite templates model.",
+      "D": "serverTemplates is part of the composite templates model, not the template reference model."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "basedOn": [
+      11
+    ]
+  },
+  {
+    "paper": "B",
+    "length": "long",
+    "domain": "eSignature API",
+    "topic": "Composite templates: document precedence and order",
+    "stem": "Aster Supply sends vendor packets with composite templates. Object 1 in the compositeTemplates array contains a document property with a generated cover letter, a server template \"MSA\" (sequence 1, which has its own MSA document) and an inline template (sequence 2) with the signer. Object 2 contains a server template \"NDA\" (sequence 1, with its NDA document) and an inline template (sequence 2). The developer expected three documents. Which documents does the envelope contain, in which order?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Cover letter, then NDA"
+      },
+      {
+        "id": "B",
+        "text": "MSA, then cover letter, then NDA"
+      },
+      {
+        "id": "C",
+        "text": "MSA, then NDA"
+      },
+      {
+        "id": "D",
+        "text": "NDA, then cover letter"
+      }
+    ],
+    "correct": "A",
+    "answerText": "Cover letter, then NDA",
+    "explanation": "Each composite template object contributes at most one document, and a document property takes precedence over any template documents in that object, so object 1 contributes the cover letter and the MSA document is ignored. Documents then follow the order of objects in the array.",
+    "whyNotOthers": "A is right: document precedence (first in wins) plus array order. The trap is B: it assumes each template adds its own document, but one object contributes one document only. C wrongly lets the sequence-1 server template beat the document property. D reverses the array order, which is what controls document order.",
+    "optionExplanations": {
+      "A": "Correct. Object 1 contributes only the cover letter (document property wins); object 2 contributes the NDA.",
+      "B": "A composite template object contributes at most one document, so the MSA and cover letter cannot both come from object 1.",
+      "C": "The document property takes precedence over server template documents regardless of sequence.",
+      "D": "Document order follows the order of objects in the compositeTemplates array."
+    },
+    "trapOption": "B",
+    "importance": "HIGH",
+    "basedOn": [
+      11
+    ]
+  },
+  {
+    "paper": "B",
+    "length": "long",
+    "domain": "eSignature API",
+    "topic": "Choosing the envelope model",
+    "stem": "Bayview Insurance's quoting service currently sends policies with the template reference model. A new rule says each envelope must contain two existing server templates, Policy Terms and State Disclosures, plus a premium schedule PDF that the service generates for each quote, and everything must be created in a single API call. Signers and anchors are already defined in the templates, and the team wants an envelope structure that is easy to extend later. Which approach should the developer use?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Keep the template reference model and pass both template IDs in templateId with one templateRoles list"
+      },
+      {
+        "id": "B",
+        "text": "Use the direct documents model and reference both server templates from the documents array"
+      },
+      {
+        "id": "C",
+        "text": "Use the composite templates model, with one composite template object for each template and the PDF"
+      },
+      {
+        "id": "D",
+        "text": "Send from one template with the template reference model, then add the rest with EnvelopeDocuments:update"
+      }
+    ],
+    "correct": "C",
+    "answerText": "Use the composite templates model, with one composite template object for each template and the PDF",
+    "explanation": "Only composite templates can apply multiple server templates and extra documents in one envelope per API call. The clue is \"two server templates plus a generated PDF\" and \"a single API call\".",
+    "whyNotOthers": "C is right because composite templates combine server templates, inline templates and documents. The trap is D: adding documents later could work, but it takes several calls and still cannot apply the second template's roles and tabs. A fails because the template reference model takes a single template. B fails because the direct documents model does not reference server templates.",
+    "optionExplanations": {
+      "A": "The template reference model includes a single template; it cannot combine two.",
+      "B": "The direct documents model supplies documents directly and does not apply server templates.",
+      "C": "Correct. Composite templates are the only model that combines multiple server templates and a document in one call.",
+      "D": "This needs several calls and does not bring in the second template's recipients and tabs."
+    },
+    "trapOption": "D",
+    "importance": "HIGH",
+    "basedOn": [
+      11,
+      12
+    ]
+  },
+  {
+    "paper": "B",
+    "length": "long",
+    "domain": "eSignature API",
+    "topic": "Idempotent envelope creation",
+    "stem": "Felix's payroll service posts Envelopes:create for year-end bonus letters through a corporate API gateway. Last week the gateway timed out after 30 seconds on several calls, the service retried, and some employees received two identical envelopes because the first call had actually succeeded. The service never received an envelopeId for the timed-out calls. Each letter already uses envelopeIdStamping and a signer with clientUserId for embedded signing. Which change lets the service safely retry a timed-out create without producing duplicates?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Reuse the same clientUserId on the retry so Docusign recognizes the signer and skips duplicates"
+      },
+      {
+        "id": "B",
+        "text": "Retry with the envelopeId from the first call so Docusign updates rather than recreates the envelope"
+      },
+      {
+        "id": "C",
+        "text": "Rely on envelopeIdStamping, which makes Docusign reject a second envelope with the same documents"
+      },
+      {
+        "id": "D",
+        "text": "Send a unique transactionId with each create and reuse the same value when retrying that letter"
+      }
+    ],
+    "correct": "D",
+    "answerText": "Send a unique transactionId with each create and reuse the same value when retrying that letter",
+    "explanation": "transactionId is a sender-generated value that makes the create request safe to retry: resending the same transactionId does not create a second envelope. The clue is that no envelopeId came back from the timed-out calls.",
+    "whyNotOthers": "D is right because transactionId is the duplicate-prevention parameter. The trap is B: an envelopeId would identify the envelope, but Docusign assigns it only after a successful create, and the service never received it. A fails because clientUserId only marks an embedded signer. C fails because envelopeIdStamping prints the envelope ID on documents and does not detect duplicates.",
+    "optionExplanations": {
+      "A": "clientUserId marks the recipient as embedded; it does not deduplicate envelopes.",
+      "B": "The envelopeId is returned only after success, and the timed-out calls never returned one.",
+      "C": "envelopeIdStamping only stamps the envelope ID on documents; it does not prevent duplicates.",
+      "D": "Correct. Reusing the same transactionId on retry prevents a duplicate envelope."
+    },
+    "trapOption": "B",
+    "importance": "MEDIUM",
+    "basedOn": [
+      40
+    ]
+  },
+  {
+    "paper": "B",
+    "length": "short",
+    "domain": "eSignature API",
+    "topic": "Terminal envelope statuses",
+    "stem": "Which two envelope statuses are terminal, so that tabs can no longer be added to the envelope through the API? (Select two)",
+    "options": [
+      {
+        "id": "A",
+        "text": "sent"
+      },
+      {
+        "id": "B",
+        "text": "declined"
+      },
+      {
+        "id": "C",
+        "text": "correct"
+      },
+      {
+        "id": "D",
+        "text": "voided"
+      },
+      {
+        "id": "E",
+        "text": "delivered"
+      }
+    ],
+    "correct": "B,D",
+    "correctAnswers": [
+      "B",
+      "D"
+    ],
+    "answerText": "declined; voided",
+    "explanation": "Docusign University lists completed, declined and voided as terminal statuses; no further API modifications, including adding tabs, can be made on them.",
+    "whyNotOthers": "B and D are right because declined and voided are terminal. The trap is C: correct stops signing, but it is a temporary lock, and the envelope can be edited and resumed. A and E are normal in-progress states where changes are still possible.",
+    "optionExplanations": {
+      "A": "sent is in progress; the envelope can still be modified.",
+      "B": "Correct. declined is a terminal status.",
+      "C": "correct is a temporary hold (lock), not a terminal status.",
+      "D": "Correct. voided is a terminal status; voiding is permanent.",
+      "E": "delivered means recipients have viewed the envelope; it is still in progress."
+    },
+    "trapOption": "C",
+    "importance": "MEDIUM",
+    "basedOn": [
+      8
+    ]
+  },
+  {
+    "paper": "B",
+    "length": "long",
+    "domain": "eSignature API",
+    "topic": "Embedded sending",
+    "stem": "Ridgeway Talent's recruiting platform lets recruiters build offer packets. The recruiter must open the Docusign tagging screen inside the platform, drag signature and date fields onto the uploaded offer, review the candidate details, and click Send there. Candidates sign remotely by email and use no embedded signing. The platform authenticates recruiters with Authorization Code Grant, already registers a return URL, and receives envelope status from an account-level Connect listener. Which API sequence should the developer implement?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Create the envelope with status sent, then call EnvelopeViews:createSender for the recruiter"
+      },
+      {
+        "id": "B",
+        "text": "Create the envelope with status created, then call EnvelopeViews:createSender for the recruiter"
+      },
+      {
+        "id": "C",
+        "text": "Create the envelope with a clientUserId on the candidate, then call EnvelopeViews:createRecipient"
+      },
+      {
+        "id": "D",
+        "text": "Create the envelope with status created and a clientUserId on the recruiter, then call createRecipient"
+      }
+    ],
+    "correct": "B",
+    "answerText": "Create the envelope with status created, then call EnvelopeViews:createSender for the recruiter",
+    "explanation": "Embedded sending uses EnvelopeViews:createSender on a draft (status created) envelope, so the user can edit tabs, documents and recipients and send from inside the app. The clue is that the recruiter tags and clicks Send in the platform while candidates sign remotely.",
+    "whyNotOthers": "B is right because the sender view needs a draft envelope. The trap is A: it uses the right view, but a sent envelope has already been sent, so the recruiter cannot prepare and send it. C embeds the candidate's signing, which the scenario rules out. D uses the recipient (signing) view, which does not provide the tagging and sending screen.",
+    "optionExplanations": {
+      "A": "Once sent, the envelope is no longer a draft the recruiter can prepare and send.",
+      "B": "Correct. createSender on a created (draft) envelope gives the embedded tagging and sending experience.",
+      "C": "That is embedded signing for the candidate, who signs remotely in this scenario.",
+      "D": "createRecipient opens a signing session, not the sender's tagging view."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "basedOn": [
+      20,
+      43,
+      17
+    ]
+  },
+  {
+    "paper": "B",
+    "length": "long",
+    "domain": "eSignature API",
+    "topic": "returnUrl event handling",
+    "stem": "Copperline Credit embeds loan signing with classic view. After signing, Docusign redirects the borrower to https://loans.copperline.example/done?app=7781, and the current code marks the loan as signed and starts funding whenever that page loads. Auditors found loans funded for borrowers who had closed the session or declined. The company already has an account-level Connect listener using JSON SIM that receives envelope events for every loan envelope. Which two changes follow Docusign's guidance? (Select two)",
+    "options": [
+      {
+        "id": "A",
+        "text": "Read the event query parameter on the returnUrl and treat only signing_complete as a finished signature"
+      },
+      {
+        "id": "B",
+        "text": "Poll Envelopes:get every minute after the redirect until the envelope shows completed"
+      },
+      {
+        "id": "C",
+        "text": "Start funding only after Connect confirms the envelope is completed, not from the redirect alone"
+      },
+      {
+        "id": "D",
+        "text": "Replace the returnUrl with Brand Destination URLs so declined borrowers are redirected elsewhere"
+      },
+      {
+        "id": "E",
+        "text": "Treat ttl_expired as completed, because it means the session ended after signing"
+      }
+    ],
+    "correct": "A,C",
+    "correctAnswers": [
+      "A",
+      "C"
+    ],
+    "answerText": "Read the event query parameter on the returnUrl and treat only signing_complete as a finished signature; Start funding only after Connect confirms the envelope is completed, not from the redirect alone",
+    "explanation": "Docusign appends event={type} (signing_complete, cancel, decline, ttl_expired, and so on) to the returnUrl, so the app must read it. Because the redirect alone is not proof, the final status should be confirmed through Connect, which the company already has.",
+    "whyNotOthers": "A and C are right. The trap is B: it checks status, but polling once a minute breaks the one-request-per-envelope-every-15-minutes limit, and Connect is already in place. D fails because Brand Destination URLs control redirects for remote signing, not embedded signing. E fails because ttl_expired means the session expired, not that the borrower signed.",
+    "optionExplanations": {
+      "A": "Correct. The event parameter tells you what the signer did; only signing_complete means they signed.",
+      "B": "Polling every minute breaks the 15-minute polling limit; Connect is already available.",
+      "C": "Correct. Do not rely on the returnUrl alone; confirm completion through Connect before funding.",
+      "D": "Brand Destination URLs apply to remote signing redirects; embedded signing uses returnUrl.",
+      "E": "ttl_expired means the signing session timed out, not that signing finished."
+    },
+    "trapOption": "B",
+    "importance": "HIGH",
+    "basedOn": [
+      38,
+      42,
+      20
+    ]
+  },
+  {
+    "paper": "B",
+    "length": "short",
+    "domain": "eSignature API",
+    "topic": "Post-signing redirect: remote vs embedded",
+    "stem": "A company wants signers sent to its own thank-you page after signing. Some signers sign remotely from an email link, others sign embedded in the company portal. What controls the redirect for each group?",
+    "options": [
+      {
+        "id": "A",
+        "text": "returnUrl in Envelopes:create for remote signers; Brand Destination URLs for embedded signers"
+      },
+      {
+        "id": "B",
+        "text": "Brand Destination URLs for both groups, because they override any returnUrl value"
+      },
+      {
+        "id": "C",
+        "text": "returnUrl in EnvelopeViews:createRecipient for both groups, because it applies to every signer"
+      },
+      {
+        "id": "D",
+        "text": "Brand Destination URLs for remote signers; returnUrl in EnvelopeViews:createRecipient for embedded signers"
+      }
+    ],
+    "correct": "D",
+    "answerText": "Brand Destination URLs for remote signers; returnUrl in EnvelopeViews:createRecipient for embedded signers",
+    "explanation": "For remote signing the post-signing destination comes from the brand's destination URLs; for embedded signing your app sets returnUrl when it calls EnvelopeViews:createRecipient.",
+    "whyNotOthers": "D is right because each group uses a different mechanism. The trap is C: returnUrl is correct for embedded signers, but remote signers never go through createRecipient. A swaps the two mechanisms and puts returnUrl on the wrong call. B ignores that embedded signing returns to the returnUrl your app supplies.",
+    "optionExplanations": {
+      "A": "This swaps the mechanisms; returnUrl is not set on Envelopes:create for remote signers.",
+      "B": "Embedded signers are redirected to the returnUrl supplied on createRecipient.",
+      "C": "Remote signers do not use createRecipient, so a returnUrl there cannot redirect them.",
+      "D": "Correct. Brand Destination URLs for remote signing; returnUrl on createRecipient for embedded signing."
+    },
+    "trapOption": "C",
+    "importance": "MEDIUM",
+    "basedOn": [
+      38,
+      20
+    ]
+  },
+  {
+    "paper": "B",
+    "length": "long",
+    "domain": "eSignature API",
+    "topic": "CORS for a single-page app",
+    "stem": "Jonah builds an internal agreement dashboard as a single-page app hosted at https://dash.vela.example with no back end. Users sign in with Authorization Code Grant with PKCE, and tokens are issued correctly. When the browser calls Envelopes:listStatusChanges directly, the requests are blocked with cross-origin errors before Docusign returns any data. The same calls with the same token work from Postman. Focused view is not used, and the company does not want to build or host a back-end proxy. What should Jonah do?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Add https://dash.vela.example as an allowed origin in the integration key's CORS settings in Apps and Keys"
+      },
+      {
+        "id": "B",
+        "text": "Add an Access-Control-Allow-Origin header with the dashboard origin to each request the SPA sends"
+      },
+      {
+        "id": "C",
+        "text": "Request an additional OAuth scope for browser access when the user signs in"
+      },
+      {
+        "id": "D",
+        "text": "Add https://dash.vela.example to frameAncestors so Docusign trusts the dashboard's origin"
+      }
+    ],
+    "correct": "A",
+    "answerText": "Add https://dash.vela.example as an allowed origin in the integration key's CORS settings in Apps and Keys",
+    "explanation": "CORS for the eSignature API is configured on the integration key in Apps and Keys, where you list the allowed origins (and methods). The clue is that calls work from Postman (no browser origin checks) but fail in the browser.",
+    "whyNotOthers": "A is right because the origin allowlist is set by Docusign for the integration key. The trap is B: Access-Control-Allow-Origin is a response header the server sends, so the browser ignores it on the SPA's own requests. C fails because scopes control permissions, not allowed origins. D fails because frameAncestors only controls where focused view can be framed.",
+    "optionExplanations": {
+      "A": "Correct. Allowed CORS origins are configured on the integration key in Apps and Keys.",
+      "B": "Access-Control-Allow-Origin is a server response header; setting it on requests does nothing.",
+      "C": "OAuth scopes grant API permissions; they do not configure allowed browser origins.",
+      "D": "frameAncestors governs focused view framing, not cross-origin API calls."
+    },
+    "trapOption": "B",
+    "importance": "MEDIUM",
+    "basedOn": [
+      41,
+      3
+    ]
+  },
+  {
+    "paper": "B",
+    "length": "long",
+    "domain": "eSignature API",
+    "topic": "Envelope-level eventNotification for recipient status",
+    "stem": "Maple Health's referral app creates envelopes with three signers in routing order and includes an eventNotification object in Envelopes:create, because only these referral envelopes, not the whole account, should go to its listener. The nurse dashboard must show a check mark as soon as each individual signer finishes. Today the listener receives a single message when the whole envelope finishes. The listener already returns 200 quickly and uses HMAC. What should the developer change?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Add an account-level Connect configuration that publishes recipient events for all envelopes"
+      },
+      {
+        "id": "B",
+        "text": "Add the recipient-completed event to the eventNotification in the Envelopes:create request"
+      },
+      {
+        "id": "C",
+        "text": "Poll EnvelopeRecipients:list for each open referral so the dashboard sees each signer's status"
+      },
+      {
+        "id": "D",
+        "text": "Keep only envelope-completed and read each signer's status from that final message"
+      }
+    ],
+    "correct": "B",
+    "answerText": "Add the recipient-completed event to the eventNotification in the Envelopes:create request",
+    "explanation": "An eventNotification on Envelopes:create is envelope-level Connect for just that envelope. Subscribing it to recipient-completed sends a message as each signer finishes; the clue is \"only these referral envelopes\" and \"as soon as each individual signer finishes\".",
+    "whyNotOthers": "B is right because it adds per-recipient events while keeping the envelope-level scope. The trap is D: envelope-completed fires only once, after all signers are done, so it cannot show progress in real time. A breaks the requirement to keep this scoped to these envelopes. C polls, which counts against API limits and is restricted to once per 15 minutes per envelope.",
+    "optionExplanations": {
+      "A": "Account-level Connect covers every envelope, which the requirement rules out.",
+      "B": "Correct. Subscribing the envelope-level eventNotification to recipient-completed gives per-signer messages.",
+      "C": "Polling counts against API limits and is restricted to once per 15 minutes per envelope.",
+      "D": "envelope-completed arrives only after the last signer, so per-signer progress is lost."
+    },
+    "trapOption": "D",
+    "importance": "HIGH",
+    "basedOn": [
+      5,
+      42,
+      19
+    ]
+  },
+  {
+    "paper": "B",
+    "length": "short",
+    "domain": "eSignature API",
+    "topic": "Templates after go-live",
+    "stem": "After go-live, an app that sends with the template reference model gets template-not-found errors in production, although it worked in demo. What must the developer do?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Nothing in the account; re-run the go-live review so templates are copied with the integration key"
+      },
+      {
+        "id": "B",
+        "text": "Switch the app to composite templates, because server templates are not referenced in production"
+      },
+      {
+        "id": "C",
+        "text": "Make the template available in the production account and update the app to use its production template ID"
+      },
+      {
+        "id": "D",
+        "text": "Keep the demo template ID and change only the base URI, since template IDs are global"
+      }
+    ],
+    "correct": "C",
+    "answerText": "Make the template available in the production account and update the app to use its production template ID",
+    "explanation": "Go-live promotes the integration key, not templates. The template must exist in the production account, which gives it a new template ID, and the app must reference that ID.",
+    "whyNotOthers": "C is right because template IDs differ between demo and production. The trap is D: the base URI does change, but template IDs are not global, so the demo ID still fails. A fails because go-live does not copy templates. B fails because the template reference model works in production.",
+    "optionExplanations": {
+      "A": "Go-live promotes the integration key only; templates are not copied.",
+      "B": "Server templates and the template reference model are fully supported in production.",
+      "C": "Correct. Put the template in the production account and reference its new production template ID.",
+      "D": "Template IDs are environment-specific; changing the base URI alone does not help."
+    },
+    "trapOption": "D",
+    "importance": "MEDIUM",
+    "basedOn": [
+      11,
+      9
+    ]
+  }
+]

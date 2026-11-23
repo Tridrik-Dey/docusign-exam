@@ -1,0 +1,1272 @@
+[
+  {
+    "paper": "E",
+    "length": "long",
+    "style": "design",
+    "domain": "API Authentication",
+    "topic": "Flow selection: interactive users plus nightly batch",
+    "stem": "Harbor & Pine, a furniture wholesaler, runs a dealer-relations portal on its own application servers, where credentials live in a hardware-backed vault. During the day about 120 account managers sign in to the portal and send dealer agreements that must show each manager as the sender, and the security office insists the portal must never act for a manager who is not personally signed in. Every night an unattended reconciliation job on the same servers downloads completed agreements account-wide as a service user named recon-svc. The portal's screens were recently rebuilt in Vue. Which authentication design fits best?",
+    "options": [
+      {
+        "id": "A",
+        "text": "JWT Grant for both parts, impersonating each account manager by user ID during the day and recon-svc at night, after one admin consent"
+      },
+      {
+        "id": "B",
+        "text": "Confidential Authorization Code Grant for both parts, with recon-svc signing in once and the nightly job reusing its stored extended refresh token"
+      },
+      {
+        "id": "C",
+        "text": "Confidential Authorization Code Grant for the managers' sessions and JWT Grant as recon-svc for the nightly job, both credentials on one key"
+      },
+      {
+        "id": "D",
+        "text": "Public Authorization Code Grant with PKCE for the managers because the screens are a Vue app, and JWT Grant as recon-svc for the nightly job"
+      },
+      {
+        "id": "E",
+        "text": "Implicit Grant for the managers' browser sessions so no secret is stored, and JWT Grant as recon-svc for the nightly job"
+      }
+    ],
+    "correct": "C",
+    "answerText": "Confidential Authorization Code Grant for the managers' sessions and JWT Grant as recon-svc for the nightly job, both credentials on one key",
+    "explanation": "Managers sign in personally on a server that can keep a secret in a vault, so Confidential Authorization Code Grant fits them; the job with no human at the keyboard needs JWT Grant. One integration key can hold both a secret key and an RSA key pair.",
+    "whyNotOthers": "C is right because the daytime part is interactive and server-hosted while the nightly part is unattended. The trap is D: the Vue front end is a red herring, because the server does the token exchange and can protect a secret, so Confidential is preferred over Public. A breaks the rule that the portal never acts for a manager who is not signed in; B makes a headless job depend on one interactive login and a refresh token; E uses the legacy Implicit Grant.",
+    "optionExplanations": {
+      "A": "JWT would let the portal act for managers who are not signed in, which the security office forbids.",
+      "B": "An unattended job should not depend on one interactive login and a refresh token chain; JWT is the flow for a service user.",
+      "C": "Correct. Confidential for the signed-in managers on a secret-capable server, JWT for the headless job; both credentials can live on one integration key.",
+      "D": "Public Auth Code is for apps that cannot keep a secret; this portal's servers have a vault, so the Vue UI does not change the choice.",
+      "E": "Implicit Grant is legacy and less secure; it is not recommended for a server that can store a secret."
+    },
+    "trapOption": "D",
+    "importance": "HIGH",
+    "decode": {
+      "needs": "Confidential Authorization Code Grant for signed-in users plus JWT Grant for the unattended service user",
+      "clues": [
+        "'never act for a manager who is not personally signed in' -> user-present flow, not JWT impersonation",
+        "'credentials live in a hardware-backed vault' -> the app can keep a secret: Confidential",
+        "'unattended reconciliation job as recon-svc' -> JWT Grant",
+        "'rebuilt in Vue' -> red herring; token exchange still happens on the server"
+      ]
+    },
+    "concept": {
+      "title": "Mixing flows on one key",
+      "line": "Interactive users on a secret-capable server use Confidential Auth Code; unattended jobs use JWT. One integration key can carry both a secret and an RSA key pair."
+    }
+  },
+  {
+    "paper": "E",
+    "length": "short",
+    "style": "fact",
+    "domain": "API Authentication",
+    "topic": "Admin consent prerequisites",
+    "stem": "An organization wants a single administrator action to give its in-house JWT Grant app consent for all of its employees. Which two conditions must be true? (Select two)",
+    "options": [
+      {
+        "id": "A",
+        "text": "The organization has Docusign Access Management as part of its plan"
+      },
+      {
+        "id": "B",
+        "text": "The person granting consent is an eSignature account administrator"
+      },
+      {
+        "id": "C",
+        "text": "The employees' email domain has been claimed by the organization"
+      },
+      {
+        "id": "D",
+        "text": "The integration key has completed go-live and is in production"
+      },
+      {
+        "id": "E",
+        "text": "The app requests the extended scope so the consent does not lapse"
+      }
+    ],
+    "correct": "A,C",
+    "correctAnswers": [
+      "A",
+      "C"
+    ],
+    "answerText": "The organization has Docusign Access Management as part of its plan; The employees' email domain has been claimed by the organization",
+    "explanation": "Admin consent requires the Access Management product and a claimed domain; it then covers the users in that claimed domain.",
+    "whyNotOthers": "A and C are right because admin consent needs Access Management and a claimed domain. The trap is B: consent is granted by an organization administrator in Docusign Admin, not by an eSignature account administrator. D is not a prerequisite (admin consent works in the developer environment too) and E is wrong because extended only affects Authorization Code refresh tokens.",
+    "optionExplanations": {
+      "A": "Correct. Access Management is required for admin consent.",
+      "B": "The documentation says an organization administrator, not an eSignature account administrator, grants admin consent.",
+      "C": "Correct. Admin consent applies to users whose addresses are in the organization's claimed domain.",
+      "D": "Go-live is not a prerequisite for admin consent.",
+      "E": "extended changes refresh token lifetime in Authorization Code Grant; it has nothing to do with consent or JWT."
+    },
+    "trapOption": "B",
+    "importance": "HIGH",
+    "concept": {
+      "title": "Admin consent prerequisites",
+      "line": "Admin consent needs Access Management and a claimed domain, and is granted by an organization administrator, not an eSignature account admin."
+    }
+  },
+  {
+    "paper": "E",
+    "length": "short",
+    "style": "fact",
+    "domain": "API Authentication",
+    "topic": "Token request format",
+    "stem": "When a Confidential Authorization Code Grant app posts the authorization code to /oauth/token, which Content-Type must the request use?",
+    "options": [
+      {
+        "id": "A",
+        "text": "application/json"
+      },
+      {
+        "id": "B",
+        "text": "multipart/form-data"
+      },
+      {
+        "id": "C",
+        "text": "application/jwt"
+      },
+      {
+        "id": "D",
+        "text": "text/plain"
+      },
+      {
+        "id": "E",
+        "text": "application/x-www-form-urlencoded"
+      }
+    ],
+    "correct": "E",
+    "answerText": "application/x-www-form-urlencoded",
+    "explanation": "The /oauth/token endpoint requires Content-Type application/x-www-form-urlencoded, with grant_type and code in the form body.",
+    "whyNotOthers": "E is right because the token endpoint takes form-encoded parameters. The trap is A: most Docusign REST calls use JSON, but the OAuth token request does not. B, C and D are not accepted formats for this endpoint.",
+    "optionExplanations": {
+      "A": "JSON is used by the eSignature REST API bodies, not by the /oauth/token request.",
+      "B": "The token request is not a multipart upload.",
+      "C": "There is no application/jwt content type for this request; even JWT Grant sends the assertion as a form field.",
+      "D": "Plain text is not the documented format.",
+      "E": "Correct. The documented Content-Type for /oauth/token is application/x-www-form-urlencoded."
+    },
+    "trapOption": "A",
+    "importance": "LOW",
+    "concept": {
+      "title": "Token endpoint content type",
+      "line": "POST /oauth/token takes form-encoded parameters (application/x-www-form-urlencoded), not a JSON body."
+    }
+  },
+  {
+    "paper": "E",
+    "length": "long",
+    "style": "design",
+    "domain": "API Authentication",
+    "topic": "Scopes for a browser-only app",
+    "stem": "Fernhill Library Services is building a browser-only volunteer-agreement app: plain JavaScript served from a static website, with no server code at all. Each branch coordinator signs in with their own Docusign login, and the scripts call the eSignature REST API directly from the browser to send agreements. The integration key is set up for Public Authorization Code Grant, allowed origins and HTTP methods are configured on the key, and the account administrator has left CORS enabled for all apps. Most branches use Chromebooks. What should the authorization request ask for in its scope parameter?",
+    "options": [
+      {
+        "id": "A",
+        "text": "signature cors, so the token covers the eSignature endpoints and is allowed to make requests from browser scripts"
+      },
+      {
+        "id": "B",
+        "text": "signature extended, so the token covers the eSignature endpoints and the browser can keep refreshing it for 30 days"
+      },
+      {
+        "id": "C",
+        "text": "signature impersonation, so the browser scripts can act for the coordinator without needing any server"
+      },
+      {
+        "id": "D",
+        "text": "signature only, because the allowed origins on the integration key are what permit requests from browsers"
+      },
+      {
+        "id": "E",
+        "text": "cors only, because the cors scope already includes the eSignature endpoints that have an account ID in the path"
+      }
+    ],
+    "correct": "A",
+    "answerText": "signature cors, so the token covers the eSignature endpoints and is allowed to make requests from browser scripts",
+    "explanation": "An app that sends eSignature requests from browser scripts must be configured for CORS and must request the cors scope in addition to signature.",
+    "whyNotOthers": "A is right because CORS needs both the app configuration and the cors scope. The trap is D: allowed origins are necessary but not sufficient; without the cors scope the browser calls are rejected. B is wrong because a Public Auth Code refresh token lasts only up to 24 hours, C confuses the JWT consent scope with a browser flow, and E drops signature, which the eSignature endpoints require.",
+    "optionExplanations": {
+      "A": "Correct. signature covers most eSignature endpoints and cors is the scope required to send CORS requests.",
+      "B": "extended does not give a Public (browser) app 30-day refresh tokens, and it does not enable browser requests.",
+      "C": "impersonation is the consent scope for JWT Grant service integrations, not for a browser sign-in.",
+      "D": "Allowed origins are required, but the app must also request the cors scope.",
+      "E": "cors does not replace signature; the eSignature endpoints still need signature."
+    },
+    "trapOption": "D",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "Request signature and cors in the Public Authorization Code Grant scope",
+      "clues": [
+        "'no server code at all, scripts call the API from the browser' -> CORS request, needs the cors scope",
+        "'allowed origins already configured' -> necessary but not sufficient",
+        "'Chromebooks' -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "Scopes for CORS apps",
+      "line": "A browser app calling the eSignature API directly needs CORS configured on the key and must request both signature and cors."
+    }
+  },
+  {
+    "paper": "E",
+    "length": "short",
+    "style": "fact",
+    "domain": "API Authentication",
+    "topic": "PKCE verification",
+    "stem": "A field agent's mobile app uses Public Authorization Code Grant and ships with no secret. At the token step, how does Docusign confirm that the app redeeming the authorization code is the one that started the flow?",
+    "options": [
+      {
+        "id": "A",
+        "text": "It checks that the code_challenge sent again in the token request matches the one sent to /oauth/auth"
+      },
+      {
+        "id": "B",
+        "text": "It verifies the code_verifier's signature with the public key registered on the integration key"
+      },
+      {
+        "id": "C",
+        "text": "It decrypts the code_challenge with the integration key and compares it with the authorization code"
+      },
+      {
+        "id": "D",
+        "text": "It hashes the code_verifier with S256, base64url-encodes it and compares the result with the earlier code_challenge"
+      },
+      {
+        "id": "E",
+        "text": "It compares the code_verifier with the random state value that the app sent to /oauth/auth"
+      }
+    ],
+    "correct": "D",
+    "answerText": "It hashes the code_verifier with S256, base64url-encodes it and compares the result with the earlier code_challenge",
+    "explanation": "The app sends the unhashed code_verifier to /oauth/token; Docusign hashes it with S256, base64url-encodes it and checks that it matches the code_challenge from the authorization request.",
+    "whyNotOthers": "D is right because PKCE proves possession of the original random string. The trap is A: the challenge is sent only on /oauth/auth; at the token step the app sends the verifier, never the challenge again. B and C invent key operations PKCE does not use, and E confuses PKCE with the CSRF state parameter.",
+    "optionExplanations": {
+      "A": "The token request carries the code_verifier, not the code_challenge again.",
+      "B": "PKCE involves no signature or public key; that is JWT Grant.",
+      "C": "Nothing is decrypted; the verifier is hashed and compared.",
+      "D": "Correct. S256 hash of the verifier, base64url-encoded, must equal the stored code_challenge.",
+      "E": "state protects against CSRF on the redirect; it plays no part in PKCE."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "concept": {
+      "title": "How PKCE proves the caller",
+      "line": "Send code_challenge (S256 hash of a random verifier) on /oauth/auth; send the raw code_verifier to /oauth/token, where Docusign re-hashes and compares."
+    }
+  },
+  {
+    "paper": "E",
+    "length": "long",
+    "style": "design",
+    "domain": "API Authentication",
+    "topic": "JWT Grant drawbacks",
+    "stem": "The architecture board at Quarry Point Energy must approve a design in which an unattended back-office service sends royalty statements on behalf of the land agent responsible for each lease, using JWT Grant. Most agents have addresses in the company's claimed domain, but some contract land agents use their own agency domains. The company has Access Management, and the service will run in a Kubernetes cluster managed by a partner. The board asks for an accurate list of the drawbacks it is accepting with this flow. Which two statements belong on that list? (Select two)",
+    "options": [
+      {
+        "id": "A",
+        "text": "The service must keep a client secret on a secure web server and send it in a Basic header on every token request"
+      },
+      {
+        "id": "B",
+        "text": "Each access token lasts one hour with no refresh token, so the service must build and exchange a new JWT each time"
+      },
+      {
+        "id": "C",
+        "text": "The refresh token expires 30 days after issue unless extended is requested, so each agent must sign in again every month"
+      },
+      {
+        "id": "D",
+        "text": "Admin consent will not reach agents outside the claimed domain, so the service also needs an individual consent path"
+      },
+      {
+        "id": "E",
+        "text": "Each impersonated agent must be signed in to Docusign whenever the service starts a sending run for their leases"
+      }
+    ],
+    "correct": "B,D",
+    "correctAnswers": [
+      "B",
+      "D"
+    ],
+    "answerText": "Each access token lasts one hour with no refresh token, so the service must build and exchange a new JWT each time; Admin consent will not reach agents outside the claimed domain, so the service also needs an individual consent path",
+    "explanation": "The documented JWT drawbacks include a one-hour token with no refresh token, and the need to support individual consent for users that admin consent cannot cover, such as contractors outside the claimed domain.",
+    "whyNotOthers": "B and D are right: the contract agents on agency domains are the deciding clue for D. The trap is C: refresh tokens and the extended scope belong to Authorization Code Grant; JWT Grant issues no refresh token at all. A describes the Confidential Auth Code secret (JWT uses an RSA key pair) and E contradicts the point of JWT, which needs no user present after consent.",
+    "optionExplanations": {
+      "A": "JWT Grant signs an assertion with an RSA private key; the Basic header with a secret belongs to Confidential Auth Code Grant.",
+      "B": "Correct. A JWT access token lasts one hour and no refresh token is provided.",
+      "C": "JWT Grant issues no refresh token, so this Authorization Code rule does not apply.",
+      "D": "Correct. Users outside the claimed domain need individual consent, so the integration must support it too.",
+      "E": "After consent, JWT Grant does not need the impersonated user to be present."
+    },
+    "trapOption": "C",
+    "importance": "HIGH",
+    "decode": {
+      "needs": "Identify the documented disadvantages of JWT Grant",
+      "clues": [
+        "'unattended back-office service on behalf of each land agent' -> JWT impersonating many users",
+        "'contract agents on their own agency domains' -> outside admin consent, need individual consent",
+        "'Kubernetes cluster managed by a partner' -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "JWT Grant trade-offs",
+      "line": "JWT: no user needed after consent, but one-hour tokens with no refresh, possible individual-consent fallback, RSA key handling and high trust."
+    }
+  },
+  {
+    "paper": "E",
+    "length": "long",
+    "style": "design",
+    "domain": "API Authentication",
+    "topic": "Credentials used by each flow",
+    "stem": "Copperline Insurance uses one integration key for two integrations: a claims-adjuster web portal on company servers that uses Confidential Authorization Code Grant, and a headless overnight batch that uses JWT Grant to impersonate a claims-mailroom user. During a credential clean-up, an engineer deleted the key's only secret key but left its RSA key pair untouched. The change was made from a contractor's laptop while most adjusters were mid-shift. Assuming nothing else changes, what happens to new token requests from the two integrations?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Both integrations fail, because every /oauth/token request is authenticated with the integration key's secret key"
+      },
+      {
+        "id": "B",
+        "text": "The portal can't exchange codes or refresh tokens, as its Basic header needs the secret; the batch keeps working"
+      },
+      {
+        "id": "C",
+        "text": "The batch can no longer get tokens, because its JWT is signed with the secret key; the portal keeps working with user logins"
+      },
+      {
+        "id": "D",
+        "text": "Neither integration is affected, because the secret key is only checked when the integration key is promoted at go-live"
+      },
+      {
+        "id": "E",
+        "text": "The portal keeps working until its refresh tokens expire in 30 days, while the batch fails at its next run tonight"
+      }
+    ],
+    "correct": "B",
+    "answerText": "The portal can't exchange codes or refresh tokens, as its Basic header needs the secret; the batch keeps working",
+    "explanation": "Confidential Authorization Code Grant sends a Basic header built from integration key and secret on the code exchange and on refreshes; JWT Grant signs its assertion with the RSA private key, so it does not need the secret.",
+    "whyNotOthers": "B is right because only the Confidential flow depends on the secret key. The trap is A: both flows call /oauth/token, but JWT requests carry an RSA-signed assertion, not a Basic header. C reverses the credentials, D invents a go-live-only check, and E is wrong because refreshing itself needs the Basic header with the secret.",
+    "optionExplanations": {
+      "A": "JWT token requests are authenticated by the RSA-signed assertion, not by the secret.",
+      "B": "Correct. Code exchange and refresh need the Basic integrationKey:secretKey header; the JWT batch only needs its RSA private key.",
+      "C": "The JWT is signed with the RSA private key, not with the secret key.",
+      "D": "The secret is used on every Confidential token and refresh request, not only at go-live.",
+      "E": "A Confidential refresh request also needs the Basic header, so refreshing fails too; the JWT batch is unaffected."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "Know which credential each flow sends to /oauth/token",
+      "clues": [
+        "'deleted the only secret key' -> Confidential Auth Code token and refresh requests fail",
+        "'RSA key pair untouched' -> JWT Grant still works",
+        "'contractor's laptop, mid-shift' -> red herrings"
+      ]
+    },
+    "concept": {
+      "title": "Secret key versus RSA key",
+      "line": "Confidential Auth Code authenticates token requests with integration key plus secret; JWT Grant authenticates with an assertion signed by the RSA private key."
+    }
+  },
+  {
+    "paper": "E",
+    "length": "long",
+    "style": "fact",
+    "domain": "API Authentication",
+    "topic": "RSA key pair limit",
+    "stem": "Larchmont Health's JWT Grant service must rotate its RSA key pair every 90 days under a new security policy, with no window in which token requests fail. The team plans to generate a new key pair on the integration key, deploy the new private key to the service in all three regions, confirm that tokens are being issued, and only then delete the old pair. A reviewer points out that the integration key already holds four RSA key pairs left over from earlier experiments and asks how many the key can hold. What is the documented maximum number of RSA key pairs per integration key?",
+    "options": [
+      {
+        "id": "A",
+        "text": "One"
+      },
+      {
+        "id": "B",
+        "text": "Two"
+      },
+      {
+        "id": "C",
+        "text": "Three"
+      },
+      {
+        "id": "D",
+        "text": "Ten"
+      },
+      {
+        "id": "E",
+        "text": "Five"
+      }
+    ],
+    "correct": "E",
+    "answerText": "Five",
+    "explanation": "An integration key can hold a maximum of 5 RSA key pairs; with four defined, one more can be added before the old pair is deleted.",
+    "whyNotOthers": "E is right: the documented limit is five, and when five exist one must be deleted before another is created. The trap is B: rotation is often pictured as one active plus one pending key, but Docusign allows up to five. A, C and D are not the documented limit.",
+    "optionExplanations": {
+      "A": "The key can hold more than one pair, which is what makes overlap during rotation possible.",
+      "B": "Two is a common mental model for rotation, but the limit is five.",
+      "C": "Three is not the documented limit.",
+      "D": "Ten exceeds the limit.",
+      "E": "Correct. Up to 5 RSA key pairs; delete one before creating a sixth."
+    },
+    "trapOption": "B",
+    "importance": "LOW",
+    "decode": {
+      "needs": "Know the RSA key pair limit on an integration key",
+      "clues": [
+        "'rotate with no failure window' -> add new pair before deleting old",
+        "'already holds four pairs' -> one more is still allowed",
+        "'three regions' -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "RSA key pairs per key",
+      "line": "An integration key holds up to five RSA key pairs, which allows overlap when rotating JWT signing keys."
+    }
+  },
+  {
+    "paper": "F",
+    "length": "long",
+    "style": "design",
+    "domain": "API Authentication",
+    "topic": "Flow selection: SPA front end with a server back end",
+    "stem": "Saltmarsh Credit's loan-officer workspace has a React front end, but every call to Docusign goes through the bank's own Node.js API layer in its data center, where credentials sit in a managed secrets vault; the browser only ever holds the bank's own session cookie. Each of 300 loan officers signs in with their own Docusign login so that disclosures go out under their name. A front-end developer argues that because the UI is a single-page app, the key should be registered as unable to keep a secret. Which flow should the bank use?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Confidential Authorization Code Grant, with the Node.js layer exchanging the code using the vaulted secret and holding tokens"
+      },
+      {
+        "id": "B",
+        "text": "Public Authorization Code Grant with PKCE, because the user interface is a React single-page application that runs in the browser"
+      },
+      {
+        "id": "C",
+        "text": "JWT Grant from the Node.js layer, impersonating each loan officer so that none of them ever sees a Docusign login page"
+      },
+      {
+        "id": "D",
+        "text": "Implicit Grant, letting the React front end read the access token from the redirect and pass it on to the Node.js layer"
+      },
+      {
+        "id": "E",
+        "text": "Public Authorization Code Grant without PKCE, because the Node.js layer already protects the token exchange from interception"
+      }
+    ],
+    "correct": "A",
+    "answerText": "Confidential Authorization Code Grant, with the Node.js layer exchanging the code using the vaulted secret and holding tokens",
+    "explanation": "The token exchange happens in a server layer that can protect a secret, and each officer signs in personally, so Confidential Authorization Code Grant is the recommended flow.",
+    "whyNotOthers": "A is right because 'every call goes through the Node.js layer' with a vault means the app can keep a secret. The trap is B: Public is for apps with no secure place for a secret, and here the React UI never touches Docusign tokens. C removes the personal sign-in the bank wants, D is the legacy Implicit Grant, and E is wrong because Public Auth Code always uses PKCE.",
+    "optionExplanations": {
+      "A": "Correct. Server-side code exchange with a vaulted secret and individual logins is Confidential Auth Code Grant.",
+      "B": "The React UI is a red herring; the server layer, not the browser, talks to Docusign and can store a secret.",
+      "C": "JWT impersonation is for service integrations, not for officers who sign in individually.",
+      "D": "Implicit Grant is legacy and exposes the token in the browser.",
+      "E": "Public Authorization Code Grant always uses PKCE; it is never 'without PKCE'."
+    },
+    "trapOption": "B",
+    "importance": "HIGH",
+    "decode": {
+      "needs": "Confidential Authorization Code Grant run by the server-side API layer",
+      "clues": [
+        "'every call goes through our Node.js layer, credentials in a vault' -> can keep a secret",
+        "'each officer signs in with their own Docusign login' -> user-present Auth Code flow",
+        "'React front end' -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "Where the token exchange runs",
+      "line": "If a server you control performs the token exchange and can protect a secret, use Confidential Auth Code even when the UI is an SPA."
+    }
+  },
+  {
+    "paper": "F",
+    "length": "short",
+    "style": "fact",
+    "domain": "API Authentication",
+    "topic": "Consent step in JWT Grant",
+    "stem": "In JWT Grant, a user opens the consent URL, signs in and clicks Allow Access, and the browser is redirected with a code parameter. What should the integration do with that code?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Exchange it at /oauth/token within 120 seconds to obtain the first access token"
+      },
+      {
+        "id": "B",
+        "text": "Put it in the JWT payload as proof that the user granted consent"
+      },
+      {
+        "id": "C",
+        "text": "Nothing; the redirect parameters are not used in JWT Grant, so the service now builds and signs its JWT"
+      },
+      {
+        "id": "D",
+        "text": "Store it as the refresh token that renews JWT access tokens each hour"
+      },
+      {
+        "id": "E",
+        "text": "Send it as the assertion parameter together with the jwt-bearer grant_type"
+      }
+    ],
+    "correct": "C",
+    "answerText": "Nothing; the redirect parameters are not used in JWT Grant, so the service now builds and signs its JWT",
+    "explanation": "In the JWT flow the consent redirect only records consent; the returned parameters such as code are not used. The service then builds a JWT and exchanges it.",
+    "whyNotOthers": "C is right because the documentation states the returned parameters are not used in the JWT flow. The trap is A: exchanging a code within 120 seconds is Authorization Code Grant. B, D and E misplace the code: the JWT payload has no consent claim, JWT issues no refresh token, and the assertion is the signed JWT itself.",
+    "optionExplanations": {
+      "A": "That is the Authorization Code Grant step; in JWT the code is ignored.",
+      "B": "The JWT payload holds iss, sub, aud, iat, exp and scope, not a consent code.",
+      "C": "Correct. Consent is recorded by Docusign; the integration ignores the code and moves on to the JWT.",
+      "D": "JWT Grant never issues a refresh token.",
+      "E": "The assertion is the signed JWT, not the code."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "concept": {
+      "title": "Consent redirect in JWT",
+      "line": "In JWT Grant the consent redirect only records consent; its code is not used. Tokens come from posting a signed JWT."
+    }
+  },
+  {
+    "paper": "F",
+    "length": "long",
+    "style": "design",
+    "domain": "API Authentication",
+    "topic": "JWT Grant sequence",
+    "stem": "Glenmoor Utilities is writing the runbook for a new unattended meter-dispute service that sends notices as the Docusign user disputes-desk through the eSignature REST API. The RSA private key is mounted into the service's container from a secrets store, and the account's base URI differs between the developer and production environments. A consultant drafted several sequences, and the on-call team wants the one that is correct from first setup through ongoing operation. The service also posts a daily summary to the team's chat channel. Which sequence should go in the runbook?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Build and sign a JWT; post it to /oauth/token; have disputes-desk consent once; call /oauth/userinfo; call the API; build a new JWT on expiry"
+      },
+      {
+        "id": "B",
+        "text": "Have disputes-desk consent once; build and sign a JWT; post it to /oauth/token; call /oauth/userinfo; call the API; use the refresh token on expiry"
+      },
+      {
+        "id": "C",
+        "text": "Have disputes-desk consent once; request an authorization code; post the code with the JWT to /oauth/token; call /oauth/userinfo; call the API"
+      },
+      {
+        "id": "D",
+        "text": "Have disputes-desk consent once; build and sign a JWT; post it to /oauth/token; call /oauth/userinfo; call the API; build a new JWT on expiry"
+      },
+      {
+        "id": "E",
+        "text": "Build a JWT signed with the secret key; post it to /oauth/token; call /oauth/userinfo; call the API; have disputes-desk consent again each hour"
+      }
+    ],
+    "correct": "D",
+    "answerText": "Have disputes-desk consent once; build and sign a JWT; post it to /oauth/token; call /oauth/userinfo; call the API; build a new JWT on expiry",
+    "explanation": "JWT Grant starts with one-time consent, then the service signs a JWT with the RSA private key, exchanges it at /oauth/token, reads account_id and base_uri from /oauth/userinfo, and builds a new JWT when the one-hour token expires.",
+    "whyNotOthers": "D is right because it orders consent, JWT, token, userinfo, API and renews by building a new JWT. The trap is B: its steps match D until renewal, but JWT Grant issues no refresh token, so ongoing operation needs a new JWT. A requests a token before consent, which fails with consent_required. C mixes in an authorization code exchange, and E signs with the secret and repeats consent needlessly.",
+    "optionExplanations": {
+      "A": "Consent must come before the first token request; without it /oauth/token returns consent_required, so the order is wrong even though the renewal step is right.",
+      "B": "Every step is right except renewal: JWT Grant issues no refresh token, so the service must build and sign a new JWT when the one-hour token expires.",
+      "C": "JWT Grant does not exchange an authorization code; the token request carries only the signed assertion.",
+      "D": "Correct. Consent once, sign JWT, exchange, userinfo, call the API, and build a new JWT when the token expires.",
+      "E": "The JWT is signed with the RSA private key, and consent is a one-time step, not hourly."
+    },
+    "trapOption": "B",
+    "importance": "HIGH",
+    "decode": {
+      "needs": "Order the JWT Grant steps and renew without a refresh token",
+      "clues": [
+        "'unattended service sends as disputes-desk' -> JWT Grant",
+        "'base URI differs between environments' -> must call /oauth/userinfo",
+        "'from first setup through ongoing operation' -> order of consent and how renewal works (new JWT, no refresh token)",
+        "'daily summary to chat' -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "JWT Grant step order",
+      "line": "Consent once, sign JWT with RSA private key, POST /oauth/token, GET /oauth/userinfo, call API; on expiry build a new JWT."
+    }
+  },
+  {
+    "paper": "F",
+    "length": "short",
+    "style": "fact",
+    "domain": "API Authentication",
+    "topic": "Confidential Auth Code drawbacks",
+    "stem": "Which two are documented disadvantages of Confidential Authorization Code Grant compared with the other Docusign grant types? (Select two)",
+    "options": [
+      {
+        "id": "A",
+        "text": "It issues no refresh token, so users must sign in again whenever the access token expires"
+      },
+      {
+        "id": "B",
+        "text": "Its access token lasts only one hour, so users must sign in several times a day"
+      },
+      {
+        "id": "C",
+        "text": "The user must be present to authenticate, so autonomous applications cannot use it"
+      },
+      {
+        "id": "D",
+        "text": "It cannot be combined with a PKCE code challenge for added protection"
+      },
+      {
+        "id": "E",
+        "text": "The app must be able to keep a client secret secure, typically on a web server"
+      }
+    ],
+    "correct": "C,E",
+    "correctAnswers": [
+      "C",
+      "E"
+    ],
+    "answerText": "The user must be present to authenticate, so autonomous applications cannot use it; The app must be able to keep a client secret secure, typically on a web server",
+    "explanation": "The documented disadvantages are that the user must be present (no autonomous use) and that the app must be able to secure a client secret.",
+    "whyNotOthers": "C and E are right. The trap is B: one-hour tokens belong to JWT Grant; Confidential Auth Code access tokens last 8 hours. A is wrong because Confidential returns a refresh token (up to 30 days), and D is wrong because PKCE is an optional extra for Confidential.",
+    "optionExplanations": {
+      "A": "Confidential Auth Code Grant does return a refresh token.",
+      "B": "Its access token lasts 8 hours by default; one hour is the JWT token.",
+      "C": "Correct. A user must be present, so it cannot serve autonomous applications.",
+      "D": "PKCE can optionally be added to Confidential Auth Code Grant.",
+      "E": "Correct. Unlike Public Auth Code Grant, it requires a secured client secret."
+    },
+    "trapOption": "B",
+    "importance": "MEDIUM",
+    "concept": {
+      "title": "Confidential Auth Code drawbacks",
+      "line": "Confidential Auth Code needs a present user and a securely stored secret; it gives 8-hour tokens and refresh tokens."
+    }
+  },
+  {
+    "paper": "F",
+    "length": "long",
+    "style": "design",
+    "domain": "API Authentication",
+    "topic": "Least-privilege scopes for Click",
+    "stem": "Brightwater Telecom's online sign-up flow shows each new customer a clickwrap agreement that the legal team designs and maintains in the Docusign web app. The integration only needs to present that existing clickwrap to new customers and check whether a customer has already agreed. It runs as an unattended service using JWT Grant, it also sends contracts through the eSignature REST API, and the CISO requires least privilege. Marketing wants the clickwrap restyled next quarter, which legal will do in the web app. Which scope list should the one-time consent request?",
+    "options": [
+      {
+        "id": "A",
+        "text": "signature click.manage impersonation"
+      },
+      {
+        "id": "B",
+        "text": "signature click.send impersonation"
+      },
+      {
+        "id": "C",
+        "text": "signature click.manage click.send extended"
+      },
+      {
+        "id": "D",
+        "text": "signature click.send"
+      },
+      {
+        "id": "E",
+        "text": "signature click.send extended impersonation"
+      }
+    ],
+    "correct": "B",
+    "answerText": "signature click.send impersonation",
+    "explanation": "click.send is the Click API scope required to send a clickwrap or check for a previously sent one; signature covers the eSignature calls and impersonation is needed for JWT consent.",
+    "whyNotOthers": "B is right because the service only sends and checks clickwraps, so click.send meets least privilege. The trap is A: click.manage enables all elastic template operations, including creating and updating them, which legal does in the web app. C and E add extended, which is an Authorization Code scope, and D omits impersonation, which JWT consent requires.",
+    "optionExplanations": {
+      "A": "click.manage grants create and update rights the service does not need, so it breaks least privilege.",
+      "B": "Correct. signature for eSignature, click.send for presenting and checking clickwraps, impersonation for JWT consent.",
+      "C": "Includes unneeded click.manage and the Authorization Code-only extended scope, and lacks impersonation.",
+      "D": "Without impersonation the consent does not allow JWT Grant to act as the user.",
+      "E": "extended has no role in JWT Grant; it adds nothing and should not be requested."
+    },
+    "trapOption": "A",
+    "importance": "LOW",
+    "decode": {
+      "needs": "Consent scopes: signature click.send impersonation",
+      "clues": [
+        "'present existing clickwrap and check whether already agreed' -> click.send only",
+        "'legal designs it in the web app' -> no click.manage needed",
+        "'unattended service using JWT' -> impersonation in consent, no extended",
+        "'restyled next quarter' -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "Least privilege across APIs",
+      "line": "Request only the scopes the calls need: click.send to send or check clickwraps, click.manage only to build or edit them."
+    }
+  },
+  {
+    "paper": "F",
+    "length": "long",
+    "style": "design",
+    "domain": "API Authentication",
+    "topic": "Token storage",
+    "stem": "Ashgrove Property Management's lease portal runs on a cluster of company web servers behind a load balancer and uses Confidential Authorization Code Grant so that each leasing agent sends from their own Docusign account. A penetration tester objected that the current build returns the access token and refresh token to the browser, which saves them in localStorage and attaches the access token to every AJAX call back to the portal. The portal also writes a nightly CSV export of lease statuses for finance. Where should the tokens be kept?",
+    "options": [
+      {
+        "id": "A",
+        "text": "In localStorage, but encrypted with a key that is embedded in the portal's JavaScript bundle"
+      },
+      {
+        "id": "B",
+        "text": "In a browser cookie readable by JavaScript, so that any server node can read it from each request"
+      },
+      {
+        "id": "C",
+        "text": "In sessionStorage, so the tokens are discarded automatically as soon as the agent closes the browser tab"
+      },
+      {
+        "id": "D",
+        "text": "In IndexedDB, wrapped with the Web Crypto API so that page scripts cannot read the raw token value"
+      },
+      {
+        "id": "E",
+        "text": "On the server, bound to the agent's session in a store shared by every node behind the load balancer"
+      }
+    ],
+    "correct": "E",
+    "answerText": "On the server, bound to the agent's session in a store shared by every node behind the load balancer",
+    "explanation": "In Confidential Authorization Code Grant the tokens are kept on the server; binding them to a server-side session store shared by all nodes keeps them out of the browser and works behind a load balancer.",
+    "whyNotOthers": "E is right because the Confidential flow exists so that secrets and tokens stay on a secure server. The trap is C: sessionStorage shortens exposure but still leaves both tokens readable by browser scripts. A, B and D all keep the tokens in the browser, where an XSS flaw or the embedded key exposes them.",
+    "optionExplanations": {
+      "A": "A key embedded in the JavaScript bundle is visible to anyone, so the encryption protects nothing.",
+      "B": "A JavaScript-readable cookie still exposes the tokens to browser scripts.",
+      "C": "sessionStorage is still browser storage readable by scripts on the page.",
+      "D": "The tokens still live in the browser and the refresh token remains at risk.",
+      "E": "Correct. Server-side storage bound to the user's session, shared across the load-balanced nodes."
+    },
+    "trapOption": "C",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "Store Confidential Auth Code tokens on the server, tied to the session",
+      "clues": [
+        "'returns tokens to the browser, localStorage' -> the flaw to fix",
+        "'cluster behind a load balancer' -> the session store must be shared",
+        "'nightly CSV export' -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "Keep tokens server-side",
+      "line": "Confidential Auth Code apps store access and refresh tokens on the server, bound to the user's session, never in browser storage."
+    }
+  },
+  {
+    "paper": "F",
+    "length": "short",
+    "style": "fact",
+    "domain": "API Authentication",
+    "topic": "Authorization redirect contents",
+    "stem": "In Confidential Authorization Code Grant, after the user signs in and allows access, what does Docusign add to the redirect URI?",
+    "options": [
+      {
+        "id": "A",
+        "text": "An access_token value in the URL fragment, ready to use as a bearer token"
+      },
+      {
+        "id": "B",
+        "text": "A code query parameter, plus the state value if the app sent one"
+      },
+      {
+        "id": "C",
+        "text": "An id_token query parameter that carries the account_id and base_uri"
+      },
+      {
+        "id": "D",
+        "text": "A refresh_token query parameter that the app exchanges for an access token"
+      },
+      {
+        "id": "E",
+        "text": "An assertion parameter that the app signs and returns to /oauth/token"
+      }
+    ],
+    "correct": "B",
+    "answerText": "A code query parameter, plus the state value if the app sent one",
+    "explanation": "Docusign redirects to the redirect_uri with a code query string parameter (and echoes state), which the app then exchanges at /oauth/token.",
+    "whyNotOthers": "B is right because Authorization Code Grant returns a short-lived code, not a token. The trap is A: returning the access token directly in the redirect is Implicit Grant (response_type=token). C, D and E describe values that are not returned on this redirect: account_id and base_uri come from /oauth/userinfo, refresh tokens come from /oauth/token, and assertions belong to JWT Grant.",
+    "optionExplanations": {
+      "A": "That is Implicit Grant behaviour.",
+      "B": "Correct. The redirect carries the authorization code (and the state value).",
+      "C": "account_id and base_uri come from /oauth/userinfo, not the redirect.",
+      "D": "Refresh tokens are returned by /oauth/token, never on the redirect.",
+      "E": "An assertion is the signed JWT in JWT Grant."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "concept": {
+      "title": "What the redirect returns",
+      "line": "Auth Code Grant redirects with a code (and state); Implicit Grant returns the access token directly."
+    }
+  },
+  {
+    "paper": "F",
+    "length": "long",
+    "style": "design",
+    "domain": "API Authentication",
+    "topic": "JWT with admin consent for many users",
+    "stem": "Rowan & Sable, a national accountancy, wants its practice-management system to send engagement letters from each partner's own Docusign account so that every letter sits in that partner's Sent folder. All 900 partners are on the firm's claimed domain, the firm has Access Management, and the managing partner has ruled that partners must never be shown a Docusign login or consent page, not even once. The system is hosted on the firm's servers and can protect an RSA private key. Partners also work heavily in Microsoft Teams. What should the integration do?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Use Confidential Authorization Code Grant with the extended scope, so each partner signs in once and the refresh token keeps rolling"
+      },
+      {
+        "id": "B",
+        "text": "Use JWT Grant impersonating one firm-wide sender, and put each partner's name in the email subject so the letter appears to come from them"
+      },
+      {
+        "id": "C",
+        "text": "Use Public Authorization Code Grant with PKCE inside a Teams tab, so partners authenticate with their existing Microsoft session"
+      },
+      {
+        "id": "D",
+        "text": "Have an organization administrator grant admin consent, then use JWT Grant with each partner's user ID as sub, looked up by email"
+      },
+      {
+        "id": "E",
+        "text": "Use JWT Grant impersonating each partner, sending every partner the individual consent URL once during their onboarding"
+      }
+    ],
+    "correct": "D",
+    "answerText": "Have an organization administrator grant admin consent, then use JWT Grant with each partner's user ID as sub, looked up by email",
+    "explanation": "Admin consent for an internal app covers every partner in the claimed domain without anyone seeing a consent page, and JWT Grant with each partner's user ID as sub sends from that partner's account.",
+    "whyNotOthers": "D is right because 'never shown a login or consent page, not even once' rules out every flow that needs the partner in a browser. The trap is E: JWT impersonation is right, but individual consent shows each partner a consent page once. A and C need partners to sign in, and B sends from one shared account, so letters would not sit in each partner's Sent folder.",
+    "optionExplanations": {
+      "A": "Each partner would still have to sign in at least once.",
+      "B": "Letters would sit in the shared sender's folder, not each partner's.",
+      "C": "Partners would still go through a Docusign sign-in; Teams is a red herring.",
+      "D": "Correct. Admin consent covers the claimed domain, and JWT with each partner's user ID impersonates them with no page shown.",
+      "E": "Individual consent shows each partner a consent page, which the managing partner forbade."
+    },
+    "trapOption": "E",
+    "importance": "HIGH",
+    "decode": {
+      "needs": "Admin consent for the claimed domain, then JWT Grant impersonating each partner",
+      "clues": [
+        "'from each partner's own account, own Sent folder' -> impersonate each user, sub = their user ID",
+        "'never shown a login or consent page, not even once' -> admin consent, not individual",
+        "'claimed domain, Access Management' -> admin consent is available",
+        "'Microsoft Teams' -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "Admin consent plus per-user JWT",
+      "line": "To act as many domain users with no prompts, combine admin consent with JWT Grant using each user's ID as sub."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "long",
+    "style": "design",
+    "domain": "API Authentication",
+    "topic": "When not to use JWT",
+    "stem": "At Bellweather Pharmacy, a two-person team is building an internal web tool, hosted on company servers, that lets regional managers send store-lease renewals. Each manager signs in to the tool personally, nothing runs on a schedule, and the tool never needs to act for a manager who is away. One developer proposes JWT Grant because it 'avoids login screens and refresh tokens', citing a sample found online. The security architect pushes back and asks the team to follow the published guidance for choosing a flow. Which response reflects Docusign's guidance?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Accept JWT, because it is the most secure flow and is recommended whenever a server can protect a private key"
+      },
+      {
+        "id": "B",
+        "text": "Accept JWT, but request the extended scope in the JWT so that its access tokens last longer than one hour"
+      },
+      {
+        "id": "C",
+        "text": "Reject JWT and use Public Authorization Code Grant, because a server-hosted tool should not hold any secret"
+      },
+      {
+        "id": "D",
+        "text": "Reject JWT and use Implicit Grant, which also avoids refresh tokens but keeps the managers' login screen"
+      },
+      {
+        "id": "E",
+        "text": "Reject JWT and use Confidential Authorization Code Grant, as JWT's power to impersonate users is not needed"
+      }
+    ],
+    "correct": "E",
+    "answerText": "Reject JWT and use Confidential Authorization Code Grant, as JWT's power to impersonate users is not needed",
+    "explanation": "Docusign notes that JWT impersonation involves a high degree of granted trust and says that if an integration does not need impersonation or automated operations, it should use an Authorization Code Grant; a server-hosted tool with signed-in users fits Confidential.",
+    "whyNotOthers": "E is right because users are present and nothing is automated. The trap is A: JWT's RSA key is secure, but the documentation names the Authorization Code flows as the most secure options and warns about JWT's high trust. B misuses extended, C is wrong because a server can and should keep the secret, and D picks the legacy Implicit Grant.",
+    "optionExplanations": {
+      "A": "Docusign calls the Auth Code flows the most secure; JWT is for service integrations that need impersonation.",
+      "B": "extended applies only to Authorization Code refresh tokens, not JWT.",
+      "C": "Public Auth Code is for apps that cannot store a secret; this server can.",
+      "D": "Implicit Grant is legacy and not recommended.",
+      "E": "Correct. No impersonation or automation is needed, so Confidential Auth Code avoids granting JWT-level trust."
+    },
+    "trapOption": "A",
+    "importance": "HIGH",
+    "decode": {
+      "needs": "Confidential Authorization Code Grant, because no impersonation is needed",
+      "clues": [
+        "'each manager signs in personally, nothing on a schedule' -> user-present flow",
+        "'never acts for a manager who is away' -> no impersonation",
+        "'hosted on company servers' -> can keep a secret: Confidential",
+        "'sample found online' -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "JWT is high trust",
+      "line": "Use JWT only when impersonation or automation is needed; for signed-in users on a server, use Confidential Auth Code."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "long",
+    "style": "design",
+    "domain": "API Authentication",
+    "topic": "Single system sender",
+    "stem": "Marlow Mutual's call-center CRM, hosted in the company's private cloud, lets 600 agents trigger policy-cancellation notices. Compliance requires every notice to be sent from one approved Docusign user, Notices Desk, and the agents have no Docusign licences. The owner of the Notices Desk mailbox will sign in once during setup and never again, and some lines of business go a full quarter without a single cancellation. The CRM is written in .NET and logs every agent action to a SIEM. Which approach fits?",
+    "options": [
+      {
+        "id": "A",
+        "text": "JWT Grant impersonating Notices Desk after its one-time consent, signing a new JWT whenever a fresh token is needed"
+      },
+      {
+        "id": "B",
+        "text": "Confidential Authorization Code Grant with extended, with Notices Desk signing in once and the CRM refreshing before each send"
+      },
+      {
+        "id": "C",
+        "text": "Confidential Authorization Code Grant, with each agent signing in using Notices Desk's credentials kept in the CRM vault"
+      },
+      {
+        "id": "D",
+        "text": "Public Authorization Code Grant with PKCE, with Notices Desk signing in once from a browser on the CRM server"
+      },
+      {
+        "id": "E",
+        "text": "JWT Grant impersonating each of the 600 agents after admin consent, so every notice shows the agent as sender"
+      }
+    ],
+    "correct": "A",
+    "answerText": "JWT Grant impersonating Notices Desk after its one-time consent, signing a new JWT whenever a fresh token is needed",
+    "explanation": "A single system user acting for everyone, with no one signing in after setup, is the JWT Grant pattern; after one consent the CRM can sign a new JWT at any time, however long the gap between sends.",
+    "whyNotOthers": "A is right because a quarter-long gap rules out any refresh-token chain. The trap is B: extended makes the refresh token last 30 days from the last refresh, so a 90-day gap lets it expire and forces a new sign-in. C shares one user's credentials among 600 people, D has a 24-hour refresh token and needs a browser, and E impersonates agents who have no Docusign accounts.",
+    "optionExplanations": {
+      "A": "Correct. One consent, then a new signed JWT whenever a one-hour token is needed.",
+      "B": "With extended the refresh token still expires 30 days after the last refresh, and a quarter passes with no sends.",
+      "C": "Sharing one user's credentials across agents is not an OAuth design and still needs interactive sign-in.",
+      "D": "Public refresh tokens last up to 24 hours, so this fails after a day without sends.",
+      "E": "The agents have no Docusign licences, so they cannot be impersonated, and compliance wants one sender."
+    },
+    "trapOption": "B",
+    "importance": "HIGH",
+    "decode": {
+      "needs": "JWT Grant impersonating the single approved sender",
+      "clues": [
+        "'every notice from one approved user' -> single system account: JWT",
+        "'sign in once and never again' and 'a full quarter without a cancellation' -> no refresh-token chain can survive",
+        "'agents have no Docusign licences' -> cannot impersonate agents",
+        "'.NET, SIEM' -> red herrings"
+      ]
+    },
+    "concept": {
+      "title": "Single system user means JWT",
+      "line": "When all sends come from one system user and no one signs in after setup, use JWT Grant; refresh chains break after long idle gaps."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "short",
+    "style": "fact",
+    "domain": "API Authentication",
+    "topic": "JWT token request body",
+    "stem": "In JWT Grant, which body parameter of the /oauth/token request carries the signed JWT?",
+    "options": [
+      {
+        "id": "A",
+        "text": "code"
+      },
+      {
+        "id": "B",
+        "text": "client_assertion"
+      },
+      {
+        "id": "C",
+        "text": "assertion"
+      },
+      {
+        "id": "D",
+        "text": "id_token"
+      },
+      {
+        "id": "E",
+        "text": "jwt"
+      }
+    ],
+    "correct": "C",
+    "answerText": "assertion",
+    "explanation": "The request body is grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer and assertion=<signed JWT>.",
+    "whyNotOthers": "C is right: Docusign's token request names the field assertion. The trap is B: client_assertion is used by some other OAuth providers, but Docusign uses assertion. A belongs to Authorization Code Grant, D is the OpenID token returned for admin consent, and E is not a parameter.",
+    "optionExplanations": {
+      "A": "code is the authorization code in Authorization Code Grant.",
+      "B": "Docusign does not use client_assertion; the field is assertion.",
+      "C": "Correct. assertion holds the signed JWT, alongside grant_type jwt-bearer.",
+      "D": "id_token is returned when openid is requested; it is never sent to obtain a token.",
+      "E": "There is no jwt parameter."
+    },
+    "trapOption": "B",
+    "importance": "LOW",
+    "concept": {
+      "title": "JWT token request fields",
+      "line": "JWT Grant posts grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer and assertion=<signed JWT> to /oauth/token."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "long",
+    "style": "design",
+    "domain": "API Authentication",
+    "topic": "Redirect URI mismatch",
+    "stem": "Kittering Logistics' carrier-onboarding portal uses Confidential Authorization Code Grant and works in its test environment. The team stood up a new staging site and now sends users to /oauth/auth with redirect_uri=https://staging.kittering.com/auth/callback/ but Docusign returns an invalid redirect URI error instead of completing the sign-in. The integration key lists https://staging.kittering.com/auth/callback as a redirect URI. The staging site runs on a new Kubernetes cluster with a freshly issued TLS certificate, and the test environment still works normally. What should the team do?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Add the staging domain to the CORS allowed origins on the integration key so that Docusign accepts the redirect"
+      },
+      {
+        "id": "B",
+        "text": "Make the redirect_uri match a registered URI exactly, trailing slash included, or register the slash form"
+      },
+      {
+        "id": "C",
+        "text": "URL-encode the redirect_uri a second time, because a single encoding leaves the slashes ambiguous to Docusign"
+      },
+      {
+        "id": "D",
+        "text": "Move the redirect_uri from the /oauth/auth request to the /oauth/token request, where Docusign validates it"
+      },
+      {
+        "id": "E",
+        "text": "Register only https://staging.kittering.com on the key, because Docusign matches redirect URIs by prefix"
+      }
+    ],
+    "correct": "B",
+    "answerText": "Make the redirect_uri match a registered URI exactly, trailing slash included, or register the slash form",
+    "explanation": "The redirect URI in the request must match one registered on the integration key exactly, including slash characters; the request has a trailing slash that the registered value lacks.",
+    "whyNotOthers": "B is right because Docusign requires an exact string match. The trap is E: registering only the domain fails because matching is exact, not by prefix. A confuses redirect URIs with CORS origins, C breaks the value, and D is wrong because the redirect URI is used on the /oauth/auth request.",
+    "optionExplanations": {
+      "A": "CORS origins control browser API calls; they do not register redirect URIs.",
+      "B": "Correct. Redirect URIs must match exactly, including a trailing slash.",
+      "C": "Double encoding produces a different string that still will not match.",
+      "D": "Docusign needs the redirect URI on the authorization request to know where to send the code.",
+      "E": "Matching is exact, not prefix-based, so a bare domain does not cover the callback path."
+    },
+    "trapOption": "E",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "Fix an exact-match failure of the registered redirect URI",
+      "clues": [
+        "'callback/' versus registered 'callback' -> trailing slash mismatch",
+        "'invalid redirect URI error' -> registration does not match exactly",
+        "'new Kubernetes cluster, fresh TLS certificate' -> red herrings"
+      ]
+    },
+    "concept": {
+      "title": "Redirect URIs match exactly",
+      "line": "The redirect_uri sent to /oauth/auth must exactly match a URI registered on the integration key, including slashes."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "short",
+    "style": "fact",
+    "domain": "API Authentication",
+    "topic": "Token response lifetime field",
+    "stem": "Which field of the /oauth/token response tells an integration how long the new access token will remain valid?",
+    "options": [
+      {
+        "id": "A",
+        "text": "exp, as a Unix epoch timestamp"
+      },
+      {
+        "id": "B",
+        "text": "expires_at, as an ISO 8601 date"
+      },
+      {
+        "id": "C",
+        "text": "token_lifetime, in hours"
+      },
+      {
+        "id": "D",
+        "text": "expires_in, in seconds"
+      },
+      {
+        "id": "E",
+        "text": "expires_in, in minutes"
+      }
+    ],
+    "correct": "D",
+    "answerText": "expires_in, in seconds",
+    "explanation": "The token response includes expires_in, the number of seconds before the access token expires.",
+    "whyNotOthers": "D is right: expires_in is given in seconds. The trap is E: the field name is right but the unit is wrong. A is a claim inside the JWT you build, not the token response, and B and C are not fields of the response.",
+    "optionExplanations": {
+      "A": "exp is a claim in the JWT assertion, not a token response field.",
+      "B": "There is no expires_at field.",
+      "C": "There is no token_lifetime field.",
+      "D": "Correct. expires_in is the number of seconds until the access token expires.",
+      "E": "expires_in is expressed in seconds, not minutes."
+    },
+    "trapOption": "E",
+    "importance": "LOW",
+    "concept": {
+      "title": "Reading the token response",
+      "line": "The /oauth/token response returns access_token, token_type Bearer, expires_in (seconds), scope and, for Auth Code, refresh_token."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "long",
+    "style": "design",
+    "domain": "API Authentication",
+    "topic": "Adding a scope after consent",
+    "stem": "Ostrava Shipping's JWT Grant service has sent charter agreements for a year as the user charters-bot, which consented once with scope=signature impersonation. The analytics team now wants the same service to pull AI-extracted agreement data through the Navigator API, so a developer added adm_store_unified_repo_read to the scope claim of the JWT. Token requests now fail with consent_required, although the eSignature calls worked yesterday and the RSA key has not changed. The service runs on a managed container platform. What is the fix?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Remove impersonation from charters-bot's original consent, because it conflicts with the Navigator scopes"
+      },
+      {
+        "id": "B",
+        "text": "Keep the JWT scope as signature only, because scopes beyond signature are ignored once consent has been granted for a user"
+      },
+      {
+        "id": "C",
+        "text": "Get charters-bot's consent again for signature impersonation adm_store_unified_repo_read and keep the scope in the JWT"
+      },
+      {
+        "id": "D",
+        "text": "Generate a new RSA key pair, because adding a scope invalidates every assertion signed with the old private key"
+      },
+      {
+        "id": "E",
+        "text": "Send adm_store_unified_repo_read as a body parameter of the token request instead of in the JWT scope claim"
+      }
+    ],
+    "correct": "C",
+    "answerText": "Get charters-bot's consent again for signature impersonation adm_store_unified_repo_read and keep the scope in the JWT",
+    "explanation": "consent_required means the user has not consented to the app or to a scope it now requests. Consent must be granted again with the new scope included before the JWT can ask for it.",
+    "whyNotOthers": "C is right because the existing consent covered only signature and impersonation. The trap is B: dropping the scope makes tokens issue again, but the Navigator calls would then lack the scope they need. A breaks JWT consent, D is unrelated to scopes, and E puts the scope in the wrong place.",
+    "optionExplanations": {
+      "A": "impersonation is required for JWT consent; removing it would break the service.",
+      "B": "Tokens would issue, but without adm_store_unified_repo_read the Navigator calls are not permitted.",
+      "C": "Correct. Re-consent with the added scope, then the JWT may request it.",
+      "D": "Scopes are not tied to the RSA key; the key is still valid.",
+      "E": "Scopes for JWT Grant are requested in the JWT's scope claim."
+    },
+    "trapOption": "B",
+    "importance": "HIGH",
+    "decode": {
+      "needs": "Collect consent again including the Navigator scope",
+      "clues": [
+        "'consented once with signature impersonation' -> new scope not covered",
+        "'added a scope, now consent_required' -> consent missing for the requested scope",
+        "'RSA key has not changed' and 'managed container platform' -> red herrings"
+      ]
+    },
+    "concept": {
+      "title": "New scope needs new consent",
+      "line": "A token can only carry scopes the user has consented to; adding an API scope later means collecting consent again."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "long",
+    "style": "design",
+    "domain": "API Authentication",
+    "topic": "Individual consent in Auth Code Grant",
+    "stem": "Pemberton Schools is launching a contracts portal, hosted on its own servers, for 40 head teachers, using Confidential Authorization Code Grant with the signature scope. The project manager has scheduled a separate sprint to build a consent page that each head teacher must visit before first using the portal, and asks the developer to confirm the plan. The schools' Docusign organization does not have Access Management, and the portal was styled with Bootstrap. What should the developer tell the project manager?",
+    "options": [
+      {
+        "id": "A",
+        "text": "No separate page is needed: the first sign-in through /oauth/auth shows each teacher the consent screen for the scopes requested"
+      },
+      {
+        "id": "B",
+        "text": "The sprint is needed, because individual consent must be collected through a URL with the impersonation scope before Auth Code works"
+      },
+      {
+        "id": "C",
+        "text": "The sprint can be dropped, because an organization administrator can grant consent for all teachers in Docusign Admin"
+      },
+      {
+        "id": "D",
+        "text": "The sprint is needed, because each teacher's consent must be requested by email through the Docusign account administrator"
+      },
+      {
+        "id": "E",
+        "text": "The sprint can be dropped, because Confidential Authorization Code Grant never needs user consent when a secret key is used"
+      }
+    ],
+    "correct": "A",
+    "answerText": "No separate page is needed: the first sign-in through /oauth/auth shows each teacher the consent screen for the scopes requested",
+    "explanation": "In Authorization Code Grant, the user signs in at /oauth/auth and is shown a consent screen for the requested scopes if they have not consented before; allowing access is the individual consent.",
+    "whyNotOthers": "A is right because consent is built into the Auth Code sign-in. The trap is B: a separate consent URL with impersonation is the JWT Grant pattern. C is wrong because admin consent needs Access Management, which the schools lack; D invents an email process; and E is wrong because consent is still needed, it is simply collected during sign-in.",
+    "optionExplanations": {
+      "A": "Correct. Docusign shows the consent screen during sign-in if the user has not yet consented to the app and its scopes.",
+      "B": "Separate consent with impersonation is for JWT Grant, not Authorization Code Grant.",
+      "C": "Admin consent requires Access Management, which this organization does not have.",
+      "D": "There is no email-based consent process through the account administrator.",
+      "E": "Consent is still required; it is collected as part of the sign-in."
+    },
+    "trapOption": "B",
+    "importance": "HIGH",
+    "decode": {
+      "needs": "Individual consent happens during the Authorization Code sign-in",
+      "clues": [
+        "'Confidential Authorization Code Grant' -> users sign in at /oauth/auth and see the consent screen there",
+        "'no Access Management' -> admin consent is not available",
+        "'Bootstrap' -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "Consent inside Auth Code sign-in",
+      "line": "Auth Code Grant collects individual consent at sign-in; a separate consent URL with impersonation is needed only for JWT."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "short",
+    "style": "fact",
+    "domain": "API Authentication",
+    "topic": "Required authorization request parameters",
+    "stem": "A Confidential Authorization Code Grant app builds its /oauth/auth URL with response_type=code and scope. Which two other query parameters are required? (Select two)",
+    "options": [
+      {
+        "id": "A",
+        "text": "client_id"
+      },
+      {
+        "id": "B",
+        "text": "state"
+      },
+      {
+        "id": "C",
+        "text": "code_challenge"
+      },
+      {
+        "id": "D",
+        "text": "redirect_uri"
+      },
+      {
+        "id": "E",
+        "text": "login_hint"
+      }
+    ],
+    "correct": "A,D",
+    "correctAnswers": [
+      "A",
+      "D"
+    ],
+    "answerText": "client_id; redirect_uri",
+    "explanation": "The authorization request requires response_type, scope, client_id (the integration key) and redirect_uri.",
+    "whyNotOthers": "A and D are right. The trap is B: state is strongly recommended to prevent CSRF, but it is not one of the required parameters. C is required only for Public Auth Code Grant (optional with Confidential), and E is an optional convenience.",
+    "optionExplanations": {
+      "A": "Correct. client_id carries the integration key.",
+      "B": "Recommended against CSRF, but optional.",
+      "C": "Required for Public Auth Code Grant; optional PKCE for Confidential.",
+      "D": "Correct. redirect_uri must match a URI registered on the integration key.",
+      "E": "login_hint is optional."
+    },
+    "trapOption": "B",
+    "importance": "MEDIUM",
+    "concept": {
+      "title": "Authorization URL parameters",
+      "line": "/oauth/auth needs response_type, scope, client_id and redirect_uri; state is recommended, code_challenge required only for Public."
+    }
+  }
+]

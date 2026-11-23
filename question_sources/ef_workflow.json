@@ -1,0 +1,1385 @@
+[
+  {
+    "paper": "E",
+    "length": "long",
+    "style": "design",
+    "domain": "Workflow Builder and Workflow API",
+    "topic": "Branching on envelope status after signing",
+    "stem": "Harlow Mutual's renewals team is automating its home-policy renewal packet. A web form collects the policyholder's updated details, a fixed renewal agreement is prepared from a template, and it goes out for remote signature. Compliance wants the signed packet filed in the company's SharePoint library only when the policyholder actually finishes signing. If the envelope ends any other way, for example declined or voided, the assigned agent must be emailed a notice so they can call the customer. The team also plans to refresh the packet's logo next quarter. Which design should the process builder add after the signing step?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Add a Store Files step directly after signing and then a Send an Email step to the agent, so every instance archives the packet and also alerts the agent"
+      },
+      {
+        "id": "B",
+        "text": "Add a Multi Branch Rule step on the policyholder's state from the web form, with one path that archives to SharePoint and one path that emails the assigned agent"
+      },
+      {
+        "id": "C",
+        "text": "Add a Branching Rule step on envelope status equals completed, with a Store Files step to SharePoint on the true path and a Send an Email step on the false path"
+      },
+      {
+        "id": "D",
+        "text": "Add a Branching Rule step on envelope status equals completed, with a Store Files step on the true path and a Show a Confirmation Screen step on the false path"
+      },
+      {
+        "id": "E",
+        "text": "Add a Writeback step that records the envelope status in SharePoint, and have the agent check that library each morning for declined or voided packets"
+      }
+    ],
+    "correct": "C",
+    "answerText": "Add a Branching Rule step on envelope status equals completed, with a Store Files step to SharePoint on the true path and a Send an Email step on the false path",
+    "explanation": "Two outcomes hang on one condition ('only when the policyholder actually finishes signing', otherwise 'emailed a notice'), so a Branching Rule on envelope status = completed with Store Files on the true path and Send an Email on the false path fits, exactly as in the course's offer-letter example.",
+    "whyNotOthers": "C is right because the archive and the notice are mutually exclusive outcomes of the envelope status. The trap is D: the branch is right, but a Show a Confirmation Screen step displays a message to a participant in the session; it does not email the agent. A archives and alerts on every instance, B branches on the wrong variable, and E replaces the automatic notice with a manual check.",
+    "optionExplanations": {
+      "A": "Archives even unsigned packets and alerts the agent every time; there is no condition.",
+      "B": "Branches on the policyholder's state, which has nothing to do with whether the envelope was completed.",
+      "C": "Correct. A Branching Rule on envelope status = completed gives a true path (Store Files to SharePoint) and a false path (Send an Email to the agent).",
+      "D": "The false path shows an on-screen message to a participant; it does not email the agent, who is not in the session.",
+      "E": "A Writeback step updates a system of record; a daily manual check is not the required automatic notice."
+    },
+    "trapOption": "D",
+    "importance": "HIGH",
+    "decode": {
+      "needs": "Branching Rule on envelope status = completed; Store Files on true, Send an Email on false",
+      "clues": [
+        "only when the policyholder actually finishes signing -> condition on envelope status completed",
+        "declined or voided -> the false path",
+        "agent must be emailed a notice -> Send an Email step, not a confirmation screen",
+        "logo refresh next quarter -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "Branching Rule for two outcomes",
+      "line": "Use a Branching Rule on a step result (such as envelope status) when one condition decides between a true path and a false path."
+    }
+  },
+  {
+    "paper": "E",
+    "length": "long",
+    "style": "design",
+    "domain": "Workflow Builder and Workflow API",
+    "topic": "Starting Maestro from a CLM workflow",
+    "stem": "Valemont Logistics' legal operations team already runs its supplier contract process in Docusign CLM, including CLM's WhatsApp and SMS delivery options, which many of its regional haulage partners prefer over email. The team now wants a Workflow Builder workflow (web form intake, identity check, then signature) to run as part of that same automated CLM process, so the haulage partners get the CLM delivery options and the Maestro steps in a single flow. The team has no developers available this quarter, and the partner portal is being redesigned. How should the Maestro workflow be started?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Trigger the Maestro workflow from within the CLM workflow, which is meant for starts inside Docusign and keeps CLM delivery options such as WhatsApp and SMS in one process"
+      },
+      {
+        "id": "B",
+        "text": "Set the start method to From a Link and have CLM text the copied workflow URL to each partner, so that partners start their own instance from their phone whenever they choose"
+      },
+      {
+        "id": "C",
+        "text": "Set the start method to From an API call and have CLM post to the trigger URL with trigger_inputs, so that each supplier record starts an instance with that partner's details"
+      },
+      {
+        "id": "D",
+        "text": "Set the start method to Manually in Docusign so a legal ops user with Workflows: Prepare runs each instance from Run Workflow after the CLM step for that partner finishes"
+      },
+      {
+        "id": "E",
+        "text": "Rebuild the intake, identity check and signing as CLM steps and retire the Maestro workflow, because Maestro steps cannot run inside the same automated CLM process"
+      }
+    ],
+    "correct": "A",
+    "answerText": "Trigger the Maestro workflow from within the CLM workflow, which is meant for starts inside Docusign and keeps CLM delivery options such as WhatsApp and SMS in one process",
+    "explanation": "Docusign lets a Maestro workflow be triggered from within a CLM workflow, which is meant for starts inside Docusign and lets you use CLM options such as WhatsApp or SMS delivery alongside Maestro 'in a single automated process'.",
+    "whyNotOthers": "A is right because the stem asks for the Maestro steps inside 'that same automated CLM process' with CLM's delivery options and no developers. The trap is B: a link can start the workflow, but each partner would start a separate, self-service instance outside the CLM process. C needs developer work and an API design, D adds a manual step per partner, and E is false because the CLM start option exists precisely to combine the two.",
+    "optionExplanations": {
+      "A": "Correct. Starting from a CLM workflow is the documented option for combining CLM delivery options (WhatsApp, SMS) with Maestro in one automated process.",
+      "B": "Self-service link starts happen outside the CLM process; the partner decides when, and the flows are not one automated process.",
+      "C": "From an API call needs an integration that posts to the trigger URL; there are no developers, and CLM can start Maestro directly.",
+      "D": "Manual starts by a Prepare user are not automated and add a person to every partner's process.",
+      "E": "False premise: a CLM workflow can trigger a Maestro workflow, so nothing needs to be rebuilt."
+    },
+    "trapOption": "B",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "Trigger the Maestro workflow from inside the CLM workflow",
+      "clues": [
+        "already runs in Docusign CLM -> start option from a CLM workflow",
+        "WhatsApp and SMS delivery -> CLM delivery options kept in the same process",
+        "no developers available -> no API trigger code",
+        "portal redesign -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "CLM workflow as a start option",
+      "line": "A Maestro workflow can be triggered from within a CLM workflow, combining CLM options like WhatsApp or SMS delivery with Maestro steps."
+    }
+  },
+  {
+    "paper": "E",
+    "length": "long",
+    "style": "design",
+    "domain": "Workflow Builder and Workflow API",
+    "topic": "Redirect versus iframe for an instance URL",
+    "stem": "Brightmoor Credit Union's members start a loan-deferral request from the online banking portal. The portal's server already triggers the published workflow with the member's details and receives the instance URL. In the pilot, developers simply sent the member's browser to that URL: members completed the web form and the signature without trouble, but afterwards they were left on a Docusign page, and many called the contact centre asking how to get back to their accounts. The product owner wants members to see the portal's navigation throughout and land on the portal's next-steps page when they finish. The portal also runs a chat widget. What should change?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Keep redirecting the browser to the instance URL, but pass the next-steps page as a return URL in trigger_inputs so the workflow sends members back after the last step"
+      },
+      {
+        "id": "B",
+        "text": "Switch the start method to From a Link and place the workflow link on a portal page, so that each member opens the workflow from inside the portal instead of being redirected"
+      },
+      {
+        "id": "C",
+        "text": "Create an eSignature recipient view with a returnUrl for the signing step only, and keep redirecting the browser to the instance URL for the web form and other steps"
+      },
+      {
+        "id": "D",
+        "text": "Load the instance URL in an iframe on a portal page, so the portal interface stays visible during every step and the portal routes the member onward when the workflow ends"
+      },
+      {
+        "id": "E",
+        "text": "Add a Show a Confirmation Screen step whose message links back to the portal, because a workflow instance cannot be displayed inside another web application"
+      }
+    ],
+    "correct": "D",
+    "answerText": "Load the instance URL in an iframe on a portal page, so the portal interface stays visible during every step and the portal routes the member onward when the workflow ends",
+    "explanation": "With a redirect, the user 'remains at the Docusign platform' after finishing; embedding the instance URL in an iframe keeps the web application visible, and when the workflow finishes the browser still shows the application, which can route the member onward.",
+    "whyNotOthers": "D is right because the deciding clues are 'see the portal's navigation throughout' and 'land on the next-steps page'. The trap is A: it sounds like eSignature's returnUrl, but trigger_inputs carry starting variable values, not a redirect target, and a redirected user stays on Docusign. B still navigates away when the link opens, C mixes in an eSignature view the workflow does not need, and E is false because instance URLs are designed to be framed.",
+    "optionExplanations": {
+      "A": "trigger_inputs hold starting variable values; there is no documented return URL there, and a redirected member stays on Docusign.",
+      "B": "Opening a workflow link still takes the member to Docusign; it also drops the server-side trigger with the member's details.",
+      "C": "The signing step runs inside the workflow instance; a separate eSignature recipient view does not fix the redirect for the whole journey.",
+      "D": "Correct. In an iframe the portal stays visible, and after the last step the browser still shows the portal, which routes the member to next steps.",
+      "E": "Embedding the instance URL in an iframe is the documented option, so the premise is wrong."
+    },
+    "trapOption": "A",
+    "importance": "HIGH",
+    "decode": {
+      "needs": "Embed the triggered instance URL in an iframe instead of redirecting",
+      "clues": [
+        "left on a Docusign page -> the redirect option",
+        "see the portal's navigation throughout -> iframe embedding",
+        "land on the portal's next-steps page -> app routes the user after completion",
+        "chat widget -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "Embed instance URL in iframe",
+      "line": "Redirecting to an instance URL leaves users on Docusign afterwards; an iframe keeps your app visible and lets it route users when done."
+    }
+  },
+  {
+    "paper": "E",
+    "length": "long",
+    "style": "design",
+    "domain": "Workflow Builder and Workflow API",
+    "topic": "Resuming new instances by API",
+    "stem": "Corvane Energy's 'Winter fixed-rate switch' workflow is started by the customer website through the Maestro API. In October an engineer's script called pauseNewWorkflowInstances while a tariff was re-approved; instances already in progress finished normally. The tariff has now been approved without any change to the workflow itself, and marketing wants new sign-ups to work again tonight, driven from the company scheduler, with nobody logging in to Workflow Builder. The scheduler's configuration already holds the workflow ID and a token with the aow_manage scope. Which call should the scheduler make?",
+    "options": [
+      {
+        "id": "A",
+        "text": "POST to the workflow's trigger URL from GetWorkflowTriggerRequirements, because the first new trigger automatically lifts the pause on new instances"
+      },
+      {
+        "id": "B",
+        "text": "POST to /v1/accounts/{accountId}/workflows/{workflowId}/actions/resume (resumePausedWorkflow), which returns the workflow to active for new instances"
+      },
+      {
+        "id": "C",
+        "text": "POST to the publish endpoint with isPreRunCheck=true and then again without it, because a paused workflow must be republished before it accepts instances"
+      },
+      {
+        "id": "D",
+        "text": "POST to /workflows/{workflowId}/instances/{instanceId}/actions/resume for each paused instance, so that the sign-ups paused in October can continue"
+      },
+      {
+        "id": "E",
+        "text": "POST to /v1/accounts/{accountId}/workflows/{workflowId}/actions/pause a second time, because the pause endpoint toggles between paused and active"
+      }
+    ],
+    "correct": "B",
+    "answerText": "POST to /v1/accounts/{accountId}/workflows/{workflowId}/actions/resume (resumePausedWorkflow), which returns the workflow to active for new instances",
+    "explanation": "resumePausedWorkflow (POST .../workflows/{workflowId}/actions/resume) resumes the creation of new instances of a paused workflow and returns status 'active'.",
+    "whyNotOthers": "B is right because the pause only blocked new instances and the workflow is unchanged, so resuming is all that is needed. The trap is D: it sounds precise, but pausing never stopped running instances (they 'finished normally'), and there is no per-instance resume. A would be rejected while paused, C republishes an unchanged workflow for no reason, and E invents toggle behaviour.",
+    "optionExplanations": {
+      "A": "Triggering does not lift a pause; new instances are blocked until the workflow is resumed.",
+      "B": "Correct. resumePausedWorkflow re-enables new instances; the sample response shows status 'active'.",
+      "C": "Nothing changed in the workflow, so a republish is unnecessary; the documented action is resume.",
+      "D": "Pause affects new instances only, so no instance was paused; the Maestro API has no instance-level resume.",
+      "E": "Pause and resume are separate endpoints; calling pause again does not reactivate the workflow."
+    },
+    "trapOption": "D",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "Call resumePausedWorkflow on the workflow",
+      "clues": [
+        "new sign-ups to work again -> resume creation of new instances",
+        "instances already in progress finished normally -> pause never touched running instances",
+        "no change to the workflow -> no republish needed",
+        "driven from the scheduler -> API call, not Workflow Builder"
+      ]
+    },
+    "concept": {
+      "title": "Pause and resume affect new instances",
+      "line": "pauseNewWorkflowInstances blocks new instances; resumePausedWorkflow re-enables them. Running instances are never paused."
+    }
+  },
+  {
+    "paper": "E",
+    "length": "long",
+    "style": "design",
+    "domain": "Workflow Builder and Workflow API",
+    "topic": "Moving a Maestro integration to production",
+    "stem": "Fenwick Health's developers have finished a referral-intake integration in their developer account. Their scheduling app triggers a published workflow through the Maestro API, and one workflow step is a Writeback step from the company's own private extension app that updates the referral in the clinical scheduling system. Everything passes in demo. The project manager asks what must be in place before the app can run the workflow against the production account; the go-live date was set by the board. Which two items are required? (Select two)",
+    "options": [
+      {
+        "id": "A",
+        "text": "Create a new integration key in the production account and use it with JWT Grant, because developer integration keys cannot be promoted to production"
+      },
+      {
+        "id": "B",
+        "text": "Pass the Go-Live review for the app's integration key, so the key is copied into production and can call the production API endpoints"
+      },
+      {
+        "id": "C",
+        "text": "Add the scheduling system's base URL to the production account's Connect configuration so the Writeback step can reach the external system"
+      },
+      {
+        "id": "D",
+        "text": "Make sure the private extension app used by the Writeback step is published, and that the workflow the app triggers is published in production"
+      },
+      {
+        "id": "E",
+        "text": "Request aow_manage through a separate production consent form, because Maestro scopes are not available to keys that went live for eSignature"
+      }
+    ],
+    "correct": "B,D",
+    "correctAnswers": [
+      "B",
+      "D"
+    ],
+    "answerText": "Pass the Go-Live review for the app's integration key, so the key is copied into production and can call the production API endpoints; Make sure the private extension app used by the Writeback step is published, and that the workflow the app triggers is published in production",
+    "explanation": "Docusign's Publishing and Go-Live guidance lists: publish the workflows the app invokes, make sure any extension apps used in workflow steps are published, and promote the integration key from the developer account through a Go-Live review.",
+    "whyNotOthers": "B and D are right because production needs a promoted integration key and published workflow and extension app. The trap is A: it sounds safe to start fresh, but integration keys are promoted to production by passing Go-Live, after which the same key calls production endpoints. C confuses Connect (outbound notifications) with how an extension reaches its system, and E invents a separate consent form for Maestro scopes.",
+    "optionExplanations": {
+      "A": "The documented path is Go-Live review, which copies the existing integration key into production.",
+      "B": "Correct. A Go-Live review promotes the integration key so the app can call the production endpoints.",
+      "C": "Connect sends event notifications to listeners; an extension app reaches its external system through its own connection.",
+      "D": "Correct. The workflow the app invokes and any extension apps used in its steps must be published.",
+      "E": "aow_manage is requested in the normal OAuth flow like other scopes; no separate production form exists."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "Go-Live review for the key plus published workflow and extension app",
+      "clues": [
+        "before the app can run against production -> Go-Live requirements",
+        "private extension app in a Writeback step -> extension app must be published",
+        "board set the date -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "Maestro go-live checklist",
+      "line": "Production needs the integration key promoted through Go-Live, the workflow published, and every extension app used in steps published."
+    }
+  },
+  {
+    "paper": "E",
+    "length": "short",
+    "style": "fact",
+    "domain": "Workflow Builder and Workflow API",
+    "topic": "Maestro Connect event for start",
+    "stem": "Which Docusign Connect event is published when a workflow instance has been successfully triggered and execution of its steps begins?",
+    "options": [
+      {
+        "id": "A",
+        "text": "workflow-completed"
+      },
+      {
+        "id": "B",
+        "text": "workflow-triggered"
+      },
+      {
+        "id": "C",
+        "text": "envelope-sent"
+      },
+      {
+        "id": "D",
+        "text": "workflow-step-started"
+      },
+      {
+        "id": "E",
+        "text": "workflow-started"
+      }
+    ],
+    "correct": "E",
+    "answerText": "workflow-started",
+    "explanation": "workflow-started is published when a workflow instance is successfully triggered and execution of workflow steps begins (JSON SIM only).",
+    "whyNotOthers": "E is right because it is the documented Maestro start event. The trap is B: 'triggered' describes the action, but the event name is workflow-started. A fires when all steps are done, C is an eSignature envelope event, and D is not a Maestro Connect event.",
+    "optionExplanations": {
+      "A": "Published when all steps are completed by all participants, not at the start.",
+      "B": "Not an event name; the start event is workflow-started.",
+      "C": "An eSignature envelope event, not a workflow instance event.",
+      "D": "No per-step start event is listed for Maestro; the documented events are started, failed and completed.",
+      "E": "Correct. workflow-started fires when the instance is triggered and step execution begins."
+    },
+    "trapOption": "B",
+    "importance": "MEDIUM",
+    "concept": {
+      "title": "Maestro Connect events",
+      "line": "Maestro Connect events (JSON SIM only): workflow-started, workflow-failed, workflow-completed."
+    }
+  },
+  {
+    "paper": "E",
+    "length": "long",
+    "style": "design",
+    "domain": "Workflow Builder and Workflow API",
+    "topic": "Publishing changes to a paused workflow",
+    "stem": "At Osterley Rentals, a process builder paused the 'Tenant renewal' workflow last week so that no new renewals could start while legal rewrote one clause. Twelve renewals already in progress kept running. She has now swapped the revised template into the Prepare eSignature Template step and saved the draft, but Review & Publish will not let her publish the change. The workflow's start method is From a Link, and the link is printed on paper renewal letters. What explains this, and what is the right next step?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Changes made to a paused workflow cannot be published, so she should resume the workflow first and then publish the revised version"
+      },
+      {
+        "id": "B",
+        "text": "A workflow with running instances cannot be republished, so she must cancel the twelve active renewals before publishing the revised version"
+      },
+      {
+        "id": "C",
+        "text": "She must unpublish the paused workflow first and then publish the draft, because only unpublished workflows can accept edited versions"
+      },
+      {
+        "id": "D",
+        "text": "Workflows started From a Link cannot be republished, so she should change the start method to From an API call before publishing"
+      },
+      {
+        "id": "E",
+        "text": "The template swap needs a fresh consent grant, so she should open the consentUrl from the pre-publication check and then publish again"
+      }
+    ],
+    "correct": "A",
+    "answerText": "Changes made to a paused workflow cannot be published, so she should resume the workflow first and then publish the revised version",
+    "explanation": "The course states that 'changes made to a paused workflow can not be published' and that a paused workflow can be resumed at any time; resuming first lets the revised version be published.",
+    "whyNotOthers": "A is right because the deciding detail is that the workflow is paused. The trap is B: running instances matter for unpublishing, but editing and republishing leaves active instances on their original definition, so they need not be cancelled. C would require no running instances and is not needed, D invents a start-method restriction, and E applies only when the pre-publication check returns a consent error, which the stem does not describe.",
+    "optionExplanations": {
+      "A": "Correct. Paused workflows cannot have changes published; resume, then publish the revised version.",
+      "B": "Active instances keep their original definition when a workflow is edited; they do not block publishing.",
+      "C": "Unpublish is for freeing quota and needs no running instances; it is not the path to publish edits.",
+      "D": "The start method does not block republishing.",
+      "E": "Only a consent error returns a consentUrl; nothing in the stem shows one."
+    },
+    "trapOption": "B",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "Resume the paused workflow, then publish the edited version",
+      "clues": [
+        "paused so no new renewals could start -> workflow state is paused",
+        "will not let her publish -> paused workflows cannot publish changes",
+        "twelve renewals kept running -> active instances are unaffected by edits",
+        "link printed on letters -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "Paused workflows block publishing",
+      "line": "Changes to a paused workflow cannot be published; resume the workflow first. Active instances keep their original definition."
+    }
+  },
+  {
+    "paper": "E",
+    "length": "short",
+    "style": "fact",
+    "domain": "Workflow Builder and Workflow API",
+    "topic": "Workflow permissions",
+    "stem": "A colleague needs to edit and republish workflows that she has built herself, not only start workflows that others have published. Which workflow permission does she need?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Workflows: Prepare"
+      },
+      {
+        "id": "B",
+        "text": "Workflows: Create"
+      },
+      {
+        "id": "C",
+        "text": "Workflows: Use"
+      },
+      {
+        "id": "D",
+        "text": "Workflows: Publish"
+      },
+      {
+        "id": "E",
+        "text": "eSignature Sender"
+      }
+    ],
+    "correct": "B",
+    "answerText": "Workflows: Create",
+    "explanation": "Users with Workflow Create permission can edit and republish any workflows they created; Prepare lets users initiate published workflows.",
+    "whyNotOthers": "B is right because editing and republishing your own workflows is the Create permission. The trap is A: Prepare sounds like setup work, but it only lets a user start published workflows (Run Workflow). C is paired with Create for managing running instances, D is not a listed workflow permission, and E is an eSignature role.",
+    "optionExplanations": {
+      "A": "Prepare lets a user initiate published workflows, not edit or republish them.",
+      "B": "Correct. Workflows: Create lets users edit and republish workflows they created.",
+      "C": "Use is combined with Create to manage running instances; it does not grant editing.",
+      "D": "Not a workflow permission named in the course.",
+      "E": "An eSignature sending role, unrelated to workflow authoring."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "concept": {
+      "title": "Create versus Prepare permission",
+      "line": "Workflows: Create lets users edit and republish their own workflows; Workflows: Prepare lets users start published workflows."
+    }
+  },
+  {
+    "paper": "E",
+    "length": "long",
+    "style": "design",
+    "domain": "Workflow Builder and Workflow API",
+    "topic": "Folder picker missing in a Store Files step",
+    "stem": "Quarry Lane Architects' in-house developers built a file output cloud storage extension app that writes signed client agreements to the firm's document vault through an API proxy. The app is installed and connected to the account, and its Store Files step appears in Workflow Builder. When the process builder configures the step, she can choose the drive, but there is no control for choosing a folder, so every agreement lands at the drive's root. The vault's folder structure was reorganized by IT last month. What is the most likely cause?",
+    "options": [
+      {
+        "id": "A",
+        "text": "The app was published with private distribution, and private file output apps can only write files to the root of whichever drive is selected"
+      },
+      {
+        "id": "B",
+        "text": "The app registration does not implement List Drives, which the step needs before it can show the folders on the drive that was selected"
+      },
+      {
+        "id": "C",
+        "text": "Store Files steps support only the cloud providers listed in App Center, so in-house storage targets always receive files at the root"
+      },
+      {
+        "id": "D",
+        "text": "The app's Write File action is failing silently and the step falls back to the root folder, so the Developer Console tests will show it"
+      },
+      {
+        "id": "E",
+        "text": "The app registration does not implement List Directory Contents, so the step configuration page cannot display folder selection controls"
+      }
+    ],
+    "correct": "E",
+    "answerText": "The app registration does not implement List Directory Contents, so the step configuration page cannot display folder selection controls",
+    "explanation": "If an app registration does not include List Directory Contents, the step configuration UI does not display folder selection controls; List Drives only drives the drive selector, which she can already see.",
+    "whyNotOthers": "E is right because the drive picker works but the folder picker is missing. The trap is B: List Drives is the sibling capability, but it controls the drive selector, which is already shown. A and C invent restrictions on private or in-house apps, and D describes a runtime failure, while the missing control appears at configuration time.",
+    "optionExplanations": {
+      "A": "Distribution type does not limit where a file output app can write.",
+      "B": "List Drives controls the drive selector, which she can already use.",
+      "C": "Custom file output apps are supported; the step is already available for this app.",
+      "D": "The symptom is a missing configuration control, not a runtime write failure.",
+      "E": "Correct. Without List Directory Contents the configuration page shows no folder selection controls."
+    },
+    "trapOption": "B",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "App must implement List Directory Contents for folder selection",
+      "clues": [
+        "can choose the drive -> List Drives is implemented",
+        "no control for choosing a folder -> List Directory Contents missing",
+        "folder structure reorganized -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "File output capabilities shape the UI",
+      "line": "List Drives enables the drive picker and List Directory Contents the folder picker in a Store Files step; Write File runs at execution."
+    }
+  },
+  {
+    "paper": "F",
+    "length": "long",
+    "style": "design",
+    "domain": "Workflow Builder and Workflow API",
+    "topic": "Multi Branch Rule with a fallback path",
+    "stem": "Tavistock Engineering is automating onboarding for new contractors. After the offer letter is signed, the process depends on the work country captured in the intake form: UK contractors must verify their identity before signing a UK contract, contractors in any other country must be handed to their local HR partner by email, and if an instance somehow arrives with no recognisable country, the central HR coordinator must be told that it could not be routed. The intake form is available in English and Welsh. Which two design choices meet this? (Select two)",
+    "options": [
+      {
+        "id": "A",
+        "text": "Add a Multi Branch Rule step on the country variable with a UK path, an Other path and the No Conditions Met path"
+      },
+      {
+        "id": "B",
+        "text": "Add a Branching Rule step on country equals UK, with identity verification on true and the HR partner email on false"
+      },
+      {
+        "id": "C",
+        "text": "On the No Conditions Met path, add a Show a Confirmation Screen step telling the contractor to contact HR"
+      },
+      {
+        "id": "D",
+        "text": "Add a Set Up Invite step for the HR partner at the start so the partner is invited for every contractor"
+      },
+      {
+        "id": "E",
+        "text": "On the No Conditions Met path, add a Send an Email step telling the central HR coordinator routing failed"
+      }
+    ],
+    "correct": "A,E",
+    "correctAnswers": [
+      "A",
+      "E"
+    ],
+    "answerText": "Add a Multi Branch Rule step on the country variable with a UK path, an Other path and the No Conditions Met path; On the No Conditions Met path, add a Send an Email step telling the central HR coordinator routing failed",
+    "explanation": "Three outcomes (UK, other, unrecognised) need a Multi Branch Rule with UK, Other and No Conditions Met paths, and the coordinator 'must be told', which is a Send an Email step on the No Conditions Met path, as in the course's onboarding example.",
+    "whyNotOthers": "A and E are right because the unrecognised case needs its own path and an email to the coordinator. The trap is B: a Branching Rule handles UK versus not-UK, but its false path would treat an unrecognised country as 'other' and email an HR partner instead of telling the coordinator. C informs the wrong person on screen, and D invites the HR partner to every instance instead of only non-UK ones.",
+    "optionExplanations": {
+      "A": "Correct. A Multi Branch Rule gives separate UK, Other and No Conditions Met paths.",
+      "B": "Only two paths: an unrecognised country would fall into the false path and go to an HR partner.",
+      "C": "A confirmation screen tells the contractor; the coordinator must be informed.",
+      "D": "Invites the partner for every contractor, including UK ones; it is not routing.",
+      "E": "Correct. A Send an Email step on No Conditions Met tells the coordinator the instance could not be routed."
+    },
+    "trapOption": "B",
+    "importance": "HIGH",
+    "decode": {
+      "needs": "Multi Branch Rule (UK / Other / No Conditions Met) with an email on the fallback path",
+      "clues": [
+        "UK, any other country, no recognisable country -> three outcomes",
+        "must be told it could not be routed -> No Conditions Met path with Send an Email",
+        "English and Welsh form -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "Multi Branch Rule fallback path",
+      "line": "A Multi Branch Rule gives one path per value plus a No Conditions Met path for unexpected values; a Branching Rule has only two."
+    }
+  },
+  {
+    "paper": "F",
+    "length": "long",
+    "style": "fact",
+    "domain": "Workflow Builder and Workflow API",
+    "topic": "Listing workflows for a picker",
+    "stem": "Penrose Insurance is building an internal admin console where operations staff choose which published workflow the claims system should start for each claim type. The console must list every available workflow in the Docusign account with its name and ID and, for the one chosen, show what input data a trigger has to supply, so staff no longer ask developers for IDs. The console already authenticates with JWT Grant and the aow_manage scope, and it uses the company's corporate colour theme. Which call should populate the picker list?",
+    "options": [
+      {
+        "id": "A",
+        "text": "getWorkflowInstancesList, which returns every workflow in the account together with the instances that each one is currently running in the account"
+      },
+      {
+        "id": "B",
+        "text": "GetWorkflowTriggerRequirements without a workflowId, which returns the trigger URL and input schema for every published workflow"
+      },
+      {
+        "id": "C",
+        "text": "GetWorkflowsList, which returns each available workflow's id, name and description together with the input schema needed to trigger it"
+      },
+      {
+        "id": "D",
+        "text": "getWorkflowInstance for each workflow, which returns the workflow's name, status and started_by details for the account's admin view"
+      },
+      {
+        "id": "E",
+        "text": "eSignature Templates:list, because every published workflow is stored in the account as an eSignature template with a workflow ID"
+      }
+    ],
+    "correct": "C",
+    "answerText": "GetWorkflowsList, which returns each available workflow's id, name and description together with the input schema needed to trigger it",
+    "explanation": "GetWorkflowsList (GET /v1/accounts/{accountId}/workflows) returns each available workflow's id, name and description, plus its trigger input schema, which is exactly what a picker needs.",
+    "whyNotOthers": "C is right because the console must list 'every available workflow' with name, ID and input data. The trap is B: GetWorkflowTriggerRequirements does return the input schema, but it is called per workflow with a workflowId, so it cannot build the list. A and D work at instance level and need a workflow or instance ID first, and E confuses workflows with eSignature templates.",
+    "optionExplanations": {
+      "A": "Instance listing is per workflow (/workflows/{workflowId}/instances); it does not list workflows.",
+      "B": "Its path is /workflows/{workflowId}/trigger-requirements; it needs a workflowId and returns one workflow.",
+      "C": "Correct. GetWorkflowsList returns all available workflows with id, name, description and trigger input schema.",
+      "D": "Returns one instance's details and needs an instance ID; it does not enumerate workflows.",
+      "E": "Workflows are not stored as eSignature templates."
+    },
+    "trapOption": "B",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "Call GetWorkflowsList to enumerate workflows",
+      "clues": [
+        "list every available workflow with name and ID -> account-level workflow list",
+        "what input data a trigger has to supply -> input schema in the list entries",
+        "corporate colour theme -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "GetWorkflowsList for discovery",
+      "line": "GetWorkflowsList enumerates an account's workflows with IDs and input schemas; trigger requirements are fetched per workflow."
+    }
+  },
+  {
+    "paper": "F",
+    "length": "long",
+    "style": "design",
+    "domain": "Workflow Builder and Workflow API",
+    "topic": "Reporting on link-started instances",
+    "stem": "Larchfield Council publishes a 'Pothole damage claim' workflow that residents start themselves From a Link on the council website, so the council's systems never receive an instance ID. The highways team wants a nightly report in its case-management tool listing every instance of that workflow, running or completed, with who started it, when it was last modified and how many steps are done. The nightly job already has a token with the aow_manage scope and knows the workflow ID. Residents can also report potholes by phone. Which approach fits?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Call getWorkflowInstance nightly for each instance, using the instance IDs that the website link passes back to the case-management tool each day"
+      },
+      {
+        "id": "B",
+        "text": "Subscribe a Connect configuration in XML SIM format to workflow-started and workflow-completed events and build the report from them"
+      },
+      {
+        "id": "C",
+        "text": "Call GetWorkflowsList nightly and read the instance count and step progress that each entry returns for the pothole claim workflow"
+      },
+      {
+        "id": "D",
+        "text": "Call cancelWorkflowInstance in a dry-run mode for each instance, which returns the current status without stopping the instance"
+      },
+      {
+        "id": "E",
+        "text": "Call getWorkflowInstancesList for the workflow ID nightly, which lists its instances with status, timestamps, starter and steps completed"
+      }
+    ],
+    "correct": "E",
+    "answerText": "Call getWorkflowInstancesList for the workflow ID nightly, which lists its instances with status, timestamps, starter and steps completed",
+    "explanation": "getWorkflowInstancesList (GET .../workflows/{workflowId}/instances) returns every instance of the workflow with its id, status, timestamps and metadata such as who started it, when it was last modified and how many steps are completed; only the workflow ID is needed.",
+    "whyNotOthers": "E is right because the job knows only the workflow ID ('never receive an instance ID'). The trap is A: getWorkflowInstance gives rich detail, but it needs an instance ID per call, and link starts do not return IDs to the council. B fails because Maestro events are delivered only in JSON SIM, C lists workflows not instances, and D invents a dry-run mode.",
+    "optionExplanations": {
+      "A": "Needs instance IDs, which a self-service link start never hands back to the council.",
+      "B": "Maestro Connect events are available only in JSON SIM format, not XML.",
+      "C": "GetWorkflowsList describes workflows and their input schemas, not their instances.",
+      "D": "Cancel stops an instance; there is no dry-run mode.",
+      "E": "Correct. The instance list needs only the workflow ID and returns status, timestamps, starter and steps completed."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "getWorkflowInstancesList for the workflow",
+      "clues": [
+        "residents start it from a link -> no instance IDs returned to your system",
+        "every instance, running or completed -> list of instances for one workflow",
+        "who started it, last modified, steps done -> instance list metadata",
+        "phone reports -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "Instance list when IDs are unknown",
+      "line": "getWorkflowInstancesList needs only the workflow ID; getWorkflowInstance needs a known instance ID, such as one returned by a trigger."
+    }
+  },
+  {
+    "paper": "F",
+    "length": "short",
+    "style": "fact",
+    "domain": "Workflow Builder and Workflow API",
+    "topic": "Workflow versioning",
+    "stem": "A process builder publishes a workflow, later edits it, and publishes it a second time. Which version number does the second publication receive?",
+    "options": [
+      {
+        "id": "A",
+        "text": "1.1.0"
+      },
+      {
+        "id": "B",
+        "text": "2.0.0"
+      },
+      {
+        "id": "C",
+        "text": "1.0.1"
+      },
+      {
+        "id": "D",
+        "text": "1.0.0 plus a saved draft"
+      },
+      {
+        "id": "E",
+        "text": "2.1.0"
+      }
+    ],
+    "correct": "B",
+    "answerText": "2.0.0",
+    "explanation": "Maestro workflows support major versioning only: the first publish is 1.0.0 and each new publish adds 1.0.0, so the second is 2.0.0.",
+    "whyNotOthers": "B is right because only major versions are used. The trap is A: a minor bump feels natural for a small edit, but minor and patch versioning are not supported. C is a patch bump, D describes an unpublished edit (a single draft), and E mixes major and minor.",
+    "optionExplanations": {
+      "A": "Minor versioning is not supported; each publish increases the major number.",
+      "B": "Correct. Second publication = 2.0.0.",
+      "C": "Patch versioning is not supported.",
+      "D": "A saved but unpublished edit is a draft; here the edit was published.",
+      "E": "Minor numbers are not used; the version is 2.0.0."
+    },
+    "trapOption": "A",
+    "importance": "LOW",
+    "concept": {
+      "title": "Major-only workflow versions",
+      "line": "Each publish of a workflow increments the major version (1.0.0, 2.0.0, ...); only one draft exists per workflow."
+    }
+  },
+  {
+    "paper": "F",
+    "length": "long",
+    "style": "design",
+    "domain": "Workflow Builder and Workflow API",
+    "topic": "Direct signing and missing emails",
+    "stem": "Rowan Motors runs a vehicle-handover workflow on a tablet in each showroom. Its Send Documents for Signature step uses a direct signing session, and the buyer's name and email are mapped from workflow variables collected in the web form. After go-live a sales manager reports a 'bug': buyers sign on the tablet without trouble, but none of them ever receives a Docusign signing email at the address they typed in. The showroom Wi-Fi was upgraded the same week. What is the correct explanation?",
+    "options": [
+      {
+        "id": "A",
+        "text": "The email variable is mapped incorrectly, because a direct signing session always emails the signing link to the buyer as a backup to the tablet"
+      },
+      {
+        "id": "B",
+        "text": "The showroom network blocks the step's outbound email, so the step has failed and a workflow-failed event should appear in the Connect log"
+      },
+      {
+        "id": "C",
+        "text": "The Set Up Invite step is missing, because a direct signing session sends its signing email only after an invite step has run earlier"
+      },
+      {
+        "id": "D",
+        "text": "This is expected: with a direct signing session Docusign does not send an email to the supplied address, whereas remote signing would"
+      },
+      {
+        "id": "E",
+        "text": "Direct signing sessions cannot use workflow variables, so the step falls back to the template's default recipient and emails that address"
+      }
+    ],
+    "correct": "D",
+    "answerText": "This is expected: with a direct signing session Docusign does not send an email to the supplied address, whereas remote signing would",
+    "explanation": "With a direct signing session, Docusign does not send an email to the supplied address when executing workflow instances; the signer signs in the session itself. Remote signing is the option that notifies by email.",
+    "whyNotOthers": "D is right because 'buyers sign on the tablet without trouble' shows the step works as designed. The trap is C: Set Up Invite does send workflow invitations, but a direct signing session is meant for someone present and does not email a signing link. A and E invent behaviour, and B describes a failure, yet the signing completes.",
+    "optionExplanations": {
+      "A": "Direct signing does not email the signer at all; there is no backup email.",
+      "B": "Signing completes, so the step has not failed; Wi-Fi is a red herring.",
+      "C": "Set Up Invite sends workflow invitations; it does not make a direct signing session email a signing link.",
+      "D": "Correct. A direct signing session sends no email to the supplied address; remote signing would.",
+      "E": "Name and email can come from workflow variables in a direct signing session."
+    },
+    "trapOption": "C",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "Expected behaviour of a direct signing session",
+      "clues": [
+        "tablet in each showroom -> signer present, direct signing session",
+        "never receives a signing email -> direct signing sends none",
+        "Wi-Fi upgrade -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "Direct signing sends no email",
+      "line": "In a workflow, a direct signing session signs in-session with no email to the signer; remote signing notifies by email."
+    }
+  },
+  {
+    "paper": "F",
+    "length": "short",
+    "style": "fact",
+    "domain": "Workflow Builder and Workflow API",
+    "topic": "Start methods supported for embedding",
+    "stem": "Which two workflow start methods are supported for Maestro API integrations that embed workflow instances in their own web application? (Select two)",
+    "options": [
+      {
+        "id": "A",
+        "text": "From a Link"
+      },
+      {
+        "id": "B",
+        "text": "Manually in Docusign"
+      },
+      {
+        "id": "C",
+        "text": "From an API call"
+      },
+      {
+        "id": "D",
+        "text": "From a CLM workflow"
+      },
+      {
+        "id": "E",
+        "text": "From an envelope event"
+      }
+    ],
+    "correct": "A,C",
+    "correctAnswers": [
+      "A",
+      "C"
+    ],
+    "answerText": "From a Link; From an API call",
+    "explanation": "For integrations that embed workflow instances, the supported start methods are From a Link and From an API call.",
+    "whyNotOthers": "A and C are right per the embedding restrictions. The trap is B: Manually in Docusign is a real start method, but it is for internal users running Run Workflow inside Docusign. D is also a start inside Docusign, and E is not a documented embedding start method.",
+    "optionExplanations": {
+      "A": "Correct. From a Link is supported for embedded instances.",
+      "B": "Run Workflow inside Docusign is not an embedding start method.",
+      "C": "Correct. From an API call is supported and recommended when trigger_inputs carry starting values.",
+      "D": "Starting from a CLM workflow happens inside Docusign, not in your application.",
+      "E": "Not one of the documented start methods for embedding."
+    },
+    "trapOption": "B",
+    "importance": "HIGH",
+    "concept": {
+      "title": "Embedding start methods",
+      "line": "Embedded workflow instances support only the From a Link and From an API call start methods."
+    }
+  },
+  {
+    "paper": "F",
+    "length": "long",
+    "style": "design",
+    "domain": "Workflow Builder and Workflow API",
+    "topic": "Maestro tokens and scopes",
+    "stem": "Halden Bank's back-office service already sends account-opening envelopes through the eSignature REST API, using JWT Grant with an integration key that has passed Go-Live. The team now wants the same service to start a published Maestro workflow for business customers. A junior architect proposes registering a second integration key and building a separate OAuth flow, 'because Maestro is a different API host'. The service runs in the bank's Frankfurt data centre, and the architect also wants to keep the service's existing token cache. What is the correct approach?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Keep the same integration key and JWT flow and request the signature scope plus aow_manage, because Maestro uses the same OAuth tokens as eSignature"
+      },
+      {
+        "id": "B",
+        "text": "Register a second integration key for Maestro and request only aow_manage with it, because Maestro tokens cannot also carry any eSignature scopes at all"
+      },
+      {
+        "id": "C",
+        "text": "Keep the same integration key but switch to Authorization Code Grant, because Maestro calls must be made by a user who is present to consent"
+      },
+      {
+        "id": "D",
+        "text": "Keep the same token and scopes, and use the mtid and mtsec values from the trigger URL as the bearer credential for every Maestro call"
+      },
+      {
+        "id": "E",
+        "text": "Keep the same integration key and request aow_manage only, because adding the signature scope to a Maestro token makes trigger calls fail"
+      }
+    ],
+    "correct": "A",
+    "answerText": "Keep the same integration key and JWT flow and request the signature scope plus aow_manage, because Maestro uses the same OAuth tokens as eSignature",
+    "explanation": "Maestro OAuth access tokens are the same ones used for the eSignature REST API; you request the signature scope and one or more Maestro scopes, such as aow_manage, with any of the recommended grant types including JWT.",
+    "whyNotOthers": "A is right because the existing key and grant work once aow_manage is added. The trap is E: aow_manage is required, but the how-to says to request signature plus the Maestro scope, so dropping signature is wrong. B duplicates the key for no reason, C wrongly rules out JWT, and D misuses the trigger URL parameters, which only authenticate the trigger request.",
+    "optionExplanations": {
+      "A": "Correct. Same key and JWT flow; request signature plus aow_manage.",
+      "B": "A second key is unnecessary; Maestro tokens carry signature and Maestro scopes together.",
+      "C": "JWT Grant is one of the supported grant types for Maestro.",
+      "D": "mtid and mtsec authenticate the trigger URL request; they are not a bearer token for other calls.",
+      "E": "The documented scopes are signature plus aow_manage; signature is not harmful."
+    },
+    "trapOption": "E",
+    "importance": "HIGH",
+    "decode": {
+      "needs": "Same integration key and grant; add aow_manage alongside signature",
+      "clues": [
+        "already uses JWT with a live integration key -> reuse it",
+        "different API host -> different base path, same OAuth",
+        "Frankfurt data centre -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "Maestro uses eSignature tokens",
+      "line": "Maestro calls use the same OAuth tokens as eSignature; request signature plus a Maestro scope such as aow_manage."
+    }
+  },
+  {
+    "paper": "F",
+    "length": "long",
+    "style": "design",
+    "domain": "Workflow Builder and Workflow API",
+    "topic": "Instance naming convention",
+    "stem": "Garrow & Pike's HR team starts a 'Contract extension' workflow manually in Docusign with Run Workflow, dozens of times a week. In the workflow's instance list every run shows the same generic name, so coordinators cannot tell which instance belongs to which employee without opening each one. The coordinators want each new instance to be named with the employee's name and the extension date automatically, with no extra typing and no developer work. The workflow's emails use the company letterhead. Which change should the process builder make?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Set instance_name in the trigger request body to the employee's name and date, so that each run started from Run Workflow is labelled automatically"
+      },
+      {
+        "id": "B",
+        "text": "Add a Show a Confirmation Screen step whose title includes the employee's name, since the instance list displays the last confirmation title shown"
+      },
+      {
+        "id": "C",
+        "text": "Define the naming convention for the workflow's instances during Review & Publish, including the employee name and extension date, then republish"
+      },
+      {
+        "id": "D",
+        "text": "Rename the workflow itself to include the employee's name, because each instance in the list inherits the workflow's name at the time it starts"
+      },
+      {
+        "id": "E",
+        "text": "Ask coordinators to type the employee's name into a free-text participant field in Run Workflow, which the instance list shows as its name"
+      }
+    ],
+    "correct": "C",
+    "answerText": "Define the naming convention for the workflow's instances during Review & Publish, including the employee name and extension date, then republish",
+    "explanation": "At Review & Publish you can define the naming convention of your workflow instances so they meet your requirements; republishing applies it to new instances started with Run Workflow.",
+    "whyNotOthers": "C is right because the workflow is started manually and the team wants automatic names without developers. The trap is A: instance_name does label an instance, but only in an API trigger request, and these instances come from Run Workflow with no code. B and D invent behaviour, and E needs extra typing, which the stem rules out.",
+    "optionExplanations": {
+      "A": "instance_name belongs to the Maestro API trigger request; Run Workflow starts send no API body and the team has no developers.",
+      "B": "Confirmation screens show a message to participants; they do not name instances.",
+      "C": "Correct. The instance naming convention is defined at Review & Publish and applies to new instances.",
+      "D": "A workflow has one name; renaming it cannot give each instance a different employee name.",
+      "E": "Adds manual typing, which the coordinators explicitly do not want."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "Instance naming convention set during Review & Publish",
+      "clues": [
+        "started manually with Run Workflow -> no API request body",
+        "named automatically, no extra typing -> naming convention",
+        "no developer work -> workflow setting, not code",
+        "letterhead -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "Instance naming at publish",
+      "line": "The instance naming convention is set during Review & Publish; API triggers can also pass instance_name per run."
+    }
+  },
+  {
+    "paper": "F",
+    "length": "short",
+    "style": "fact",
+    "domain": "Workflow Builder and Workflow API",
+    "topic": "Extension step labels in Workflow Builder",
+    "stem": "On the Apps tab of the Add New Step panel, which app manifest properties supply the name and description shown for an installed and connected extension app's step?",
+    "options": [
+      {
+        "id": "A",
+        "text": "connections.name and connections.description"
+      },
+      {
+        "id": "B",
+        "text": "actions.name and actions.description"
+      },
+      {
+        "id": "C",
+        "text": "The manifest's top-level name and description"
+      },
+      {
+        "id": "D",
+        "text": "extensions.name and extensions.description"
+      },
+      {
+        "id": "E",
+        "text": "distribution.listingName and distribution.summary"
+      }
+    ],
+    "correct": "D",
+    "answerText": "extensions.name and extensions.description",
+    "explanation": "The Add New Step panel displays the values of the extensions.name and extensions.description properties from the app manifest.",
+    "whyNotOthers": "D is right because the step represents an extension defined in the registration. The trap is C: the app's own name and description describe the App Center listing, not the individual step. A describes authentication to the external system, B describes the endpoints called, and E is invented.",
+    "optionExplanations": {
+      "A": "Connections define how Docusign authenticates to the external system.",
+      "B": "Actions define the external endpoints that are called.",
+      "C": "The top-level app name and description describe the app, not the step label.",
+      "D": "Correct. extensions.name and extensions.description label the step.",
+      "E": "Not manifest properties used for the step label."
+    },
+    "trapOption": "C",
+    "importance": "LOW",
+    "concept": {
+      "title": "Step labels come from extensions",
+      "line": "In Workflow Builder, an extension app's step shows the manifest's extensions.name and extensions.description."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "short",
+    "style": "fact",
+    "domain": "Workflow Builder and Workflow API",
+    "topic": "Workflow step categories",
+    "stem": "In Workflow Builder, which step category contains the Send an Email step and the branching rule steps?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Docusign steps"
+      },
+      {
+        "id": "B",
+        "text": "Apps steps"
+      },
+      {
+        "id": "C",
+        "text": "Agreement Desk steps"
+      },
+      {
+        "id": "D",
+        "text": "Writeback steps"
+      },
+      {
+        "id": "E",
+        "text": "Utility steps"
+      }
+    ],
+    "correct": "E",
+    "answerText": "Utility steps",
+    "explanation": "Utility steps cover notification actions such as sending an email and workflow control actions such as branch rules.",
+    "whyNotOthers": "E is right per the course's step categories. The trap is A: Docusign steps are built-in too, but they are for features such as ID Verification, Web Forms and eSignature. B and D are for third-party extension apps, and C appears only when Agreement Desk is enabled.",
+    "optionExplanations": {
+      "A": "Docusign steps cover features such as Web Forms, ID Verification and eSignature.",
+      "B": "Apps steps run third-party extension apps.",
+      "C": "Only available when Agreement Desk is enabled; not the home of email or branching.",
+      "D": "Writeback is a subtype of Apps steps that updates external systems.",
+      "E": "Correct. Utility steps include Send an Email, Set Up Invite, Show a Confirmation Screen and branching steps."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "concept": {
+      "title": "Three step categories",
+      "line": "Docusign steps (features), Utility steps (email, invites, confirmation, branching), Apps steps (third-party extensions)."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "short",
+    "style": "fact",
+    "domain": "Workflow Builder and Workflow API",
+    "topic": "Starting points for a new workflow",
+    "stem": "Besides a blank canvas, a workflow template or an imported workflow, which two other starting points does Workflow Builder offer when creating a workflow? (Select two)",
+    "options": [
+      {
+        "id": "A",
+        "text": "A sent envelope"
+      },
+      {
+        "id": "B",
+        "text": "An eSignature template"
+      },
+      {
+        "id": "C",
+        "text": "A PowerForm"
+      },
+      {
+        "id": "D",
+        "text": "A CLM document type"
+      },
+      {
+        "id": "E",
+        "text": "A Web Form"
+      }
+    ],
+    "correct": "B,E",
+    "correctAnswers": [
+      "B",
+      "E"
+    ],
+    "answerText": "An eSignature template; A Web Form",
+    "explanation": "You can build workflows from a new canvas, from a workflow template, from an eSignature template, from a Web Form, or by importing a workflow.",
+    "whyNotOthers": "B and E are right per the course. The trap is C: a PowerForm is a self-service eSignature feature that sounds like a natural source, but it is not a starting point. A and D are not listed.",
+    "optionExplanations": {
+      "A": "Not a starting point for a workflow.",
+      "B": "Correct. A workflow can be created from an eSignature template.",
+      "C": "PowerForms are not a Workflow Builder starting point.",
+      "D": "CLM document types are not a starting point.",
+      "E": "Correct. A workflow can be created from a Web Form."
+    },
+    "trapOption": "C",
+    "importance": "LOW",
+    "concept": {
+      "title": "Ways to create a workflow",
+      "line": "Create workflows from a blank canvas, workflow template, eSignature template, Web Form, or by importing one."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "long",
+    "style": "design",
+    "domain": "Workflow Builder and Workflow API",
+    "topic": "Unique names for stored files",
+    "stem": "Merrow Housing Association stores every signed tenancy agreement in cloud storage through a Store Files step from a file output extension app. During testing the step was given the hard-coded file name 'Tenancy agreement', and the storage system now holds dozens of files with the same name that the records team cannot match to tenants. Each stored file name must now be unique and traceable to the specific signed envelope and tenant, with no change to the app's code. The association is also moving to a new office in spring. What should the process builder do?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Ask the app's developers to add the List Directory Contents capability, so the step creates a separate folder automatically for every tenant"
+      },
+      {
+        "id": "B",
+        "text": "Change the file naming convention to include workflow variables, such as the envelope ID from the signing step and the participant's name"
+      },
+      {
+        "id": "C",
+        "text": "Add a Writeback step before Store Files that renames the previous file in storage, so the new agreement can reuse the fixed file name"
+      },
+      {
+        "id": "D",
+        "text": "Enable connected fields in the app so the tenant reference is written into the stored file's metadata rather than into its file name"
+      },
+      {
+        "id": "E",
+        "text": "Set the folder option to New Folder with the hard-coded name 'Tenancies', so each stored agreement is placed in its own new folder"
+      }
+    ],
+    "correct": "B",
+    "answerText": "Change the file naming convention to include workflow variables, such as the envelope ID from the signing step and the participant's name",
+    "explanation": "A Store Files step's file naming convention can combine hard-coded text with workflow variables (step variables such as the envelope ID, participant variables such as name, instance variables), giving a unique name per agreement at run time.",
+    "whyNotOthers": "B is right because variables make each name unique and traceable 'with no change to the app's code'. The trap is A: List Directory Contents enables folder selection, needs code changes, and does not create per-tenant folders by itself. C invents renaming, D misapplies connected fields (not supported in Maestro), and E uses a hard-coded name, so every new folder gets the same name.",
+    "optionExplanations": {
+      "A": "Requires code changes, and the capability only lets the UI list folders; it does not name files.",
+      "B": "Correct. Workflow variables such as the envelope ID and participant name make each file name unique at run time.",
+      "C": "Writeback updates records in a system of record; it is not a file-renaming tool.",
+      "D": "Connected fields are an eSignature extension and are not supported in Maestro workflows.",
+      "E": "A hard-coded folder name is identical for every instance, so nothing becomes traceable."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "Use workflow variables in the Store Files naming convention",
+      "clues": [
+        "unique and traceable to envelope and tenant -> envelope ID and participant variables",
+        "no change to the app's code -> step configuration only",
+        "office move -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "Variables in file naming",
+      "line": "File and folder naming in Store Files steps can mix fixed text with step, participant and instance variables for unique names."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "short",
+    "style": "fact",
+    "domain": "Workflow Builder and Workflow API",
+    "topic": "Meaning of instance_name",
+    "stem": "In a Workflows:triggerWorkflow request body, what is instance_name?",
+    "options": [
+      {
+        "id": "A",
+        "text": "A user-defined label for tracking that workflow run"
+      },
+      {
+        "id": "B",
+        "text": "The name of the workflow definition to be started"
+      },
+      {
+        "id": "C",
+        "text": "The participant role that receives the first step"
+      },
+      {
+        "id": "D",
+        "text": "A starting variable declared in the trigger_input_schema"
+      },
+      {
+        "id": "E",
+        "text": "The display name of the returned workflow instance URL"
+      }
+    ],
+    "correct": "A",
+    "answerText": "A user-defined label for tracking that workflow run",
+    "explanation": "The trigger request requires an instance_name, a user-defined label for tracking the workflow run, plus input data matching the trigger_input_schema.",
+    "whyNotOthers": "A is right per the TriggerWorkflow reference. The trap is D: instance_name sits next to trigger_inputs in the body, but the starting variables go in trigger_inputs, not instance_name. B is identified by workflowId in the path, C is a participant setting, and E is invented.",
+    "optionExplanations": {
+      "A": "Correct. instance_name is a user-defined label for tracking the run.",
+      "B": "The workflow is identified by workflowId in the path.",
+      "C": "Participant roles are defined in the workflow, not by instance_name.",
+      "D": "Starting variable values go in trigger_inputs, which must match the schema.",
+      "E": "The response returns an instance ID and URL; instance_name does not name the URL."
+    },
+    "trapOption": "D",
+    "importance": "MEDIUM",
+    "concept": {
+      "title": "Trigger request body",
+      "line": "A trigger request sends instance_name (a tracking label) and trigger_inputs (values matching the trigger_input_schema)."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "long",
+    "style": "design",
+    "domain": "Workflow Builder and Workflow API",
+    "topic": "Trigger URL query parameters stripped",
+    "stem": "A developer at Calloway Freight writes a helper that calls Workflows:getWorkflowTriggerRequirements, reads the url property, and then removes everything after the question mark before posting the trigger request, because the company's API gateway logs full URLs. Since then every trigger attempt is rejected, even though the token includes signature and aow_manage, instance_name is set, and trigger_inputs match the schema exactly; the published workflow itself has not changed. The gateway was also upgraded last week. What is the fix?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Add the workflowId as a query parameter on the shortened URL, because the trigger URL needs the workflow ID in order to know which workflow to start"
+      },
+      {
+        "id": "B",
+        "text": "Request a new token with aow_manage, because the gateway strips the scopes from the bearer token whenever it rewrites the request URL"
+      },
+      {
+        "id": "C",
+        "text": "Move trigger_inputs into query parameters on the shortened URL, because the trigger endpoint reads starting values only from the query"
+      },
+      {
+        "id": "D",
+        "text": "Post to the full url with its mtid and mtsec query parameters, which Maestro generates at publication to authenticate and identify the workflow"
+      },
+      {
+        "id": "E",
+        "text": "Republish the workflow before each call, because the trigger URL's query parameters expire after every successful trigger and must be renewed"
+      }
+    ],
+    "correct": "D",
+    "answerText": "Post to the full url with its mtid and mtsec query parameters, which Maestro generates at publication to authenticate and identify the workflow",
+    "explanation": "The trigger url includes the query parameters mtid and mtsec, generated when the workflow is published and 'used to authenticate the request and identify a valid workflow'; removing them breaks the trigger.",
+    "whyNotOthers": "D is right because the only change was stripping the query string. The trap is A: identifying the workflow sounds like the missing piece, but the generated mtid and mtsec do that job and also authenticate the call. B blames scopes that the stem says are present, C moves the body into the query, and E invents expiry.",
+    "optionExplanations": {
+      "A": "The workflow is identified by the generated mtid/mtsec values, which were removed.",
+      "B": "The token already has the right scopes; a gateway rewrite does not change them.",
+      "C": "trigger_inputs belong in the JSON body.",
+      "D": "Correct. Keep the full url with mtid and mtsec; they authenticate the request and identify the workflow.",
+      "E": "The parameters are generated at publication; nothing says they expire per call."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "Use the full trigger URL including mtid and mtsec",
+      "clues": [
+        "removes everything after the question mark -> query parameters lost",
+        "scopes, instance_name and inputs are correct -> rules out the usual causes",
+        "gateway upgrade -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "Keep mtid and mtsec",
+      "line": "The trigger URL's mtid and mtsec query parameters authenticate the request and identify the workflow; never strip them."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "long",
+    "style": "design",
+    "domain": "Workflow Builder and Workflow API",
+    "topic": "Embedding the whole workflow experience",
+    "stem": "Oakhurst Lettings wants applicants on its website to complete a tenancy workflow (a web form, a phone-authentication identity check, then signature) without leaving the site. A contractor proposes building a separate embedded view for each step: a Web Forms JS SDK instance for the form, an identity session for the check, and an eSignature recipient view for signing, all stitched together by the site's server. The site's server already triggers the workflow and receives the instance URL. The site is being translated into Polish. What is the recommended integration?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Build the per-step views as proposed, because a triggered workflow instance only runs the steps that have no user interface of their own"
+      },
+      {
+        "id": "B",
+        "text": "Redirect the applicant's browser to the instance URL, because instance URLs cannot be framed and must always open directly on the Docusign platform"
+      },
+      {
+        "id": "C",
+        "text": "Place the instance URL in an iframe on the site, which loads the first step and gives the applicant the whole browser-based workflow experience"
+      },
+      {
+        "id": "D",
+        "text": "Place the instance URL in an iframe for the form and identity steps, and generate a separate eSignature recipient view for the signing step"
+      },
+      {
+        "id": "E",
+        "text": "Change the start method to From a Link and put the copied workflow link in the iframe, because only link-started instances can be framed"
+      }
+    ],
+    "correct": "C",
+    "answerText": "Place the instance URL in an iframe on the site, which loads the first step and gives the applicant the whole browser-based workflow experience",
+    "explanation": "The instance URL returned by the trigger call is embedded in an iframe; the iframe loads the first step and provides a complete browser-based workflow experience, including web form, phone-authentication IDV and signing steps.",
+    "whyNotOthers": "C is right because one embedded instance URL covers all of the applicant's steps. The trap is D: it reflects eSignature habits, but Send Documents for Signature steps run inside the embedded instance (only focused view is unsupported), so no separate recipient view is needed. A and B are false, and E is wrong because From an API call is also supported for embedding.",
+    "optionExplanations": {
+      "A": "The instance runs every step, including UI steps such as forms and signing.",
+      "B": "Framing the instance URL in an iframe is the documented embedding option.",
+      "C": "Correct. One iframe with the instance URL delivers the whole workflow experience.",
+      "D": "Signing steps run inside the embedded instance; a separate recipient view is unnecessary.",
+      "E": "Both From a Link and From an API call are supported for embedding."
+    },
+    "trapOption": "D",
+    "importance": "HIGH",
+    "decode": {
+      "needs": "Embed the instance URL in an iframe",
+      "clues": [
+        "without leaving the site -> embedded instance",
+        "separate view for each step -> unnecessary; the instance covers all steps",
+        "phone-authentication identity check -> supported when embedded",
+        "Polish translation -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "One iframe, whole workflow",
+      "line": "Embedding the trigger's instance URL in an iframe gives users the complete workflow, with no separate per-step views."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "long",
+    "style": "design",
+    "domain": "Workflow Builder and Workflow API",
+    "topic": "Viewing one instance's step progress",
+    "stem": "A support agent at Dunmore Utilities takes a call from a customer who says her service-transfer request 'seems stuck'. Support staff have the workflow Create and Use permissions but no developer access. The team lead wants them to see, for that one customer's run, which steps are completed, which step is currently active and which are still to do, plus who completed each step and when. The customer is calling from abroad, and her request was started from the website link two weeks ago. What should the support agent use?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Workflows:getWorkflowInstance with the customer's instance ID, which returns each step's completion status and participant for the whole run"
+      },
+      {
+        "id": "B",
+        "text": "View Instances for the workflow in Workflow Builder, then View details on that instance, and View Details on a step for participant and time"
+      },
+      {
+        "id": "C",
+        "text": "The workflow's Activity Log, which lists the edits, publishes and pauses made to the workflow and the people who carried out each of those actions"
+      },
+      {
+        "id": "D",
+        "text": "Cancel the instance and restart it with Run Workflow, because cancelled instances show a full step-by-step history in the instance list"
+      },
+      {
+        "id": "E",
+        "text": "The eSignature envelope history of the signing step, which records every workflow step that ran before the envelope was sent"
+      }
+    ],
+    "correct": "B",
+    "answerText": "View Instances for the workflow in Workflow Builder, then View details on that instance, and View Details on a step for participant and time",
+    "explanation": "Users with Create and Use permissions can open View Instances, then View details for an instance, which shows completed, active and incomplete steps; View Details on a step shows the participant name, completion date and time, and step ID.",
+    "whyNotOthers": "B is right because staff have no developer access and need per-step detail. The trap is A: getWorkflowInstance is the API route for status, start and end times and started_by, but it needs code, and its documented fields are instance-level, not per-step. C covers actions taken on workflows, D destroys the run, and E sees only the envelope.",
+    "optionExplanations": {
+      "A": "Requires API code, and its documented fields are instance-level (status, times, started_by).",
+      "B": "Correct. Instance details show completed, active and incomplete steps; step details show participant and completion time.",
+      "C": "The Activity Log records actions taken across workflows, not one run's step progress.",
+      "D": "Cancelling stops all further steps; it is not a way to inspect progress.",
+      "E": "Envelope history covers only the signing envelope, not the other workflow steps."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "Use the instance details view in Workflow Builder",
+      "clues": [
+        "no developer access -> UI, not API",
+        "which steps are completed, active, still to do -> instance details view",
+        "who completed each step and when -> step View Details",
+        "calling from abroad -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "Instance details in Workflow Builder",
+      "line": "View Instances > View details shows each step's state for one instance; step details add participant, time and step ID."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "short",
+    "style": "design",
+    "domain": "Workflow Builder and Workflow API",
+    "topic": "Ending a kiosk workflow",
+    "stem": "A branch kiosk runs a workflow that ends right after the customer signs. Before stepping away, the customer must see an on-screen message confirming that all of their tasks are finished. Which step should end the workflow?",
+    "options": [
+      {
+        "id": "A",
+        "text": "A Send an Email step addressed to the customer"
+      },
+      {
+        "id": "B",
+        "text": "A Set Up Invite step for the next customer in the queue"
+      },
+      {
+        "id": "C",
+        "text": "A Branching Rule step on the envelope status"
+      },
+      {
+        "id": "D",
+        "text": "A Show a Confirmation Screen step with an end-of-tasks message"
+      },
+      {
+        "id": "E",
+        "text": "A Collect Data with Web Forms step that shows a thank-you page at the end"
+      }
+    ],
+    "correct": "D",
+    "answerText": "A Show a Confirmation Screen step with an end-of-tasks message",
+    "explanation": "Show a Confirmation Screen is the utility step that displays a message to the participant, such as the end of the participant's tasks.",
+    "whyNotOthers": "D is right because the message must appear on screen before the customer leaves. The trap is A: an email also confirms completion, but it is not shown on the kiosk. B starts nothing useful, C only routes, and E would collect more data instead of confirming.",
+    "optionExplanations": {
+      "A": "An email is not an on-screen message on the kiosk.",
+      "B": "Invites participants to steps; it shows no completion message.",
+      "C": "Routes between paths; it displays nothing.",
+      "D": "Correct. Show a Confirmation Screen displays an end-of-tasks message to the participant.",
+      "E": "A web form collects data; it is not a completion message step."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "concept": {
+      "title": "Confirmation screen ends a session",
+      "line": "Use Show a Confirmation Screen to tell a participant on screen that their tasks are complete."
+    }
+  }
+]

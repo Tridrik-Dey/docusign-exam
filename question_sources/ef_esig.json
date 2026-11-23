@@ -1,0 +1,2197 @@
+[
+  {
+    "paper": "E",
+    "length": "long",
+    "style": "design",
+    "domain": "eSignature API",
+    "topic": "Composite templates: dynamic document with a server template",
+    "stem": "Bramwell & Tate, a law firm, generates a different engagement letter PDF for every new client from its practice-management system, because fee terms and scope paragraphs change each time. The signature block, date and initials fields are already laid out in a server template called Engagement Sign Block, which the knowledge team maintains in the web app. The partners want the fields from that template applied to the freshly generated letter, and the template's own placeholder PDF must not appear in the client's envelope. The firm's logo was recently updated. How should the integration build the request?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Use two composite template objects: the first carries the generated PDF in its document property with an inline recipient, the second references Engagement Sign Block, so the template's fields join the envelope"
+      },
+      {
+        "id": "B",
+        "text": "Use one composite template object: put the generated PDF in its document property, reference Engagement Sign Block in serverTemplates with sequence 1, and map the client to the role in an inlineTemplate with sequence 2"
+      },
+      {
+        "id": "C",
+        "text": "Use the template reference model with templateId set to Engagement Sign Block, templateRoles for the client, and a documents array holding the generated PDF so it replaces the sample"
+      },
+      {
+        "id": "D",
+        "text": "Use one composite template object with the generated PDF inside the inline template's documents, giving the inline template sequence 1 and Engagement Sign Block sequence 2"
+      }
+    ],
+    "correct": "B",
+    "answerText": "Use one composite template object: put the generated PDF in its document property, reference Engagement Sign Block in serverTemplates with sequence 1, and map the client to the role in an inlineTemplate with sequence 2",
+    "explanation": "Only composite templates can apply a server template's fields to a document supplied at send time. Putting the letter in the composite object's document property makes it the only document for that object ('placeholder PDF must not appear'), and sequence 1 for the server template lets the inline template map the client to an existing role.",
+    "whyNotOthers": "B is right because the document property takes precedence over the template's own document in the same object. The trap is A: two objects means two documents, so the placeholder PDF would be in the envelope and the fields would land on it. C fails because the template reference model cannot replace the template's document, and D reverses the sequence and hides the PDF in the inline template.",
+    "optionExplanations": {
+      "A": "Each composite object contributes its own document, so the second object would add the template's placeholder PDF, and its fields would sit on that PDF, not on the letter.",
+      "B": "Correct. The document property supplies the one document for that object and wins over the template's document, while the server template contributes the fields and the inline template maps the client.",
+      "C": "The template reference model applies one template as is; it cannot swap in or add a dynamically supplied document. That needs composite templates.",
+      "D": "The lowest sequence that supplies a document wins, and attributes apply in sequence order, so the role would not exist when the inline template maps the client; the document property is also the recommended place for the PDF."
+    },
+    "trapOption": "A",
+    "importance": "HIGH",
+    "decode": {
+      "needs": "Composite template: document property + serverTemplate (seq 1) + inlineTemplate (seq 2) in one object",
+      "clues": [
+        "different letter for every client -> document supplied dynamically",
+        "fields already laid out in a server template -> serverTemplates reference",
+        "placeholder PDF must not appear -> one composite object whose document property overrides the template document",
+        "logo was recently updated -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "Server template fields on a new document",
+      "line": "Within one composite object the document property supplies the document and overrides template documents, while server and inline templates supply roles and tabs."
+    }
+  },
+  {
+    "paper": "E",
+    "length": "short",
+    "style": "fact",
+    "domain": "eSignature API",
+    "topic": "Direct documents model: required properties",
+    "stem": "Which set lists the four required JSON body properties of an Envelopes:create request that uses the direct documents model?",
+    "options": [
+      {
+        "id": "A",
+        "text": "emailSubject, documents, templateRoles, status"
+      },
+      {
+        "id": "B",
+        "text": "emailSubject, documents, recipients, routingOrder"
+      },
+      {
+        "id": "C",
+        "text": "emailBlurb, documents, recipients, status"
+      },
+      {
+        "id": "D",
+        "text": "emailSubject, documents, recipients, status"
+      }
+    ],
+    "correct": "D",
+    "answerText": "emailSubject, documents, recipients, status",
+    "explanation": "The course lists emailSubject, documents, recipients and status as the required properties for a direct documents request.",
+    "whyNotOthers": "D is right. The trap is A: templateRoles is required only in the template reference model, where there is no recipients array. B swaps status for a recipient-level setting and C swaps emailSubject for the optional body text.",
+    "optionExplanations": {
+      "A": "templateRoles belongs to the template reference model; direct documents define recipients.",
+      "B": "routingOrder is a per-recipient setting, not a required envelope-level property; status is required.",
+      "C": "emailBlurb is optional message text; the required property is emailSubject.",
+      "D": "Correct. These are the four required properties for the direct documents model."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "concept": {
+      "title": "Direct documents required properties",
+      "line": "Direct documents requests need emailSubject, documents, recipients and status; template reference needs status, templateId and templateRoles."
+    }
+  },
+  {
+    "paper": "E",
+    "length": "long",
+    "style": "design",
+    "domain": "eSignature API",
+    "topic": "Embedded signing: embeddedRecipientStartURL",
+    "stem": "Calder Mutual's policyholder portal lets customers sign renewal documents inside the portal right after they log in with the portal's two-step login. About a third of customers close the browser before signing. The business wants Docusign to send those customers a reminder email, but the link in that email must bring them back through the portal's login before the documents open, because the compliance team relies on that login as the identity check. The portal runs on a new cloud host. What should the envelope request contain for each customer?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Keep the clientUserId and set embeddedRecipientStartURL to the portal's signing page, so the Docusign email routes the customer through the portal, which requests a new recipient view"
+      },
+      {
+        "id": "B",
+        "text": "Keep the clientUserId on the customer and set embeddedRecipientStartURL to SIGN_AT_DOCUSIGN, so the Docusign email opens the embedded signing session directly for the customer"
+      },
+      {
+        "id": "C",
+        "text": "Remove the clientUserId when the customer leaves, so the customer becomes a remote signer and receives the standard Docusign email with a link that opens the documents to sign"
+      },
+      {
+        "id": "D",
+        "text": "Store the recipient view URL created at login and email it from the portal to customers who leave, so they can resume the same signing session later from that link"
+      }
+    ],
+    "correct": "A",
+    "answerText": "Keep the clientUserId and set embeddedRecipientStartURL to the portal's signing page, so the Docusign email routes the customer through the portal, which requests a new recipient view",
+    "explanation": "embeddedRecipientStartURL makes Docusign email an embedded recipient while routing the link back to your own URL, so your app can authenticate the user before calling createRecipient. The deciding clue is 'must bring them back through the portal's login'.",
+    "whyNotOthers": "A is right because the email link is redirected to the portal, which keeps control of authentication. The trap is B: SIGN_AT_DOCUSIGN does send an email, but it opens signing directly at Docusign and bypasses the portal login. C turns the customer into a remote signer outside the portal, and D reuses a URL that expires within minutes.",
+    "optionExplanations": {
+      "A": "Correct. With clientUserId and embeddedRecipientStartURL set, Docusign emails the embedded recipient and the link redirects through Docusign to your URL, where your app authenticates the user and requests the signing session.",
+      "B": "SIGN_AT_DOCUSIGN sends the recipient straight to signing at Docusign and bypasses the sending application and its authentication, which the stem forbids.",
+      "C": "A remote signer signs from the email link at Docusign without passing through the portal login, so the compliance requirement is lost.",
+      "D": "Recipient view URLs are short-lived and single-use, so a stored URL fails with ttl_expired; it also skips the portal login."
+    },
+    "trapOption": "B",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "clientUserId + embeddedRecipientStartURL pointing to the app (not SIGN_AT_DOCUSIGN)",
+      "clues": [
+        "sign inside the portal -> embedded signer with clientUserId",
+        "Docusign should send a reminder email -> embeddedRecipientStartURL makes Docusign email an embedded recipient",
+        "link must come back through the portal's login -> URL of your app, not SIGN_AT_DOCUSIGN",
+        "new cloud host -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "Email link for embedded signers",
+      "line": "embeddedRecipientStartURL lets Docusign email an embedded recipient; your URL keeps your authentication, SIGN_AT_DOCUSIGN bypasses it."
+    }
+  },
+  {
+    "paper": "E",
+    "length": "long",
+    "style": "design",
+    "domain": "eSignature API",
+    "topic": "Single envelope vs bulk send",
+    "stem": "The corporate secretary of Vantor Holdings must collect a unanimous written consent from the nine board members for a new share plan. Every director signs the same resolution, the directors may sign in any order, and the general counsel wants a single completed record that shows all nine signatures together for the minute book. The board portal already stores each director's email, and the resolution is a two-page PDF. Which approach fits?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Use bulk send with a list of nine copies, one per director, so each director gets the resolution at the same time and the batch status shows when all have signed"
+      },
+      {
+        "id": "B",
+        "text": "Create one envelope with nine signers numbered routingOrder 1 to 9, so each director signs in turn and the last signature completes the record"
+      },
+      {
+        "id": "C",
+        "text": "Create one envelope with the resolution and nine signers who all share routingOrder 1, so the directors sign in parallel and one completed envelope holds every signature"
+      },
+      {
+        "id": "D",
+        "text": "Create nine envelopes in a loop from the portal, one per director, and merge the nine signed PDFs into the minute book afterwards"
+      }
+    ],
+    "correct": "C",
+    "answerText": "Create one envelope with the resolution and nine signers who all share routingOrder 1, so the directors sign in parallel and one completed envelope holds every signature",
+    "explanation": "Bulk send is for sending the same agreement separately to many recipients. Here a fixed number of parties sign one document and the counsel wants 'a single completed record', so one envelope with parallel signers is the fit.",
+    "whyNotOthers": "C is right because one envelope with shared routing order yields one record and allows any order. The trap is A: bulk send gives each director their own envelope. B gives one record but imposes sequential signing, and D creates nine envelopes by hand.",
+    "optionExplanations": {
+      "A": "Bulk send creates a separate envelope for each copy, so there would be nine completed records, not one with all signatures.",
+      "B": "This produces one record, but sequential routing forces an order the stem says is not needed and slows completion.",
+      "C": "Correct. A fixed group signing the same document belongs in one envelope; the same routing order lets them sign in parallel.",
+      "D": "Nine envelopes give nine separate records and certificates; merging PDFs afterwards is not a single completed agreement."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "One envelope, multiple signers with the same routingOrder",
+      "clues": [
+        "same resolution, single completed record -> one envelope, not bulk send",
+        "sign in any order -> same routingOrder (parallel)",
+        "nine directors -> fixed number of parties, not a mass mailing",
+        "two-page PDF -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "One envelope or bulk send",
+      "line": "A fixed set of parties signing the same document uses one envelope; bulk send gives each recipient their own separate envelope."
+    }
+  },
+  {
+    "paper": "E",
+    "length": "short",
+    "style": "fact",
+    "domain": "eSignature API",
+    "topic": "Reading a request URL: recipient tabs",
+    "stem": "A log shows GET https://eu.docusign.net/restapi/v2.1/accounts/{accountId}/envelopes/{envelopeId}/recipients/2/tabs. What did the integration request?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Recipient 2's tabs in that envelope, in a developer (demo) account in the EU"
+      },
+      {
+        "id": "B",
+        "text": "The envelope's recipient list, filtered to the tab types they can fill"
+      },
+      {
+        "id": "C",
+        "text": "Recipient 2's tabs in that envelope, in a production account on the EU site"
+      },
+      {
+        "id": "D",
+        "text": "The tabs of role 2 in the server template the envelope came from"
+      }
+    ],
+    "correct": "C",
+    "answerText": "Recipient 2's tabs in that envelope, in a production account on the EU site",
+    "explanation": "The path segments read as: production site eu, REST API v2.1, account, envelope, recipient 2, tabs. This is the EnvelopeRecipientTabs:list call.",
+    "whyNotOthers": "C is right. The trap is A: the resource is right but demo uses demo.docusign.net, not eu. B misreads the path as the recipients list, and D confuses the envelope with a template.",
+    "optionExplanations": {
+      "A": "Demo accounts use demo.docusign.net; eu is a production site.",
+      "B": "The path ends in /recipients/2/tabs, which targets one recipient's tabs, not the recipient list.",
+      "C": "Correct. This is EnvelopeRecipientTabs:list, and eu.docusign.net is a production site.",
+      "D": "The path is under /envelopes/{envelopeId}, so it reads the envelope's recipient, not a template role."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "concept": {
+      "title": "Reading eSignature request URLs",
+      "line": "Host shows the environment and site, then /restapi/v2.1/accounts/{accountId}, then the resource path from envelope down to recipient and tabs."
+    }
+  },
+  {
+    "paper": "E",
+    "length": "long",
+    "style": "design",
+    "domain": "eSignature API",
+    "topic": "Troubleshooting: Part 11 with focused view",
+    "stem": "Helix Trials runs a patient-consent web app for clinical studies that must meet 21 CFR Part 11. Docusign has configured the production account for Part 11, and SMS authentication is enabled. The developers built embedded signing with focused view because the UX team likes its clean look, and they added an identityVerification object to the signer, but the consent sessions do not work. The study sponsor also asked for the sponsor's colours on the signing button. What should the team change?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Keep SMS identityVerification on the signer and switch the session to classic view, since identityVerification is not supported in focused view"
+      },
+      {
+        "id": "B",
+        "text": "Keep focused view and change the identityVerification to use SMS, then add the sponsor's colours through the Docusign JS style settings"
+      },
+      {
+        "id": "C",
+        "text": "Keep focused view and replace identityVerification with an accessCode texted to each patient, which Part 11 accepts as identity verification"
+      },
+      {
+        "id": "D",
+        "text": "Keep focused view and remove all tabs from the consent so it runs as a click-to-agree experience, which avoids needing the identity check at all"
+      }
+    ],
+    "correct": "A",
+    "answerText": "Keep SMS identityVerification on the signer and switch the session to classic view, since identityVerification is not supported in focused view",
+    "explanation": "For 21 CFR Part 11 the course requires a Part 11-configured account, SMS identity verification through identityVerification, and classic view, because identityVerification cannot be used with focused view.",
+    "whyNotOthers": "A is right because the failure comes from using identityVerification in focused view. The trap is B: it fixes a detail that was not the problem and keeps the unsupported view. C swaps in a method that is not the Part 11 one, and D removes the identity check altogether.",
+    "optionExplanations": {
+      "A": "Correct. Part 11 embedded signing needs identityVerification with SMS on a Part 11 account, and that parameter works only with classic view.",
+      "B": "SMS is the right method, but identityVerification is not supported with focused view, so the session still fails.",
+      "C": "Part 11 embedded signing requires identityVerification with SMS; an access code is not the specified Part 11 method.",
+      "D": "Dropping identity verification breaks the Part 11 requirement; click-to-agree is not a compliance workaround."
+    },
+    "trapOption": "B",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "Part 11 embedded signing = identityVerification (SMS) + Part 11 account + classic view",
+      "clues": [
+        "21 CFR Part 11 -> identityVerification with SMS, Part 11 account",
+        "focused view ... sessions do not work -> identityVerification is classic-view only",
+        "sponsor colours on the button -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "Part 11 needs classic view",
+      "line": "21 CFR Part 11 embedded signing uses identityVerification with SMS on a Part 11 account and works only with classic view."
+    }
+  },
+  {
+    "paper": "E",
+    "length": "long",
+    "style": "design",
+    "domain": "eSignature API",
+    "topic": "Embedded views: correcting a sent envelope",
+    "stem": "Northgate's procurement app sends purchase agreements to suppliers. Yesterday a buyer sent one with the signature field on the wrong page and the supplier contact's email slightly wrong; the supplier has not opened it. The buyer wants to open Docusign's own correction screen inside the procurement app, fix the field and the email, and resume the same envelope, without leaving the app or starting over. The app authenticates buyers with Authorization Code Grant. Which call should the app make?",
+    "options": [
+      {
+        "id": "A",
+        "text": "EnvelopeViews:createSender for the sent envelope, then show the returned URL so the buyer can re-tag and send it"
+      },
+      {
+        "id": "B",
+        "text": "EnvelopeViews:createConsole, then let the buyer find the envelope in the Docusign web app and correct it there"
+      },
+      {
+        "id": "C",
+        "text": "Envelopes:update with status voided, then create a corrected copy as a draft and open EnvelopeViews:createSender"
+      },
+      {
+        "id": "D",
+        "text": "EnvelopeViews:createCorrect for the sent envelope, then show the returned URL to the buyer inside the app"
+      }
+    ],
+    "correct": "D",
+    "answerText": "EnvelopeViews:createCorrect for the sent envelope, then show the returned URL to the buyer inside the app",
+    "explanation": "The correction view (EnvelopeViews:createCorrect) is the embedded view for an envelope that 'has already been sent'. The clue is 'correction screen inside the app ... resume the same envelope'.",
+    "whyNotOthers": "D is right because it opens the correction UI for this sent envelope. The trap is A: createSender is the embedded sending view, which works on drafts, not on envelopes already sent. B opens the general web app rather than this envelope's correction screen, and C voids and restarts, which the buyer ruled out.",
+    "optionExplanations": {
+      "A": "The sender view is for preparing a draft (status created) envelope before sending; it is not the correction view for a sent envelope.",
+      "B": "The console view embeds the whole web app; it works but does not take the buyer to the correction screen of this envelope, which is the stated need.",
+      "C": "Voiding ends the envelope; the buyer wants to resume the same envelope, not start over.",
+      "D": "Correct. createCorrect returns a URL for the correction view of an envelope that has already been sent."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "Embedded correct view: EnvelopeViews:createCorrect",
+      "clues": [
+        "already sent, supplier has not opened it -> in-process envelope can still be corrected",
+        "Docusign's own correction screen inside the app -> embedded correct view",
+        "resume the same envelope, not start over -> no void and resend",
+        "Authorization Code Grant -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "Sender view vs correct view",
+      "line": "createSender embeds tagging and sending of a draft; createCorrect embeds correction of an envelope that has already been sent."
+    }
+  },
+  {
+    "paper": "E",
+    "length": "short",
+    "style": "fact",
+    "domain": "eSignature API",
+    "topic": "returnUrl events: ttl_expired",
+    "stem": "A tester opens an embedded signing URL, closes the tab, and pastes the same URL into a new tab two minutes later. Which event does Docusign append to the returnUrl?",
+    "options": [
+      {
+        "id": "A",
+        "text": "session_timeout"
+      },
+      {
+        "id": "B",
+        "text": "ttl_expired"
+      },
+      {
+        "id": "C",
+        "text": "cancel"
+      },
+      {
+        "id": "D",
+        "text": "exception"
+      }
+    ],
+    "correct": "B",
+    "answerText": "ttl_expired",
+    "explanation": "Recipient view URLs are single-use. Opening one again reports ttl_expired ('the token has already been accessed'), even within the five-minute lifetime.",
+    "whyNotOthers": "B is right because the URL had already been redeemed. The trap is A: session_timeout is about inactivity inside an open session, not reuse of the link. C is Finish Later and D is an error event.",
+    "optionExplanations": {
+      "A": "session_timeout means the signer did not finish within the session timeout (20 minutes) of an active session.",
+      "B": "Correct. ttl_expired means the token was not used within the timeout period or had already been accessed.",
+      "C": "cancel is sent when the signer chooses Finish Later.",
+      "D": "exception reports an error during the signing session, not reuse of a URL."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "concept": {
+      "title": "Signing URLs are single-use",
+      "line": "A recipient view URL used twice or after its short lifetime returns ttl_expired; request a fresh URL instead."
+    }
+  },
+  {
+    "paper": "E",
+    "length": "long",
+    "style": "design",
+    "domain": "eSignature API",
+    "topic": "Focused view best practices",
+    "stem": "Lumen Telecom embeds contract signing in its responsive website with focused view and Docusign JS. Customers report two problems: the agreement takes several seconds to appear after they press Review contract, and on small phones the agreement is cut off at the side. Customers are otherwise happy with the signing experience itself. The marketing team has also asked for the brand's teal colour on the Finish button. Which two changes address the two reported problems? (Select two)",
+    "options": [
+      {
+        "id": "A",
+        "text": "Load the Docusign JS script asynchronously when the page loads, before the signing URL is ready for loadDocuSign"
+      },
+      {
+        "id": "B",
+        "text": "Trigger the next steps from the sessionEnd event handler instead of waiting for the returnUrl redirect"
+      },
+      {
+        "id": "C",
+        "text": "Set the container div to the default 400px height and full width so the agreement keeps its designed size"
+      },
+      {
+        "id": "D",
+        "text": "Size the div that holds the agreement as a percentage of the screen rather than a fixed number of pixels"
+      },
+      {
+        "id": "E",
+        "text": "Open the signing URL in a new browser tab instead of an iframe on mobile browsers"
+      }
+    ],
+    "correct": "A,D",
+    "correctAnswers": [
+      "A",
+      "D"
+    ],
+    "answerText": "Load the Docusign JS script asynchronously when the page loads, before the signing URL is ready for loadDocuSign; Size the div that holds the agreement as a percentage of the screen rather than a fixed number of pixels",
+    "explanation": "The two problems map to two focused view best practices: load the script asynchronously before the URL is ready ('takes several seconds to appear') and scale the container by percentage ('cut off on small phones').",
+    "whyNotOthers": "A and D are right because they target load time and screen fit. The trap is B: event handlers are good practice but do not fix either reported problem. C keeps the fixed size that causes the cut-off, and E is classic view guidance.",
+    "optionExplanations": {
+      "A": "Correct. Loading the script early and asynchronously is the recommended way to improve focused view load time.",
+      "B": "This is a real focused view best practice, but it handles what happens after signing; it fixes neither the load delay nor the cut-off.",
+      "C": "Fixed pixel sizing is what causes the poor fit; Docusign recommends overriding the defaults to fit the page.",
+      "D": "Correct. Percentage sizing makes the focused view fit any screen size.",
+      "E": "This is the classic view advice for mobile; focused view is rendered with Docusign JS in a div, not by redirecting to a tab."
+    },
+    "trapOption": "B",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "Focused view best practices: async script loading and percentage-sized container",
+      "clues": [
+        "takes several seconds to appear -> load Docusign JS asynchronously early",
+        "cut off on small phones -> size the div by percentage",
+        "teal Finish button -> red herring (style settings)"
+      ]
+    },
+    "concept": {
+      "title": "Focused view performance and fit",
+      "line": "Load Docusign JS asynchronously before the URL exists, size the container by percentage, and use event handlers for next steps."
+    }
+  },
+  {
+    "paper": "E",
+    "length": "long",
+    "style": "design",
+    "domain": "eSignature API",
+    "topic": "CORS: authentication for a single-page app",
+    "stem": "Ostara Labs built an internal single-page app that calls the eSignature API from the browser through CORS. It was written two years ago with Implicit Grant. The security team now asks the developers to move to the flow Docusign recommends for single-page apps, without adding a back-end server, and to keep the app's existing CORS origins. The app is hosted on a content delivery network. What should the developers do?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Create a new integration key set to Public Authorization Code Grant with CORS configured, enable CORS for OAuth calls, request the signature and cors scopes, and update the app to use the new key"
+      },
+      {
+        "id": "B",
+        "text": "Change the existing integration key's authentication method from Implicit Grant to Public Authorization Code Grant, enable CORS for OAuth calls, and request the signature and cors scopes"
+      },
+      {
+        "id": "C",
+        "text": "Keep Implicit Grant but add the cors scope to the authorization request, because Implicit Grant is the only flow that runs entirely in the browser"
+      },
+      {
+        "id": "D",
+        "text": "Switch to JWT Grant and build the assertion in the browser with the RSA private key, so no user login is needed"
+      }
+    ],
+    "correct": "A",
+    "answerText": "Create a new integration key set to Public Authorization Code Grant with CORS configured, enable CORS for OAuth calls, request the signature and cors scopes, and update the app to use the new key",
+    "explanation": "Docusign recommends Public Authorization Code Grant (no secret) for SPAs. To move from Implicit Grant you create a new integration key with that method, allow CORS for OAuth calls, and request signature plus cors.",
+    "whyNotOthers": "A is right because it follows the documented migration path. The trap is B: the settings are right, but the existing key cannot just be switched; a new key is required. C keeps the flow the security team wants to retire, and D exposes a private key in the browser.",
+    "optionExplanations": {
+      "A": "Correct. Moving from Implicit Grant to Public Authorization Code Grant requires a new integration key; that method also needs the option to allow CORS for OAuth calls.",
+      "B": "The method of an existing SPA key cannot simply be switched; Docusign says to create a new integration key for Public Authorization Code Grant.",
+      "C": "Implicit Grant still works with CORS, but the recommended flow for SPAs is Public Authorization Code Grant, which the security team asked for.",
+      "D": "A private key in browser code is exposed to every user; JWT is for confidential server-side apps."
+    },
+    "trapOption": "B",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "SPA + CORS: Public Authorization Code Grant on a new integration key, cors scope",
+      "clues": [
+        "move to the flow Docusign recommends for SPAs -> Public Authorization Code Grant (PKCE, no secret)",
+        "written with Implicit Grant -> changing method needs a new integration key",
+        "no back-end server -> CORS, not a proxy",
+        "hosted on a CDN -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "CORS SPA authentication",
+      "line": "SPAs using CORS should use Public Authorization Code Grant with signature and cors scopes; moving from Implicit Grant needs a new integration key."
+    }
+  },
+  {
+    "paper": "F",
+    "length": "long",
+    "style": "design",
+    "domain": "eSignature API",
+    "topic": "Document generation template: send sequence",
+    "stem": "Kestrel Robotics' HR system must send offer letters from a document generation template that already contains the candidate name, job title, start date and salary placeholders, plus a relocation clause that appears only when relocation is offered. Recruiters never touch Docusign; an unattended back-office job sends each offer as soon as the hiring manager approves it in the HR system. The letters use the company's new font. Which sequence of calls should the job use?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Envelopes:create (templateId, templateRoles, status sent); getEnvelopeDocGenFormFields; updateEnvelopeDocGenFormFields with the values so the letter is complete"
+      },
+      {
+        "id": "B",
+        "text": "Envelopes:create (templateId, templateRoles, status created); getEnvelopeDocGenFormFields; updateEnvelopeDocGenFormFields with the values; Envelopes:update to status sent"
+      },
+      {
+        "id": "C",
+        "text": "Envelopes:create with templateId, status created and templateRoles whose textTabs carry the values by tabLabel; Envelopes:update with status sent"
+      },
+      {
+        "id": "D",
+        "text": "Envelopes:create with compositeTemplates and an inline template holding the values; updateEnvelopeDocGenFormFields; Envelopes:update to status sent"
+      }
+    ],
+    "correct": "B",
+    "answerText": "Envelopes:create (templateId, templateRoles, status created); getEnvelopeDocGenFormFields; updateEnvelopeDocGenFormFields with the values; Envelopes:update to status sent",
+    "explanation": "A document generation template is sent in four steps: create a draft (status created), get the docGenFormFields, update them with values (conditional content such as the relocation clause is applied here), then set status to sent.",
+    "whyNotOthers": "B is right because the fields must be filled while the envelope is still a draft. The trap is A: the calls are right but the envelope is already sent before the values are added. C uses the standard-template tabLabel technique, and D puts the data in the wrong structure and skips reading the field names.",
+    "optionExplanations": {
+      "A": "With status sent the envelope goes out before the fields are filled; the document generation flow requires a draft created with status created.",
+      "B": "Correct. Document generation needs a draft envelope, then the field list, then the values (where conditional content is applied), then the send.",
+      "C": "Pre-filling tabs by tabLabel is for standard templates; document generation fields are filled through the docGenFormFields endpoints.",
+      "D": "The course flow starts from the template reference request with status created and reads the field names first; values go into docGenFormFields, not an inline template."
+    },
+    "trapOption": "A",
+    "importance": "HIGH",
+    "decode": {
+      "needs": "Doc gen: create draft -> get docGenFormFields -> update docGenFormFields -> status sent",
+      "clues": [
+        "document generation template with placeholders -> docGenFormFields endpoints",
+        "clause appears only when relocation is offered -> conditional content applied at the update step",
+        "unattended back-office job -> fully API-driven, no sender UI",
+        "new font -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "Document generation send flow",
+      "line": "Create the envelope as a draft, read and fill docGenFormFields, then change status to sent."
+    }
+  },
+  {
+    "paper": "F",
+    "length": "short",
+    "style": "fact",
+    "domain": "eSignature API",
+    "topic": "Required headers for Envelopes:create",
+    "stem": "Which two request headers does the course list as required for an Envelopes:create call? (Select two)",
+    "options": [
+      {
+        "id": "A",
+        "text": "Accept: application/json"
+      },
+      {
+        "id": "B",
+        "text": "Authorization: Bearer followed by the OAuth access token"
+      },
+      {
+        "id": "C",
+        "text": "Authorization: Basic with the base64 integration key and secret"
+      },
+      {
+        "id": "D",
+        "text": "X-DocuSign-Authentication with the user's name and password"
+      },
+      {
+        "id": "E",
+        "text": "Content-Type: application/json (or multipart for binary documents)"
+      }
+    ],
+    "correct": "B,E",
+    "correctAnswers": [
+      "B",
+      "E"
+    ],
+    "answerText": "Authorization: Bearer followed by the OAuth access token; Content-Type: application/json (or multipart for binary documents)",
+    "explanation": "A request to create an envelope must include the Authorization header (Bearer plus the access token) and the Content-Type header.",
+    "whyNotOthers": "B and E are the two required headers. The trap is A: Accept appears in many samples but is not required. C belongs to the token request, and D is legacy authentication.",
+    "optionExplanations": {
+      "A": "Common in samples, but not one of the two required headers.",
+      "B": "Correct. The Authorization header carries Bearer plus a valid access token.",
+      "C": "Basic credentials are used at the OAuth token endpoint, not on eSignature API calls.",
+      "D": "Legacy header authentication is not the OAuth Bearer header the course requires.",
+      "E": "Correct. Content-Type is the second required header."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "concept": {
+      "title": "Envelope request headers",
+      "line": "eSignature calls need Authorization: Bearer {token} and Content-Type; Basic credentials are for the OAuth token endpoint."
+    }
+  },
+  {
+    "paper": "F",
+    "length": "long",
+    "style": "design",
+    "domain": "eSignature API",
+    "topic": "Native mobile embedded signing: returnUrl handling",
+    "stem": "Arbor Bank's Android app shows loan agreements for signing inside an in-app WebView using classic view. When the borrower finishes, the app must close the WebView and show its own confirmation screen instead of loading any web page. The developers want to follow Docusign's native mobile guidance, and the product owner insists that no Docusign or bank web page flashes on screen after the borrower taps Finish. The app also has an iPad version built by a separate team. What should the Android team do?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Use a custom host such as https://arborloans/ as the returnUrl and handle it in WebViewClient.shouldOverrideUrlLoading, returning false so the WebView loads the return page before closing"
+      },
+      {
+        "id": "B",
+        "text": "Use the public website's thank-you page as the returnUrl and close the WebView after the page has finished loading"
+      },
+      {
+        "id": "C",
+        "text": "Render the agreement with focused view and add the app's package name to frameAncestors so the WebView can host it"
+      },
+      {
+        "id": "D",
+        "text": "Use a custom host such as https://arborloans/ as the returnUrl and handle it in WebViewClient.shouldOverrideUrlLoading, returning true when the URL matches that host and reading the event parameter"
+      }
+    ],
+    "correct": "D",
+    "answerText": "Use a custom host such as https://arborloans/ as the returnUrl and handle it in WebViewClient.shouldOverrideUrlLoading, returning true when the URL matches that host and reading the event parameter",
+    "explanation": "For native apps Docusign recommends a custom host for the returnUrl and returning true when a URL change matches that host; on Android this is done in WebViewClient.shouldOverrideUrlLoading.",
+    "whyNotOthers": "D is right because it intercepts the redirect before any page loads. The trap is A: the same approach, but returning false lets the WebView navigate. B loads a real web page, and C misuses frameAncestors and changes the view.",
+    "optionExplanations": {
+      "A": "Returning false lets the WebView load the URL; the guidance is to return true for URLs that match your host so the app handles the event.",
+      "B": "This loads a web page, which the app wants to avoid, and does not follow the custom host guidance.",
+      "C": "frameAncestors lists web origins allowed to frame focused view; it is not how a native app detects completion, and the bank uses classic view.",
+      "D": "Correct. Docusign's guidance for native apps: custom returnUrl host, return true for URLs that match it, and for Android handle it in shouldOverrideUrlLoading."
+    },
+    "trapOption": "A",
+    "importance": "LOW",
+    "decode": {
+      "needs": "Native mobile: custom returnUrl host intercepted in shouldOverrideUrlLoading (return true)",
+      "clues": [
+        "Android app WebView -> WebViewClient.shouldOverrideUrlLoading",
+        "close the WebView instead of loading any page -> intercept the custom host and return true",
+        "iPad version by a separate team -> red herring (WKWebView is the iOS route)"
+      ]
+    },
+    "concept": {
+      "title": "returnUrl in native apps",
+      "line": "Native apps use a custom returnUrl host, intercept it (Android shouldOverrideUrlLoading, iOS WKWebView) and return true to handle the event."
+    }
+  },
+  {
+    "paper": "F",
+    "length": "long",
+    "style": "design",
+    "domain": "eSignature API",
+    "topic": "Bulk send from a server template",
+    "stem": "Every March, Pellucid Foods must collect a signed food-safety pledge from about 700 franchise owners. The pledge already exists as a server template with a single role named franchisee, and the operations director does not want developers to rebuild or copy the document each year. A headless scheduled job reads the owner list from the franchise database. The pledge was translated into Spanish last year. How should the job send the pledges?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Create a bulk send list, create an envelope from the template with status sent to the first owner, then call createBulkSendRequest with that envelope's ID as the source"
+      },
+      {
+        "id": "B",
+        "text": "Loop through the 700 owners and call Envelopes:create with templateId, templateRoles for the owner and status sent for each one"
+      },
+      {
+        "id": "C",
+        "text": "Create a bulk send list mapping each owner to the franchisee role, test it with the template ID as envelopeOrTemplateId, then call createBulkSendRequest with that ID"
+      },
+      {
+        "id": "D",
+        "text": "Create one envelope from the template with 700 signers mapped to the franchisee role in templateRoles, so every owner signs the same pledge in a single run"
+      }
+    ],
+    "correct": "C",
+    "answerText": "Create a bulk send list mapping each owner to the franchisee role, test it with the template ID as envelopeOrTemplateId, then call createBulkSendRequest with that ID",
+    "explanation": "The bulk send test and send requests take envelopeOrTemplateId, so an existing server template can be the source ('does not want developers to rebuild the document'). Each copy in the list becomes its own envelope.",
+    "whyNotOthers": "C is right because it reuses the template directly. The trap is A: using an envelope is valid, but only a draft one; status sent dispatches it to the first owner. B works but wastes calls and ignores bulk send, and D puts everyone on one agreement.",
+    "optionExplanations": {
+      "A": "The envelope used for bulk send must be a draft; an envelope created with status sent goes to that owner immediately.",
+      "B": "This works but makes 700 separate API calls under the hourly limit; bulk send is the designed way to send one agreement to many recipients.",
+      "C": "Correct. Bulk send v2.1 accepts an envelope or a template as envelopeOrTemplateId, so the existing template can be used without building a draft envelope.",
+      "D": "One envelope would make all owners sign one shared agreement; each owner needs their own pledge."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "Bulk send with envelopeOrTemplateId = existing template ID",
+      "clues": [
+        "700 owners each sign their own pledge -> bulk send",
+        "pledge already exists as a server template -> envelopeOrTemplateId can be the template",
+        "headless scheduled job -> API-only bulk send flow",
+        "translated into Spanish -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "Bulk send source envelope or template",
+      "line": "createBulkSendTestRequest and createBulkSendRequest take envelopeOrTemplateId, so a draft envelope or a template can be the source."
+    }
+  },
+  {
+    "paper": "F",
+    "length": "short",
+    "style": "fact",
+    "domain": "eSignature API",
+    "topic": "Base URI: production site segment",
+    "stem": "In the production base URI https://{site}.docusign.net/restapi, what does {site} identify?",
+    "options": [
+      {
+        "id": "A",
+        "text": "The region chosen for the integration key during the go-live review"
+      },
+      {
+        "id": "B",
+        "text": "The Docusign site that hosts the account, such as na3, eu or au"
+      },
+      {
+        "id": "C",
+        "text": "The organization's claimed email domain in Docusign Admin"
+      },
+      {
+        "id": "D",
+        "text": "The REST API version used by the integration"
+      }
+    ],
+    "correct": "B",
+    "answerText": "The Docusign site that hosts the account, such as na3, eu or au",
+    "explanation": "In production the host is {site}.docusign.net, where {site} is the site hosting the account (na3, eu, au). Development uses demo.docusign.net.",
+    "whyNotOthers": "B is right. The trap is A: go-live promotes the key, but the host depends on the account's site. C and D confuse the host with an Admin setting and with the version segment.",
+    "optionExplanations": {
+      "A": "Integration keys are not tied to a site segment in this URI; the account's site decides it.",
+      "B": "Correct. The site is where the account lives; read it from base_uri in the userinfo response.",
+      "C": "Domains are an Admin concept and do not appear in the API host.",
+      "D": "The version is the /v2.1 segment after /restapi, not the host."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "concept": {
+      "title": "Production base URI",
+      "line": "Production calls go to https://{site}.docusign.net/restapi, where site is the account's host site; demo uses demo.docusign.net."
+    }
+  },
+  {
+    "paper": "F",
+    "length": "long",
+    "style": "design",
+    "domain": "eSignature API",
+    "topic": "CORS errors: account-level setting",
+    "stem": "Tessaly sells a single-page scheduling app to clinics. The app calls the eSignature API from the browser through CORS, its integration key lists the app's origin and the needed HTTP methods, and it requests the signature and cors scopes. Clinics that have used it for months work fine, but a new clinic group, whose users consented to the app last week, gets 403 errors on every CORS request, while a non-CORS test call made with the same key from a server succeeds for that group. The new clinic group uses a different email provider. What is the most likely fix?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Add the new clinic group's own website domain to the integration key's allowed origins list"
+      },
+      {
+        "id": "B",
+        "text": "Add the cors scope again and ask every user in the new clinic group to grant consent a second time"
+      },
+      {
+        "id": "C",
+        "text": "Add OPTIONS and DELETE to the integration key's allowed HTTP methods so the browser preflight succeeds"
+      },
+      {
+        "id": "D",
+        "text": "Ask the new clinic group's account administrator to allow CORS for all apps or for this app"
+      }
+    ],
+    "correct": "D",
+    "answerText": "Ask the new clinic group's account administrator to allow CORS for all apps or for this app",
+    "explanation": "CORS settings exist at two levels: the app (origins, methods) and the account (admin enables or disables CORS for all or specific apps). Only the new account fails, and non-CORS calls work, so the account-level setting is off.",
+    "whyNotOthers": "D is right because the account administrator controls whether CORS requests from apps are accepted for that account. The trap is A: origins are the app's script origin, not the customer's site. B repeats steps that already work, and C changes app settings that work for every other clinic.",
+    "optionExplanations": {
+      "A": "Allowed origins are the origins of the script making the calls, which is the app's origin, already listed; the clinic's website is irrelevant.",
+      "B": "The app already requests cors and the users have consented; the server-side test shows authentication works.",
+      "C": "The same methods work for the other clinics, so the app-level method list is not what differs for this account.",
+      "D": "Correct. Docusign checks both the app's CORS settings and the account-level setting; if the user's account admin has not enabled CORS, CORS requests are rejected."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "Account admin must enable CORS for the app in that account",
+      "clues": [
+        "only the new clinic group fails -> account-specific setting",
+        "non-CORS call with the same key succeeds -> auth is fine, CORS is blocked",
+        "app origin and methods already configured -> app-level settings are fine",
+        "different email provider -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "Two levels of CORS settings",
+      "line": "An app defines CORS origins and methods; each customer account admin must also allow CORS for that app, or requests get 403/400."
+    }
+  },
+  {
+    "paper": "F",
+    "length": "long",
+    "style": "fact",
+    "domain": "eSignature API",
+    "topic": "Composite templates: sequence rules for documents and attributes",
+    "stem": "A developer at Brightwater Leasing reviews one composite template object in an envelope request. It has no document property. It contains a server template with sequence 1, which supplies the lease PDF and defines the lessee role and its tabs, and an inline template with sequence 2, which supplies a different PDF in its documents array and maps a recipient to the lessee role. The finance team wants to know what the resulting envelope will contain. Which two statements are true? (Select two)",
+    "options": [
+      {
+        "id": "A",
+        "text": "The inline template's PDF replaces the lease PDF, because the higher sequence overrides what came before"
+      },
+      {
+        "id": "B",
+        "text": "Both PDFs appear in the envelope, one after the other, because each template in the object adds its own document"
+      },
+      {
+        "id": "C",
+        "text": "The lease PDF from the server template is the document contributed by this object, because the lowest sequence that supplies a document wins"
+      },
+      {
+        "id": "D",
+        "text": "The request is invalid, because sequence values must be unique across every composite template object in the envelope"
+      },
+      {
+        "id": "E",
+        "text": "The recipient from the inline template is assigned to the lessee role and its tabs, because later sequences overlay attributes"
+      }
+    ],
+    "correct": "C,E",
+    "correctAnswers": [
+      "C",
+      "E"
+    ],
+    "answerText": "The lease PDF from the server template is the document contributed by this object, because the lowest sequence that supplies a document wins; The recipient from the inline template is assigned to the lessee role and its tabs, because later sequences overlay attributes",
+    "explanation": "Within one composite object, documents follow 'first in wins' (document property, else lowest sequence that supplies one) while recipients and tabs follow 'last in wins'.",
+    "whyNotOthers": "C and E are right because documents and attributes are prioritised in opposite directions. The trap is A: it applies the attribute rule to documents. B ignores the one-document-per-object rule, and D misstates the scope of sequence uniqueness.",
+    "optionExplanations": {
+      "A": "Last in wins applies to attributes such as recipients and tabs; documents follow first in wins.",
+      "B": "Each composite template object contributes only one document.",
+      "C": "Correct. With no document property, the template with the lowest sequence that supplies a document contributes it.",
+      "D": "Sequence values must be unique within a composite template object; numbering can restart at 1 in each object.",
+      "E": "Correct. Attributes follow last in wins, so the inline template's recipient is applied after the server template defines the role."
+    },
+    "trapOption": "A",
+    "importance": "HIGH",
+    "decode": {
+      "needs": "Composite priority rules: documents first in wins, attributes last in wins",
+      "clues": [
+        "no document property -> lowest sequence supplying a document wins",
+        "inline template seq 2 maps a recipient -> attributes overlay in sequence order",
+        "two PDFs in one object -> only one is contributed"
+      ]
+    },
+    "concept": {
+      "title": "Composite document and attribute priority",
+      "line": "Per composite object: document property first, else lowest sequence document; recipients and tabs from higher sequences overwrite lower ones."
+    }
+  },
+  {
+    "paper": "F",
+    "length": "short",
+    "style": "design",
+    "domain": "eSignature API",
+    "topic": "In-person signing hosted by an employee",
+    "stem": "At Corbel Credit Union branches, an employee hands a tablet to a walk-in member who has no email address, and the audit trail must show which employee hosted the signing. Which recipient setup fits?",
+    "options": [
+      {
+        "id": "A",
+        "text": "An inPersonSigner with the employee as host (hostName, hostEmail) and the member as signerName"
+      },
+      {
+        "id": "B",
+        "text": "A signer with a clientUserId and the employee's email, so the member signs on the tablet"
+      },
+      {
+        "id": "C",
+        "text": "A carbon copy for the employee and a remote signer for the member at a branch mailbox"
+      },
+      {
+        "id": "D",
+        "text": "An agent recipient for the employee, who then names the member as signer by email"
+      }
+    ],
+    "correct": "A",
+    "answerText": "An inPersonSigner with the employee as host (hostName, hostEmail) and the member as signerName",
+    "explanation": "In person signing is designed for a host who facilitates the session for a signer in the same location; hostName and hostEmail identify the employee and signerName the member.",
+    "whyNotOthers": "A is right because it records the host and needs no member email. The trap is B: embedded signing on a tablet sounds right, but the identity recorded would be the employee's. C needs an email the member lacks, and D misuses the agent role.",
+    "optionExplanations": {
+      "A": "Correct. In person signing lets a host facilitate a session for a signer who is physically present, and records the host.",
+      "B": "The member would sign as the employee, and the record would not show a hosted session for the member.",
+      "C": "The member has no email, and a carbon copy does not host the session.",
+      "D": "An agent chooses the next recipient by email; it does not host a face-to-face session for someone without email."
+    },
+    "trapOption": "B",
+    "importance": "LOW",
+    "concept": {
+      "title": "Hosted in-person signing",
+      "line": "Use an inPersonSigner with host details when an employee hosts signing for someone physically present."
+    }
+  },
+  {
+    "paper": "F",
+    "length": "long",
+    "style": "design",
+    "domain": "eSignature API",
+    "topic": "Per-envelope reminders and expiration",
+    "stem": "Saltmarsh Solar's quoting tool sends price quotes for signature. Because panel prices change, sales leadership wants every quote to expire 14 days after it is sent, with a reminder email every 3 days until then. Other departments that send from the same Docusign account need the account's default reminder and expiration settings to stay as they are. The quotes are generated as PDFs from the pricing engine. How should the integration handle this?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Ask the account administrator to change the account's default reminder and expiration settings to 3 and 14 days for all senders"
+      },
+      {
+        "id": "B",
+        "text": "Schedule a job that calls Envelopes:update with resend_envelope every 3 days and sets status voided after 14 days"
+      },
+      {
+        "id": "C",
+        "text": "Add a notification object to each request with useAccountDefaults false, reminders every 3 days and expiration after 14 days"
+      },
+      {
+        "id": "D",
+        "text": "Add a notification object to each request with useAccountDefaults true and the reminder and expiration values set inside it"
+      }
+    ],
+    "correct": "C",
+    "answerText": "Add a notification object to each request with useAccountDefaults false, reminders every 3 days and expiration after 14 days",
+    "explanation": "The notification object in Envelopes:create sets reminders and expirations for one envelope; useAccountDefaults must be false for those values to apply. The clue is that other departments must keep the defaults.",
+    "whyNotOthers": "C is right because it scopes the settings to each quote. The trap is D: the structure looks the same, but useAccountDefaults true makes Docusign use the account settings. A changes every department's envelopes, and B replaces built-in features with costly custom calls.",
+    "optionExplanations": {
+      "A": "This changes the behaviour for every department on the account, which the stem rules out.",
+      "B": "This rebuilds reminders and expiry with many extra API calls, and voiding is not the same as an expiration setting.",
+      "C": "Correct. The envelope-level notification object overrides reminders and expiration for that envelope only.",
+      "D": "With useAccountDefaults true the account settings apply and the per-envelope values are ignored."
+    },
+    "trapOption": "D",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "Envelope-level notification object with useAccountDefaults false",
+      "clues": [
+        "expire 14 days, remind every 3 days -> expirations and reminders",
+        "other departments keep defaults -> envelope-level, not account-level",
+        "PDFs from the pricing engine -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "Per-envelope reminders and expiration",
+      "line": "Set reminders and expirations in the envelope's notification object with useAccountDefaults false to override account defaults for that envelope only."
+    }
+  },
+  {
+    "paper": "F",
+    "length": "short",
+    "style": "fact",
+    "domain": "eSignature API",
+    "topic": "Troubleshooting: createRecipient on a draft",
+    "stem": "An app creates an envelope with status created and immediately calls EnvelopeViews:createRecipient for the signer, who has a clientUserId. The call fails. What is the fix?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Add the returnUrl value to the integration key's redirect URIs and retry the call"
+      },
+      {
+        "id": "B",
+        "text": "Call EnvelopeViews:createSender instead, since the signer needs a draft view"
+      },
+      {
+        "id": "C",
+        "text": "Send the envelope first (status sent), then request the recipient view"
+      },
+      {
+        "id": "D",
+        "text": "Remove the clientUserId so the signer can open the draft from email"
+      }
+    ],
+    "correct": "C",
+    "answerText": "Send the envelope first (status sent), then request the recipient view",
+    "explanation": "The recipient view is only available for envelopes in the sent status, which is why embedded signing requires status sent.",
+    "whyNotOthers": "C is right. The trap is A: registering the returnUrl is a real requirement but not this failure. B opens the wrong view for a signer, and D abandons embedded signing.",
+    "optionExplanations": {
+      "A": "A new returnUrl does need to be registered, but the cause here is the envelope's draft status.",
+      "B": "The sender view is for the sender preparing a draft, not for a signer.",
+      "C": "Correct. createRecipient is only used with envelopes in sent status.",
+      "D": "Without clientUserId the signer is remote, and a draft envelope sends no email anyway."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "concept": {
+      "title": "Recipient view needs a sent envelope",
+      "line": "EnvelopeViews:createRecipient works only for envelopes in sent status; drafts must be sent first."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "long",
+    "style": "design",
+    "domain": "eSignature API",
+    "topic": "Routing order: parallel and sequential recipients",
+    "stem": "Quillon Ventures closes seed investments with a single subscription agreement. The two co-founders of the startup must both sign, in either order, before the lead investor countersigns. After the investor signs, the fund's legal team needs a copy but takes no action. The fund administrator, who prepares the documents in the fund's deal-tracking system, also wants the envelope to finish as quickly as possible. Which recipient setup should the integration send?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Co-founders as signers with routingOrder 1 and 1, the investor as a signer with routingOrder 2, and legal as a carbon copy with routingOrder 3"
+      },
+      {
+        "id": "B",
+        "text": "Co-founders as signers with routingOrder 1 and 2, the investor as a signer with routingOrder 3, and legal as a carbon copy with routingOrder 4"
+      },
+      {
+        "id": "C",
+        "text": "Co-founders and the investor as signers with routingOrder 1, and legal as a carbon copy with routingOrder 2"
+      },
+      {
+        "id": "D",
+        "text": "Co-founders as signers with routingOrder 1 and 1, the investor as a signer with routingOrder 2, and legal as a certified delivery recipient with routingOrder 3"
+      }
+    ],
+    "correct": "A",
+    "answerText": "Co-founders as signers with routingOrder 1 and 1, the investor as a signer with routingOrder 2, and legal as a carbon copy with routingOrder 3",
+    "explanation": "Same routingOrder means parallel; increasing routingOrder means sequential. The co-founders sign 'in either order' (same number), the investor 'countersigns' after (next number), and legal 'takes no action' (carbon copy).",
+    "whyNotOthers": "A is right because it allows parallel founders, then the investor, then a copy. The trap is B: the sequence is valid, but it makes the founders sign one after the other. C lets the investor sign too early, and D gives legal a required viewing step.",
+    "optionExplanations": {
+      "A": "Correct. Recipients with the same routing order act in parallel; higher numbers wait until the lower step is finished.",
+      "B": "This works but forces the second co-founder to wait for the first, which the stem says is not needed and slows completion.",
+      "C": "The investor would be able to sign before the co-founders, breaking the required countersignature order.",
+      "D": "A certified delivery recipient must open the documents to complete the envelope, which adds an action; legal only needs a copy."
+    },
+    "trapOption": "B",
+    "importance": "HIGH",
+    "decode": {
+      "needs": "routingOrder 1,1 for founders, 2 for investor, carbon copy at 3",
+      "clues": [
+        "both sign in either order -> same routingOrder (parallel)",
+        "before the lead investor countersigns -> higher routingOrder",
+        "needs a copy but takes no action -> carbonCopies",
+        "deal-tracking system -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "Parallel and sequential routing",
+      "line": "Recipients sharing a routingOrder act in parallel; a higher routingOrder waits until all lower ones finish."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "short",
+    "style": "fact",
+    "domain": "eSignature API",
+    "topic": "Envelopes:create response",
+    "stem": "What does a successful Envelopes:create response return?",
+    "options": [
+      {
+        "id": "A",
+        "text": "The envelopeId and a signing URL for the first recipient in routing order"
+      },
+      {
+        "id": "B",
+        "text": "The envelopeId, the bulk batchId and the number of queued envelopes"
+      },
+      {
+        "id": "C",
+        "text": "The envelopeId and the base64 bytes of the combined document"
+      },
+      {
+        "id": "D",
+        "text": "The envelopeId, a URI for the envelope, the envelope status and a timestamp"
+      }
+    ],
+    "correct": "D",
+    "answerText": "The envelopeId, a URI for the envelope, the envelope status and a timestamp",
+    "explanation": "The create response supplies the new envelopeId, a URI snippet for the envelope, its status and a timestamp.",
+    "whyNotOthers": "D is right. The trap is A: embedded flows need a URL, but it is requested separately with createRecipient. B is a bulk send response and C a document download.",
+    "optionExplanations": {
+      "A": "A signing URL comes only from EnvelopeViews:createRecipient.",
+      "B": "batchId comes from createBulkSendRequest.",
+      "C": "Documents are downloaded with EnvelopeDocuments:get.",
+      "D": "Correct. The response returns envelopeId, uri, status and statusDateTime."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "concept": {
+      "title": "Envelope create response",
+      "line": "Envelopes:create returns envelopeId, uri, status and statusDateTime; views and documents need separate calls."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "long",
+    "style": "design",
+    "domain": "eSignature API",
+    "topic": "Recipient types: certified delivery and carbon copy",
+    "stem": "Fernhill Energy must send customers a rate-change disclosure. Regulators require proof that each customer actually opened the disclosure, but the customer does not sign anything. The customer's account manager should also receive the disclosure for reference without having to do anything. Nobody else is involved in the process. The disclosure is produced by the billing platform each month and sent from an unattended job. Which two recipient settings meet these needs? (Select two)",
+    "options": [
+      {
+        "id": "A",
+        "text": "Add the customer as a certifiedDeliveries recipient"
+      },
+      {
+        "id": "B",
+        "text": "Add the customer as a carbonCopies recipient"
+      },
+      {
+        "id": "C",
+        "text": "Add the account manager as a carbonCopies recipient"
+      },
+      {
+        "id": "D",
+        "text": "Add the account manager as a signer with no tabs"
+      },
+      {
+        "id": "E",
+        "text": "Add the account manager as an agents recipient"
+      }
+    ],
+    "correct": "A,C",
+    "correctAnswers": [
+      "A",
+      "C"
+    ],
+    "answerText": "Add the customer as a certifiedDeliveries recipient; Add the account manager as a carbonCopies recipient",
+    "explanation": "Certified delivery is the 'needs to view' recipient type, so it proves the customer opened the document; carbon copy is for someone who only gets a copy.",
+    "whyNotOthers": "A and C are right. The trap is B: the customer would receive the document, but a carbon copy records no required viewing. D and E give the manager an action.",
+    "optionExplanations": {
+      "A": "Correct. A certified delivery recipient must open the documents, which records that they viewed them, without signing.",
+      "B": "A carbon copy needs no action, so it gives no proof that the customer opened the disclosure.",
+      "C": "Correct. A carbon copy recipient receives a copy and takes no action.",
+      "D": "A signer must act to complete the envelope; the manager should not have to do anything.",
+      "E": "An agent must act by naming the next recipient; it is not a reference copy."
+    },
+    "trapOption": "B",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "certifiedDeliveries for the customer, carbonCopies for the manager",
+      "clues": [
+        "proof that each customer opened it, no signature -> certified delivery",
+        "for reference without having to do anything -> carbon copy",
+        "produced by the billing platform each month -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "Non-signing recipient types",
+      "line": "Certified delivery must view the documents (proof of receipt); carbon copy just receives a copy; agents and signers must act."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "short",
+    "style": "fact",
+    "domain": "eSignature API",
+    "topic": "Finding a template ID",
+    "stem": "Besides copying it from the template page in the web app, how can an integration retrieve a template's templateId?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Call Templates:get with the template's name"
+      },
+      {
+        "id": "B",
+        "text": "Call the Templates:list endpoint"
+      },
+      {
+        "id": "C",
+        "text": "Call Envelopes:listStatusChanges"
+      },
+      {
+        "id": "D",
+        "text": "Read it from the integration key settings in Apps and Keys"
+      }
+    ],
+    "correct": "B",
+    "answerText": "Call the Templates:list endpoint",
+    "explanation": "The template ID can be copied in the web app or retrieved with the Templates:list endpoint.",
+    "whyNotOthers": "B is right. The trap is A: Templates:get does return a template, but it takes the templateId in its path, so it cannot be used to discover the ID from a name. C and D hold no template IDs.",
+    "optionExplanations": {
+      "A": "Templates:get needs the templateId in the request path; it cannot look a template up by name, so it cannot be how you find the ID.",
+      "B": "Correct. Templates:list returns the account's templates with their IDs.",
+      "C": "This lists envelope status changes, not templates.",
+      "D": "Apps and Keys holds app settings, not template IDs."
+    },
+    "trapOption": "A",
+    "importance": "LOW",
+    "concept": {
+      "title": "Getting template IDs",
+      "line": "Copy templateId in the web app or call Templates:list; IDs differ between demo and production accounts."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "long",
+    "style": "design",
+    "domain": "eSignature API",
+    "topic": "Where to author templates",
+    "stem": "Galloway Freight's developers plan to create the company's six carrier-agreement templates from a deployment script that calls Templates:create and places every signature and date field by code. The contracts team, who are not developers, expects to adjust field positions several times a year as the agreements are revised. The integration itself only needs to send the agreements. The company is moving from demo to production next month. What should the architect recommend?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Build and maintain the templates in the web app, and reference each by a templateId kept in per-environment configuration"
+      },
+      {
+        "id": "B",
+        "text": "Keep the deployment script, but run Templates:create in each environment so the template IDs are generated automatically at every release"
+      },
+      {
+        "id": "C",
+        "text": "Build the templates in the web app and hard-code their demo templateId values, because template IDs carry over to production at go-live"
+      },
+      {
+        "id": "D",
+        "text": "Drop templates and send each agreement with the direct documents model and fixed x/y tab positions defined in code"
+      }
+    ],
+    "correct": "A",
+    "answerText": "Build and maintain the templates in the web app, and reference each by a templateId kept in per-environment configuration",
+    "explanation": "The course best practice is to create templates in the web app and reference them by ID, because placing tags by code is cumbersome; template IDs must be updated per environment.",
+    "whyNotOthers": "A is right because the contracts team can edit templates without code and IDs stay configurable. The trap is C: authoring in the web app is right, but demo IDs do not work in production. B keeps the cumbersome scripted approach, and D hard-codes layouts.",
+    "optionExplanations": {
+      "A": "Correct. Docusign recommends setting templates up once in the web app and referencing them by ID; IDs differ between demo and production, so keep them in configuration.",
+      "B": "Creating templates by API is possible but cumbersome, and the contracts team could not edit layouts without a release.",
+      "C": "Template IDs differ between developer and production accounts; go-live does not copy them.",
+      "D": "This removes the contracts team's ability to edit layouts and is the least flexible model."
+    },
+    "trapOption": "C",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "Templates built in the web app, referenced by templateId from config",
+      "clues": [
+        "not developers, adjust fields several times a year -> author in the web app",
+        "moving to production -> template IDs differ per environment",
+        "six carrier agreements -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "Author templates in the web app",
+      "line": "Create templates once in the eSignature web app and reference them by templateId, configured per environment."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "long",
+    "style": "design",
+    "domain": "eSignature API",
+    "topic": "Template reference with an embedded signer",
+    "stem": "Wexford Dental's check-in kiosk asks each patient to sign a consent form that already exists as a server template with a role named patient. The patient signs immediately on the kiosk's screen and must not get an email from Docusign. The front desk does not want any paper copies. The practice-management system assigns each patient a chart number that is unique to that patient. The kiosk software is supplied by a hardware vendor. How should the integration build the Envelopes:create request?",
+    "options": [
+      {
+        "id": "A",
+        "text": "templateId plus a templateRoles entry with roleName patient, name and email, and status sent; then pass the chart number as clientUserId in createRecipient"
+      },
+      {
+        "id": "B",
+        "text": "templateId plus a templateRoles entry with roleName patient, the patient's name and email, and a clientUserId such as the chart number, with status sent"
+      },
+      {
+        "id": "C",
+        "text": "templateId plus a templateRoles entry with roleName patient, name, email and clientUserId, with status created so the kiosk can open the draft"
+      },
+      {
+        "id": "D",
+        "text": "templateId plus a recipients.signers entry with roleName patient and clientUserId, with status sent"
+      }
+    ],
+    "correct": "B",
+    "answerText": "templateId plus a templateRoles entry with roleName patient, the patient's name and email, and a clientUserId such as the chart number, with status sent",
+    "explanation": "In the template reference model each person is assigned through templateRoles, so the clientUserId that makes the patient an embedded signer goes there, with status sent.",
+    "whyNotOthers": "B is right. The trap is A: createRecipient does take clientUserId, but it must match a value set at envelope creation. C leaves the envelope as a draft, and D uses the direct documents structure.",
+    "optionExplanations": {
+      "A": "clientUserId must be set on the recipient when the envelope is created; createRecipient must match it, it cannot add it later.",
+      "B": "Correct. In the template reference model the embedded flag goes on the templateRoles entry, and embedded signing needs status sent.",
+      "C": "A recipient view needs the envelope in sent status; a draft cannot be signed.",
+      "D": "The template reference model assigns people to roles through templateRoles, not a recipients array."
+    },
+    "trapOption": "A",
+    "importance": "HIGH",
+    "decode": {
+      "needs": "templateRoles entry with clientUserId, status sent",
+      "clues": [
+        "signs immediately on the kiosk, no email -> embedded signer (clientUserId)",
+        "consent form exists as a server template -> template reference model, templateRoles",
+        "hardware vendor -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "Embedded signer from a template",
+      "line": "With the template reference model, put clientUserId on the templateRoles entry at creation and send with status sent."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "long",
+    "style": "design",
+    "domain": "eSignature API",
+    "topic": "Choosing the composite model for growth",
+    "stem": "Ampersand HR, a startup, needs only one agreement today: an NDA built from a single server template. Its product roadmap, however, adds offer letters that combine several templates and generated documents next year, and the CTO does not want to rewrite the integration then. Both products will be sold to the same customers through one admin console. The team has a comfortable schedule. Which envelope model should the developers use now?",
+    "options": [
+      {
+        "id": "A",
+        "text": "The template reference model, because the current requirement is a single template and it needs the least code"
+      },
+      {
+        "id": "B",
+        "text": "The direct documents model, because it is the quickest to build and more documents can simply be added later"
+      },
+      {
+        "id": "C",
+        "text": "The template reference model now, adding a second templateId to the request when the offer letters arrive"
+      },
+      {
+        "id": "D",
+        "text": "The composite templates model, because it covers today's single template and can add templates and documents later"
+      }
+    ],
+    "correct": "D",
+    "answerText": "The composite templates model, because it covers today's single template and can add templates and documents later",
+    "explanation": "The deciding clue is 'does not want to rewrite the integration' while the roadmap combines several templates; composite templates support both today's need and that growth, and the schedule allows the extra planning.",
+    "whyNotOthers": "D is right. The trap is A: correct for today's single template, but it cannot grow to multiple templates. B is the least flexible model, and C assumes a capability the template reference model lacks.",
+    "optionExplanations": {
+      "A": "Fine for a single template, but it cannot be expanded to multiple templates, so it would need a rewrite next year.",
+      "B": "Direct documents uses no templates and is the least flexible to expand.",
+      "C": "The template reference model takes a single template; a second templateId is not supported.",
+      "D": "Correct. The course recommends composite templates when growth is expected, since it supports every simpler case and scales."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "Composite templates model chosen for future flexibility",
+      "clues": [
+        "several templates and generated documents next year -> composite needed eventually",
+        "does not want to rewrite -> choose composite now",
+        "comfortable schedule -> composite's planning cost is acceptable"
+      ]
+    },
+    "concept": {
+      "title": "Composite templates scale",
+      "line": "Choose composite templates when requirements will grow; template reference handles exactly one template and cannot expand."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "short",
+    "style": "fact",
+    "domain": "eSignature API",
+    "topic": "Composite templates: sequence values",
+    "stem": "Which statement about the sequence property in a composite templates request is correct?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Every server template and inline template needs a sequence, unique across the whole compositeTemplates array"
+      },
+      {
+        "id": "B",
+        "text": "Only inline templates need a sequence, because server templates are always applied first"
+      },
+      {
+        "id": "C",
+        "text": "Each server and inline template needs a sequence that is unique within its composite object, starting at 1"
+      },
+      {
+        "id": "D",
+        "text": "The sequence values decide the order in which documents appear in the envelope"
+      }
+    ],
+    "correct": "C",
+    "answerText": "Each server and inline template needs a sequence that is unique within its composite object, starting at 1",
+    "explanation": "Every serverTemplate and inlineTemplate needs a sequence; values must be unique within a composite template object, and numbering should start at 1 in each.",
+    "whyNotOthers": "C is right. The trap is A: it widens the uniqueness rule to the whole array. B drops server template sequences, and D confuses sequence with array order.",
+    "optionExplanations": {
+      "A": "Uniqueness applies within each composite template object, not across the array.",
+      "B": "Both server and inline templates need a sequence.",
+      "C": "Correct. Sequence values are required and must be unique within each composite template object.",
+      "D": "Document order follows the order of objects in the compositeTemplates array."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "concept": {
+      "title": "Composite sequence rules",
+      "line": "Each server and inline template needs a sequence unique within its composite object; document order follows array order."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "short",
+    "style": "fact",
+    "domain": "eSignature API",
+    "topic": "Reading a request URL: docGenFormFields",
+    "stem": "What does PUT {baseUri}/restapi/v2.1/accounts/{accountId}/envelopes/{envelopeId}/docGenFormFields do?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Lists the document generation fields available in the envelope"
+      },
+      {
+        "id": "B",
+        "text": "Fills in the document generation field values of a draft envelope"
+      },
+      {
+        "id": "C",
+        "text": "Sends the draft envelope once all fields are filled"
+      },
+      {
+        "id": "D",
+        "text": "Updates the tab values of a standard template's recipients"
+      }
+    ],
+    "correct": "B",
+    "answerText": "Fills in the document generation field values of a draft envelope",
+    "explanation": "The docGenFormFields path is read with GET and updated with PUT; PUT supplies the values (and applies conditional content).",
+    "whyNotOthers": "B is right. The trap is A: same path, but listing is GET. C is a different call, and D confuses doc gen fields with tabs.",
+    "optionExplanations": {
+      "A": "Listing uses GET on the same path.",
+      "B": "Correct. This is DocumentGeneration:updateEnvelopeDocGenFormFields.",
+      "C": "Sending is Envelopes:update with status sent.",
+      "D": "Tab values are updated through the recipient tabs endpoints."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "concept": {
+      "title": "Doc gen field endpoints",
+      "line": "GET .../docGenFormFields lists fields; PUT .../docGenFormFields sets values before the envelope is sent."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "long",
+    "style": "fact",
+    "domain": "eSignature API",
+    "topic": "Request URL: what changes at go-live",
+    "stem": "Mirela's integration logs this call from the developer environment: POST https://demo.docusign.net/restapi/v2.1/accounts/4b1c...9e/envelopes. Her company's production account is hosted on the na4 site, and the app will keep using eSignature REST API v2.1 after go-live. Nothing else about the request will change. The QA lead asks which parts of this URL must come from production values rather than the demo configuration. Which two parts? (Select two)",
+    "options": [
+      {
+        "id": "A",
+        "text": "The host, which becomes the production authentication server https://account.docusign.com"
+      },
+      {
+        "id": "B",
+        "text": "The host, which becomes the production base URI such as https://na4.docusign.net"
+      },
+      {
+        "id": "C",
+        "text": "The /v2.1 segment, which becomes /v2 for production accounts"
+      },
+      {
+        "id": "D",
+        "text": "The account ID segment, which becomes the production account's ID"
+      },
+      {
+        "id": "E",
+        "text": "The /restapi segment, which becomes /api in production"
+      }
+    ],
+    "correct": "B,D",
+    "correctAnswers": [
+      "B",
+      "D"
+    ],
+    "answerText": "The host, which becomes the production base URI such as https://na4.docusign.net; The account ID segment, which becomes the production account's ID",
+    "explanation": "The URL is {baseUri}/v2.1/accounts/{accountId}/envelopes. The base URI and the account ID both differ between demo and production; the path and version stay the same.",
+    "whyNotOthers": "B and D are right. The trap is A: account.docusign.com does replace account-d.docusign.com at go-live, but it is the OAuth server, not the host of eSignature REST calls; API calls go to the base URI such as https://na4.docusign.net. C and E invent path changes.",
+    "optionExplanations": {
+      "A": "account.docusign.com is the production OAuth (authentication) server used to get tokens and call userinfo; eSignature API calls go to the account's base URI on its site, not to the auth server.",
+      "B": "Correct. Production uses https://{site}.docusign.net/restapi, read from base_uri.",
+      "C": "The version stays v2.1 in production.",
+      "D": "Correct. accountId differs between developer and production accounts; read it from userinfo.",
+      "E": "Both environments use /restapi."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "Base URI and accountId change between demo and production",
+      "clues": [
+        "demo.docusign.net vs na4 site -> base URI changes",
+        "accounts/4b1c...9e -> account ID differs per environment",
+        "keeps using v2.1 -> version segment unchanged"
+      ]
+    },
+    "concept": {
+      "title": "Environment-specific URL parts",
+      "line": "Base URI and accountId change between demo and production; /restapi/v2.1 and resource paths stay the same."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "long",
+    "style": "design",
+    "domain": "eSignature API",
+    "topic": "Troubleshooting: 401 after an hour with JWT",
+    "stem": "Dunmore Logistics runs an unattended overnight job that uses JWT Grant to impersonate a service user and send customs declarations. The job gets one access token at 1:00 a.m. and reuses it. Every night, calls succeed until shortly after 2:00 a.m., when every eSignature request starts returning 401 Unauthorized, and the remaining declarations wait until morning. The job does not use any interactive login. The job runs on a new container platform. What should the developers change?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Store the refresh token returned with the JWT token and use it to renew the access token at 2:00 a.m."
+      },
+      {
+        "id": "B",
+        "text": "Add the extended scope to the JWT request so the access token stays valid for the whole night"
+      },
+      {
+        "id": "C",
+        "text": "Ask the account administrator to grant consent again, because consent expires after an hour of continuous use"
+      },
+      {
+        "id": "D",
+        "text": "Track the token's expiry and request a new JWT access token shortly before the hour is up"
+      }
+    ],
+    "correct": "D",
+    "answerText": "Track the token's expiry and request a new JWT access token shortly before the hour is up",
+    "explanation": "The failure starts about an hour after the token was issued, which matches the JWT access token lifetime. JWT has no refresh token, so the job requests a new token.",
+    "whyNotOthers": "D is right. The trap is A: refreshing sounds natural, but JWT Grant does not return refresh tokens. B applies an Authorization Code Grant feature, and C blames consent, which does not expire hourly.",
+    "optionExplanations": {
+      "A": "JWT Grant never returns a refresh token; refresh tokens belong to Authorization Code Grant.",
+      "B": "The extended scope gives a reusable refresh token in Authorization Code Grant only; it does not lengthen JWT tokens.",
+      "C": "Consent does not expire hourly; the 401 comes from the expired access token.",
+      "D": "Correct. JWT access tokens last about an hour and JWT never returns a refresh token, so the job must mint a new token."
+    },
+    "trapOption": "A",
+    "importance": "HIGH",
+    "decode": {
+      "needs": "Request a new JWT access token before the 1-hour expiry",
+      "clues": [
+        "one token at 1:00, failures after 2:00 -> one-hour token lifetime",
+        "unattended job, JWT Grant -> no refresh token, mint a new JWT",
+        "new container platform -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "JWT token renewal",
+      "line": "JWT access tokens last about one hour and come with no refresh token; request a new token before expiry."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "long",
+    "style": "fact",
+    "domain": "eSignature API",
+    "topic": "CORS: endpoints without an account ID",
+    "stem": "Halvard's internal single-page admin dashboard uses CORS and Public Authorization Code Grant. Its envelope list, template list and envelope status widgets all work from the browser. A new widget that calls the Diagnostics category to show the API request log fails in the browser with a CORS error, although the same call works from Postman with the same token. No back end exists yet. The dashboard uses a dark theme. What explains the failure?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Diagnostics endpoints have no account ID in the path, and CORS covers only endpoints that do, so this call needs a back-end proxy"
+      },
+      {
+        "id": "B",
+        "text": "GET is not among the integration key's allowed HTTP methods, so the browser blocks the preflight for the new widget"
+      },
+      {
+        "id": "C",
+        "text": "The dashboard's origin must be added again in Apps and Keys for each new API category that it calls"
+      },
+      {
+        "id": "D",
+        "text": "The access token lacks the cors scope, which Postman does not need but the browser widget does"
+      }
+    ],
+    "correct": "A",
+    "answerText": "Diagnostics endpoints have no account ID in the path, and CORS covers only endpoints that do, so this call needs a back-end proxy",
+    "explanation": "CORS works with all eSignature endpoints that include the account ID in the path; Diagnostics, Notary and BillingPlans do not and therefore do not support CORS. Postman is not a browser, so CORS does not apply there.",
+    "whyNotOthers": "A is right. The trap is B: allowed methods are a real CORS setting, but the other GET widgets work. C misplaces origin settings, and D is ruled out by the working widgets.",
+    "optionExplanations": {
+      "A": "Correct. Docusign lists the Diagnostics category among the resources without an account ID that do not support CORS.",
+      "B": "The other widgets also read data and work, so the method list is not the difference.",
+      "C": "Allowed origins apply to the app, not per API category.",
+      "D": "The token works for other CORS calls from the same browser app, so the scope is present."
+    },
+    "trapOption": "B",
+    "importance": "LOW",
+    "decode": {
+      "needs": "Endpoints without accountId (e.g. Diagnostics) do not support CORS",
+      "clues": [
+        "other widgets work from the browser -> app CORS setup is fine",
+        "works from Postman -> only a browser CORS restriction",
+        "dark theme -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "CORS endpoint coverage",
+      "line": "eSignature CORS covers endpoints with an account ID in the path; Diagnostics, Notary and BillingPlans need a server-side call."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "short",
+    "style": "fact",
+    "domain": "eSignature API",
+    "topic": "CORS: required scopes",
+    "stem": "A single-page app will send eSignature requests directly from the browser using CORS. Which two scopes must it request in the authorization URI? (Select two)",
+    "options": [
+      {
+        "id": "A",
+        "text": "impersonation"
+      },
+      {
+        "id": "B",
+        "text": "extended"
+      },
+      {
+        "id": "C",
+        "text": "openid"
+      },
+      {
+        "id": "D",
+        "text": "signature"
+      },
+      {
+        "id": "E",
+        "text": "cors"
+      }
+    ],
+    "correct": "D,E",
+    "correctAnswers": [
+      "D",
+      "E"
+    ],
+    "answerText": "signature; cors",
+    "explanation": "For an eSignature integration that uses CORS the authorization URI must include signature and cors.",
+    "whyNotOthers": "D and E are right. The trap is A: it is usually paired with signature, but only for JWT. B and C are optional scopes with other purposes.",
+    "optionExplanations": {
+      "A": "impersonation is for JWT Grant, which is not used in a browser app.",
+      "B": "extended gives a reusable refresh token in Authorization Code Grant; it is not needed for CORS.",
+      "C": "openid returns an ID token; it is not required for CORS calls.",
+      "D": "Correct. signature is the basic scope for most eSignature endpoints.",
+      "E": "Correct. cors is required to send CORS requests."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "concept": {
+      "title": "CORS scopes",
+      "line": "CORS integrations request signature plus cors; impersonation is only for JWT."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "long",
+    "style": "design",
+    "domain": "eSignature API",
+    "topic": "Embedded signing: recording the app's authentication",
+    "stem": "Penrose Bank's online banking portal logs customers in with a password and a one-time code from the bank's mobile app, and loan agreements are then signed embedded in the portal. The compliance team wants the certificate of completion to show how the bank verified the customer and when, but they do not want customers to face any extra Docusign check, because the bank's login is already strong. The portal runs in three languages. What should the integration do?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Add an accessCode to the signer and display the code in the portal after login so the customer can type it"
+      },
+      {
+        "id": "B",
+        "text": "Add an identityVerification object with a phone workflow so Docusign confirms the customer's mobile number"
+      },
+      {
+        "id": "C",
+        "text": "In createRecipient, set authenticationMethod to describe the portal login and authenticationInstant to the login time"
+      },
+      {
+        "id": "D",
+        "text": "Put the login method and time in envelope custom fields so that they are stored alongside the envelope record"
+      }
+    ],
+    "correct": "C",
+    "answerText": "In createRecipient, set authenticationMethod to describe the portal login and authenticationInstant to the login time",
+    "explanation": "In embedded signing the app authenticates the user, and createRecipient's authenticationMethod (with authenticationInstant and related fields) records that on the certificate of completion without enforcing anything.",
+    "whyNotOthers": "C is right because it records rather than enforces. The trap is A: an access code is the lightest enforced method, but it is enforced, and the stem wants no extra check. B enforces a heavier check, and D stores data outside the certificate.",
+    "optionExplanations": {
+      "A": "An access code enforces an extra Docusign step, which compliance did not want, and does not record the bank's login method.",
+      "B": "This enforces an additional verification inside Docusign, which the stem rules out.",
+      "C": "Correct. These parameters record the app's own authentication on the certificate of completion; they do not add a check for the signer.",
+      "D": "Custom fields store metadata but are not the authentication record on the certificate of completion."
+    },
+    "trapOption": "A",
+    "importance": "HIGH",
+    "decode": {
+      "needs": "createRecipient authenticationMethod / authenticationInstant (record, not enforce)",
+      "clues": [
+        "certificate of completion to show how and when -> authenticationMethod, authenticationInstant",
+        "no extra Docusign check -> record only, no accessCode or IDV",
+        "three languages -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "Record vs enforce authentication",
+      "line": "createRecipient's authenticationMethod records your app's login on the certificate; accessCode, phone and IDV enforce extra checks."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "long",
+    "style": "design",
+    "domain": "eSignature API",
+    "topic": "Classic view on mobile browsers",
+    "stem": "Tallis Gym's membership sign-up runs in a mobile web browser and is signed embedded in classic view, because the agreement includes a payment field that charges the joining fee. Members on phones complain that the agreement shown inside an iframe on the sign-up page is cramped and hard to scroll. Desktop users have no complaints. The gym recently changed its pricing tiers. What should the developers do?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Switch to focused view with Docusign JS and size the container by percentage, so the agreement fits the phone screen"
+      },
+      {
+        "id": "B",
+        "text": "Keep the iframe and set its height to the default 400px so the agreement keeps its designed proportions"
+      },
+      {
+        "id": "C",
+        "text": "Keep classic view and, on mobile browsers, open the signing URL in a new browser tab instead of an iframe"
+      },
+      {
+        "id": "D",
+        "text": "Keep the iframe and generate a new signing URL each time the member scrolls to the bottom of the page"
+      }
+    ],
+    "correct": "C",
+    "answerText": "Keep classic view and, on mobile browsers, open the signing URL in a new browser tab instead of an iframe",
+    "explanation": "Payment fields require classic view, so the fix is the classic view guidance: let Docusign take full control of the browser window and, on mobile browsers, use a new tab instead of an iframe.",
+    "whyNotOthers": "C is right. The trap is A: focused view is the usual recommendation, but it does not support payment fields. B keeps the cramped frame, and D does not affect layout.",
+    "optionExplanations": {
+      "A": "Focused view would fit better, but payment fields require classic view.",
+      "B": "A fixed small frame is the cause of the cramped view; Docusign advises proper sizing, and a new tab on mobile.",
+      "C": "Correct. Classic view best practice is to let Docusign control the window and, on mobile browsers, use a new tab rather than an iframe.",
+      "D": "Generating more URLs does not change the layout and wastes API calls."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "Classic view mobile best practice: new browser tab, not iframe",
+      "clues": [
+        "payment field -> classic view is required",
+        "phones, cramped iframe -> open in a new tab on mobile",
+        "pricing tiers -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "Classic view on mobile",
+      "line": "In classic view let Docusign take the full window; on mobile browsers open a new tab instead of an iframe."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "short",
+    "style": "fact",
+    "domain": "eSignature API",
+    "topic": "Embedded sending: endpoint path",
+    "stem": "Which request returns the URL for an embedded sending session on a draft envelope?",
+    "options": [
+      {
+        "id": "A",
+        "text": "POST .../envelopes/{envelopeId}/views/sender"
+      },
+      {
+        "id": "B",
+        "text": "POST .../envelopes/{envelopeId}/views/recipient"
+      },
+      {
+        "id": "C",
+        "text": "POST .../envelopes/{envelopeId}/views/correct"
+      },
+      {
+        "id": "D",
+        "text": "PUT .../envelopes/{envelopeId} with status sent"
+      }
+    ],
+    "correct": "A",
+    "answerText": "POST .../envelopes/{envelopeId}/views/sender",
+    "explanation": "Embedded sending uses EnvelopeViews:createSender, POST .../envelopes/{envelopeId}/views/sender, on a draft envelope.",
+    "whyNotOthers": "A is right. The trap is C: the correct view is also a sender-side view, but for envelopes already sent. B is for signers and D sends without UI.",
+    "optionExplanations": {
+      "A": "Correct. This is EnvelopeViews:createSender.",
+      "B": "This returns a signing URL for a recipient.",
+      "C": "This returns the correction view for an envelope already sent.",
+      "D": "This sends the draft directly, with no sending UI."
+    },
+    "trapOption": "C",
+    "importance": "MEDIUM",
+    "concept": {
+      "title": "Embedded sending endpoint",
+      "line": "views/sender embeds tagging and sending of a draft; views/recipient embeds signing; views/correct embeds correction."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "long",
+    "style": "design",
+    "domain": "eSignature API",
+    "topic": "Focused view: click-to-agree",
+    "stem": "Orbis Streaming wants new subscribers to accept updated terms of service inside its web app with a single 'I agree' button. Legal wants the acceptance captured in Docusign with a full audit trail, but there is nothing for the subscriber to type, initial or sign. The product team wants the experience to blend into the app's design. The terms are updated twice a year. How should the integration present the terms?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Create the envelope with the subscriber as an embedded recipient with no fields, and show it with classic view in an iframe so the full signing toolbar is available"
+      },
+      {
+        "id": "B",
+        "text": "Add a single checkbox field labelled I agree for the subscriber and show it with classic view"
+      },
+      {
+        "id": "C",
+        "text": "Send the terms to the subscriber as a carbon copy recipient so they can read them by email"
+      },
+      {
+        "id": "D",
+        "text": "Create the envelope with the subscriber as an embedded recipient with no fields, and show it with focused view, which falls back to a click-to-agree experience"
+      }
+    ],
+    "correct": "D",
+    "answerText": "Create the envelope with the subscriber as an embedded recipient with no fields, and show it with focused view, which falls back to a click-to-agree experience",
+    "explanation": "With focused view, an envelope that has no fields for the recipient is shown as a click-to-agree experience, and focused view blends into the app.",
+    "whyNotOthers": "D is right. The trap is A: same envelope, wrong view; click-to-agree fallback is listed as a focused view benefit. B adds a field and the full UI, and C records no acceptance.",
+    "optionExplanations": {
+      "A": "Classic view shows the full Docusign signing interface; the automatic click-to-agree fallback is a focused view feature.",
+      "B": "This forces a field and the full classic UI, which the product team wanted to avoid.",
+      "C": "A carbon copy captures no acceptance.",
+      "D": "Correct. Focused view with no tabs for the recipient automatically becomes a clickwrap-style agreement with an agree button."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "Focused view + recipient with no tabs = click-to-agree",
+      "clues": [
+        "single I agree button, nothing to type or sign -> no tabs",
+        "blend into the app's design -> focused view",
+        "updated twice a year -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "Focused view click-to-agree",
+      "line": "In focused view a recipient with no fields gets a clickwrap-style agree button automatically."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "long",
+    "style": "design",
+    "domain": "eSignature API",
+    "topic": "Embedded signing: what to persist",
+    "stem": "Riverbend Insurance's claims portal lets a claimant start signing a settlement, leave, and come back days later to finish from the portal. The portal must be able to open a fresh signing session for the same envelope when the claimant returns. Claimants always come back through the portal, never through an email link. The claims database runs on a managed SQL service. Which two values should the portal store for each claimant when it creates the envelope? (Select two)",
+    "options": [
+      {
+        "id": "A",
+        "text": "The envelopeId returned by Envelopes:create"
+      },
+      {
+        "id": "B",
+        "text": "The signing URL from the first createRecipient call, so the claimant can reopen it"
+      },
+      {
+        "id": "C",
+        "text": "The access token used to create the envelope, so the session can be resumed with it"
+      },
+      {
+        "id": "D",
+        "text": "The returnUrl event received when the claimant left"
+      },
+      {
+        "id": "E",
+        "text": "The clientUserId used for the claimant's recipient"
+      }
+    ],
+    "correct": "A,E",
+    "correctAnswers": [
+      "A",
+      "E"
+    ],
+    "answerText": "The envelopeId returned by Envelopes:create; The clientUserId used for the claimant's recipient",
+    "explanation": "Docusign's best practices say to store the envelope ID for each customer and cache the clientUserId sent for each recipient; the signing URL is requested only when the user is ready.",
+    "whyNotOthers": "A and E are right. The trap is B: it seems convenient to save the URL, but it expires within minutes and works once. C expires as well, and D is not an input to createRecipient.",
+    "optionExplanations": {
+      "A": "Correct. The envelope ID is needed for later calls such as createRecipient.",
+      "B": "Signing URLs are short-lived and single-use; request a new one when the claimant returns.",
+      "C": "Tokens expire; the app gets a current token when it needs one.",
+      "D": "The event is useful for routing the user, but it is not needed to reopen the session.",
+      "E": "Correct. createRecipient must repeat the same clientUserId, so cache it per recipient."
+    },
+    "trapOption": "B",
+    "importance": "HIGH",
+    "decode": {
+      "needs": "Persist envelopeId and clientUserId; request a new recipient view on return",
+      "clues": [
+        "come back days later -> new signing URL needed",
+        "fresh session for the same envelope -> envelopeId + matching clientUserId",
+        "managed SQL service -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "Persist IDs, not URLs",
+      "line": "Store the envelopeId and each recipient's clientUserId; generate a new signing URL whenever the user is ready to sign."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "long",
+    "style": "design",
+    "domain": "eSignature API",
+    "topic": "Embedded console view",
+    "stem": "Marlow Realty's agent portal already lets agents sign and send specific documents. Agents now want to open their full Docusign workspace inside the portal, to browse their inbox and sent items, check statuses and use templates, without logging in to a separate site. Each agent has a Docusign user in the brokerage account, and the portal authenticates them with Authorization Code Grant. The portal was recently redesigned. Which call should the portal use?",
+    "options": [
+      {
+        "id": "A",
+        "text": "EnvelopeViews:createSender on a new draft envelope, so the agent sees the Docusign sending screen"
+      },
+      {
+        "id": "B",
+        "text": "EnvelopeViews:createConsole, opening the returned URL for the signed-in agent"
+      },
+      {
+        "id": "C",
+        "text": "EnvelopeViews:createRecipient with the agent's clientUserId"
+      },
+      {
+        "id": "D",
+        "text": "EnvelopeViews:createCorrect for the agent's most recent envelope"
+      }
+    ],
+    "correct": "B",
+    "answerText": "EnvelopeViews:createConsole, opening the returned URL for the signed-in agent",
+    "explanation": "To embed the whole Docusign web app (inbox, sent items, templates) for a user, use the console view, EnvelopeViews:createConsole.",
+    "whyNotOthers": "B is right. The trap is A: the sender view is the closest embedded view, but it covers one draft envelope. C and D are also single-envelope views.",
+    "optionExplanations": {
+      "A": "The sender view is limited to preparing and sending one draft envelope, not the full workspace.",
+      "B": "Correct. The console view embeds the Docusign web app for the authenticated user.",
+      "C": "The recipient view is a signing session for one envelope.",
+      "D": "The correct view edits one sent envelope."
+    },
+    "trapOption": "A",
+    "importance": "LOW",
+    "decode": {
+      "needs": "Embedded console view: EnvelopeViews:createConsole",
+      "clues": [
+        "full Docusign workspace, inbox, sent items, templates -> console view",
+        "each agent is a Docusign user -> session for the authenticated user",
+        "portal recently redesigned -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "Embedded console view",
+      "line": "createConsole embeds the whole web app for a user; createSender, createRecipient and createCorrect each target one envelope."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "short",
+    "style": "fact",
+    "domain": "eSignature API",
+    "topic": "Bulk send: batch status response",
+    "stem": "What does BulkSend:getBulkSendBatchStatus return for a batch?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Counts of sent, queued and failed envelopes, plus any error messages"
+      },
+      {
+        "id": "B",
+        "text": "The canBeSent flag showing whether the list and envelope are compatible"
+      },
+      {
+        "id": "C",
+        "text": "The listId and the bulk copies stored in the list"
+      },
+      {
+        "id": "D",
+        "text": "The signed documents of every envelope in the batch"
+      }
+    ],
+    "correct": "A",
+    "answerText": "Counts of sent, queued and failed envelopes, plus any error messages",
+    "explanation": "Checking a bulk send with the batchId returns counts of sent, queued and failed envelopes, as well as error messages.",
+    "whyNotOthers": "A is right. The trap is B: it is the response of the optional test step, not the status check. C and D belong to other calls.",
+    "optionExplanations": {
+      "A": "Correct. The batch status reports sent, queued and failed counts and errors.",
+      "B": "canBeSent comes from createBulkSendTestRequest.",
+      "C": "These come from the bulk send list endpoints.",
+      "D": "Documents are downloaded per envelope."
+    },
+    "trapOption": "B",
+    "importance": "MEDIUM",
+    "concept": {
+      "title": "Bulk send return values",
+      "line": "List returns listId; test returns canBeSent; send returns batchId; batch status returns sent, queued and failed counts."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "long",
+    "style": "fact",
+    "domain": "eSignature API",
+    "topic": "Bulk send: v2.1 model vs legacy v2",
+    "stem": "Ironwood College inherited a scholarship-renewal integration written against eSignature REST API v2, which sends one agreement to each of several hundred students by attaching a bulk recipients file to the envelope. The team is moving the integration to v2.1 and wants to follow the current bulk send model. The financial aid office also wants the emails to come from a shared mailbox. Where does the list of students go in v2.1?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Into a bulk recipients CSV file attached to the envelope's signer, as before, because v2.1 still reads it"
+      },
+      {
+        "id": "B",
+        "text": "Into a bulk send list created with BulkSend:createBulkSendList, whose copies hold each student's recipient details"
+      },
+      {
+        "id": "C",
+        "text": "Into the templateRoles array of one envelope, one entry per student"
+      },
+      {
+        "id": "D",
+        "text": "Into an eventNotification object, so Connect delivers a copy to each student"
+      }
+    ],
+    "correct": "B",
+    "answerText": "Into a bulk send list created with BulkSend:createBulkSendList, whose copies hold each student's recipient details",
+    "explanation": "Bulk send in v2.1 uses BulkSend resources: create a bulk send list with copies, then send it against a draft envelope or template. The v2 BulkEnvelopes model is legacy.",
+    "whyNotOthers": "B is right. The trap is A: it describes the v2 approach the team is leaving. C creates one shared envelope and D misuses Connect.",
+    "optionExplanations": {
+      "A": "That is the legacy v2 BulkEnvelopes approach; v2.1 changed the construction model to bulk send lists.",
+      "B": "Correct. In v2.1 the recipients for each copy are stored in a bulk send list, then sent with createBulkSendRequest.",
+      "C": "That would put every student on one envelope.",
+      "D": "eventNotification configures webhooks, not recipients."
+    },
+    "trapOption": "A",
+    "importance": "LOW",
+    "decode": {
+      "needs": "v2.1 bulk send list (BulkSend:createBulkSendList)",
+      "clues": [
+        "written against v2 with a bulk recipients file -> legacy BulkEnvelopes",
+        "moving to v2.1 current model -> bulk send lists",
+        "shared mailbox -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "Bulk send in v2.1",
+      "line": "v2.1 bulk send stores recipients in bulk send lists; the v2 BulkEnvelopes resource is the legacy model."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "long",
+    "style": "design",
+    "domain": "eSignature API",
+    "topic": "Sending Word documents directly",
+    "stem": "Calloway Legal's matter system stores engagement terms as Word (.docx) files. A developer proposes building a conversion service that turns each file into a PDF before sending it for signature with the direct documents model, which will take two sprints. The partners want the agreements sent next week, the matter system already exports each file as bytes, and the files contain anchor text for the signature lines. What should the lead developer recommend?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Build the conversion service first, because the eSignature API accepts only PDF documents"
+      },
+      {
+        "id": "B",
+        "text": "Upload each .docx file as a server template by hand and then send it with the template reference model"
+      },
+      {
+        "id": "C",
+        "text": "Send the .docx files as base64, but replace the anchor tabs with fixed x/y positions, because anchors only work in PDFs"
+      },
+      {
+        "id": "D",
+        "text": "Send the .docx files as base64 documents with fileExtension docx, since Docusign accepts DOCX, and keep the anchor tabs"
+      }
+    ],
+    "correct": "D",
+    "answerText": "Send the .docx files as base64 documents with fileExtension docx, since Docusign accepts DOCX, and keep the anchor tabs",
+    "explanation": "Docusign accepts a wide variety of document types including PDF, DOCX, RTF and PNG, so the files can be sent as they are with the correct fileExtension.",
+    "whyNotOthers": "D is right. The trap is A: PDF is common, but not the only accepted type. B adds manual template work, and C drops robust anchor placement for no reason.",
+    "optionExplanations": {
+      "A": "Docusign accepts PDF, DOCX, RTF, PNG and more; conversion is unnecessary.",
+      "B": "This turns each one-off document into a template and adds manual work.",
+      "C": "Anchor tabs locate text in the document; there is no PDF-only rule, and fixed positions are less robust.",
+      "D": "Correct. Docusign accepts many file types, including DOCX, so no conversion service is needed."
+    },
+    "trapOption": "A",
+    "importance": "LOW",
+    "decode": {
+      "needs": "Direct documents with DOCX, fileExtension docx",
+      "clues": [
+        "Word files, conversion service -> unnecessary, DOCX is accepted",
+        "send next week -> simplest working approach",
+        "anchor text for signature lines -> keep anchor tabs"
+      ]
+    },
+    "concept": {
+      "title": "Accepted document types",
+      "line": "Docusign accepts PDF, DOCX, RTF, PNG and others; set fileExtension so the file is converted on upload."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "short",
+    "style": "fact",
+    "domain": "eSignature API",
+    "topic": "Envelope status: delivered",
+    "stem": "What does the envelope status delivered mean?",
+    "options": [
+      {
+        "id": "A",
+        "text": "At least one recipient has been sent an email with a link"
+      },
+      {
+        "id": "B",
+        "text": "All recipients have signed and the envelope is being finalised"
+      },
+      {
+        "id": "C",
+        "text": "All recipients have viewed the documents"
+      },
+      {
+        "id": "D",
+        "text": "The envelope has been completed by all recipients"
+      }
+    ],
+    "correct": "C",
+    "answerText": "All recipients have viewed the documents",
+    "explanation": "Sent means at least one recipient got the link; delivered means all recipients have viewed; signed is temporary; completed ends the lifecycle.",
+    "whyNotOthers": "C is right. The trap is A: it is the definition of sent. B and D are later statuses.",
+    "optionExplanations": {
+      "A": "That is the sent status.",
+      "B": "Signed is a temporary processing state before completed.",
+      "C": "Correct. Delivered means all recipients have viewed the documents.",
+      "D": "That is completed."
+    },
+    "trapOption": "A",
+    "importance": "LOW",
+    "concept": {
+      "title": "Envelope lifecycle statuses",
+      "line": "created (draft) -> sent -> delivered (all viewed) -> signed (temporary) -> completed; voided and declined end it early."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "long",
+    "style": "design",
+    "domain": "eSignature API",
+    "topic": "Replacing a document in an in-process envelope",
+    "stem": "Ashby Construction sent a subcontract for signature this morning. Before anyone has signed, the project manager notices that the payment schedule attached as document 2 has an outdated rate. Legal wants to keep the same envelope, its recipients and its history, and simply swap in the corrected schedule. The integration already stores the envelope ID. The subcontractor is working on a remote site. Which call should the integration make?",
+    "options": [
+      {
+        "id": "A",
+        "text": "EnvelopeRecipientTabs:update for the subcontractor with the corrected rate in the payment schedule's text tab"
+      },
+      {
+        "id": "B",
+        "text": "EnvelopeDocuments:update for the envelope with documentId 2 and the corrected file"
+      },
+      {
+        "id": "C",
+        "text": "Envelopes:update with status voided, then create a new envelope with the corrected schedule"
+      },
+      {
+        "id": "D",
+        "text": "EnvelopeDocuments:delete for document 2, leaving the subcontractor to sign without a payment schedule"
+      }
+    ],
+    "correct": "B",
+    "answerText": "EnvelopeDocuments:update for the envelope with documentId 2 and the corrected file",
+    "explanation": "The in-process envelope can be modified with EnvelopeDocuments:update, specifying the documentId, to replace or add a document while keeping the envelope.",
+    "whyNotOthers": "B is right. The trap is A: updating tabs is a valid in-process change, but the wrong rate is in the document content. C discards the envelope, and D removes the document entirely.",
+    "optionExplanations": {
+      "A": "Tabs are fields placed on documents; the rate is printed in the document itself, which must be replaced.",
+      "B": "Correct. EnvelopeDocuments:update adds or replaces a document in an in-process envelope.",
+      "C": "Voiding ends this envelope; legal wants to keep it.",
+      "D": "Deleting removes the schedule without providing the corrected one."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "EnvelopeDocuments:update on the sent envelope",
+      "clues": [
+        "before anyone has signed -> in-process envelope can still be modified",
+        "keep the same envelope and history -> no void",
+        "swap in the corrected schedule -> replace document 2",
+        "remote site -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "Modifying in-process documents",
+      "line": "EnvelopeDocuments:update adds or replaces documents in an in-process envelope; EnvelopeDocuments:delete removes them."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "short",
+    "style": "fact",
+    "domain": "eSignature API",
+    "topic": "Updating recipient tabs",
+    "stem": "Before calling EnvelopeRecipientTabs:update to change a recipient's existing fields, what must the app obtain?",
+    "options": [
+      {
+        "id": "A",
+        "text": "The documentId of each document, from EnvelopeDocuments:list"
+      },
+      {
+        "id": "B",
+        "text": "A lock token from EnvelopeLocks:create for every tab update"
+      },
+      {
+        "id": "C",
+        "text": "The anchorString used when the tab was created"
+      },
+      {
+        "id": "D",
+        "text": "The tabId of each tab to change, from EnvelopeRecipientTabs:list"
+      }
+    ],
+    "correct": "D",
+    "answerText": "The tabId of each tab to change, from EnvelopeRecipientTabs:list",
+    "explanation": "The course steps are: list the recipient's tabs, store the tabId of each tab to update, then PUT the entire tab objects with the changes.",
+    "whyNotOthers": "D is right. The trap is B: locking is used when editing an in-process envelope, but the update itself is keyed by tabId. A and C identify other things.",
+    "optionExplanations": {
+      "A": "documentId identifies documents; tabs are updated by tabId.",
+      "B": "Locks are optional while editing; they are not the input the update needs.",
+      "C": "Existing tabs are identified by tabId, not anchors.",
+      "D": "Correct. List the recipient's tabs, store each tabId, then PUT the full tab objects with changes."
+    },
+    "trapOption": "B",
+    "importance": "MEDIUM",
+    "concept": {
+      "title": "Updating tabs needs tabId",
+      "line": "Call EnvelopeRecipientTabs:list for tabIds, then update with the full tab objects."
+    }
+  }
+]

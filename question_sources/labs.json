@@ -1,0 +1,649 @@
+{
+  "esignature": {
+    "title": "Lab 1-2: eSignature API",
+    "weeks": "Weeks 1-2",
+    "goal": "Build the same small agreement several ways against your developer (demo) account so that the design choices behind the eSignature API questions become muscle memory: how an envelope is built, when it is a draft, how embedded signing and sending work, and how in-flight envelopes are changed. Every exercise ends with the exam trap it is meant to defuse.",
+    "setup": [
+      "Log in to your developer account at https://account-d.docusign.com and open Apps and Keys (https://apps-d.docusign.com/admin/apps-and-keys). Note where the User ID, API Account ID and Account Base URI are shown; you will use them as {userId}, {accountId} and {base_uri}. Never paste them into shared notes.",
+      "Create (or reuse) an integration key for the labs. Add a secret key and the redirect URI https://oauth.pstmn.io/v1/browser-callback so Postman can run Authorization Code Grant. Store the secret only in your Postman environment.",
+      "Import the Docusign eSignature REST API Postman collection (Developer Center > Tools > Postman) into a new workspace, set accountId, baseUrl and the integration key variables, then click Get New Access Token and Use Token.",
+      "Alternative with no Postman: the API Request Builder / API Explorer on the Developer Center lets you log in with the demo account and run each call from the browser.",
+      "Prepare a one-page PDF containing the anchor text /sn1/ where the signer should sign, and base64-encode it once (any online or command-line encoder) so you can paste it as documentBase64.",
+      "Use two of your own email addresses (for example a Gmail plus-address) as signers so you can watch both sides of every flow.",
+      "Reference code already in this project: d:/Docusign exam/docusign-node-quickstart/app/lib/eSignature/examples/ (signingViaEmail.js, useTemplate.js, embeddedSigning via ../../embeddedSigning.js, embeddedSending.js, focusedView.js, bulkSendEnvelope.js). Read them; do not copy any credentials from the quickstart config."
+    ],
+    "exercises": [
+      {
+        "title": "1. Request URL anatomy: userinfo -> base_uri -> accountId",
+        "minutes": 15,
+        "steps": [
+          "With your access token, call the userinfo endpoint on the demo authentication host.",
+          "In the response find the accounts array; pick the entry with is_default true and copy account_id and base_uri.",
+          "Build the full URL for listing envelopes: {base_uri}/restapi/v2.1/accounts/{accountId}/envelopes?from_date=2026-01-01 and call it.",
+          "Deliberately call the same path on the wrong host (account-d.docusign.com) and on a wrong accountId and note the errors.",
+          "Write down which part of the URL changes in production (base_uri comes from userinfo and can be any data center) and which does not (/restapi/v2.1/accounts/{accountId}/...)."
+        ],
+        "api": "GET https://account-d.docusign.com/oauth/userinfo\nAuthorization: Bearer {accessToken}\n\nthen\n\nGET {base_uri}/restapi/v2.1/accounts/{accountId}/envelopes?from_date=2026-01-01",
+        "observe": [
+          "userinfo returns sub (the user ID), and accounts[] each with account_id, account_name, is_default and base_uri (demo: https://demo.docusign.net).",
+          "The REST path is always base_uri + /restapi + /v2.1 + /accounts/{accountId} + resource.",
+          "A user can belong to several accounts; your app must choose one (usually is_default) or let the user choose."
+        ],
+        "examTraps": [
+          "Never hard-code the base URI in production; call /oauth/userinfo after authentication and cache the result for the session.",
+          "The authentication host (account-d / account.docusign.com) is not the API host (base_uri); mixing them is a classic wrong answer.",
+          "accountId in the path is the API Account ID (GUID) or account number, not the user ID."
+        ]
+      },
+      {
+        "title": "2. One envelope, way A: inline documents and recipients",
+        "minutes": 20,
+        "steps": [
+          "Create an envelope with your PDF as documentBase64, one signer with an anchor-based signHere tab on /sn1/, and status sent.",
+          "Open the signer's email and sign.",
+          "Create the same envelope again but with status created. Check the web app: it appears under Drafts and no email is sent.",
+          "Send the draft by updating its status to sent.",
+          "Call Envelopes:get on both envelopes and compare status and statusChangedDateTime."
+        ],
+        "api": "POST {base_uri}/restapi/v2.1/accounts/{accountId}/envelopes\n{\n  \"emailSubject\": \"Lab 1 - please sign\",\n  \"documents\": [{\"documentBase64\": \"{pdfBase64}\", \"name\": \"Lab NDA\", \"fileExtension\": \"pdf\", \"documentId\": \"1\"}],\n  \"recipients\": {\"signers\": [{\"email\": \"{signerEmail}\", \"name\": \"Lab Signer\", \"recipientId\": \"1\", \"routingOrder\": \"1\",\n    \"tabs\": {\"signHereTabs\": [{\"anchorString\": \"/sn1/\", \"anchorUnits\": \"pixels\", \"anchorXOffset\": \"20\", \"anchorYOffset\": \"10\"}]}}]},\n  \"status\": \"sent\"\n}\n\nSend a draft later:\nPUT {base_uri}/restapi/v2.1/accounts/{accountId}/envelopes/{envelopeId}\n{\"status\": \"sent\"}",
+        "observe": [
+          "status sent returns envelopeId with status sent and emails go out immediately.",
+          "status created returns a draft: no email, editable, visible under Drafts.",
+          "Anchor tabs land wherever /sn1/ appears, so one definition works for many document layouts."
+        ],
+        "examTraps": [
+          "Use status created when anything must happen before sending (add documents, fill document generation fields, embedded sending, bulk send).",
+          "A draft is not voided; it is deleted or sent. Void applies only to envelopes that are in process."
+        ]
+      },
+      {
+        "title": "3. One envelope, way B: templateId + templateRoles",
+        "minutes": 20,
+        "steps": [
+          "In the web app create a template from your PDF with one role named signer and a signature field. Copy its templateId (Templates > template > Template ID).",
+          "Create an envelope that references it with templateId and fills the role through templateRoles.",
+          "Try to add a second template to the same request (a second templateId) and confirm the model has no place for it.",
+          "Look at useTemplate.js in the quickstart to see the same call in Node."
+        ],
+        "api": "POST {base_uri}/restapi/v2.1/accounts/{accountId}/envelopes\n{\n  \"templateId\": \"{templateId}\",\n  \"templateRoles\": [{\"roleName\": \"signer\", \"name\": \"Lab Signer\", \"email\": \"{signerEmail}\"}],\n  \"status\": \"sent\"\n}",
+        "observe": [
+          "roleName must match the template role exactly (case included) or the recipient is not bound to the role's tabs.",
+          "Documents, tabs, email subject and routing all come from the template; the request is tiny."
+        ],
+        "examTraps": [
+          "templateId + templateRoles is the simplest model but cannot combine several templates or add extra documents in one call; that needs compositeTemplates.",
+          "Template IDs differ between demo and production; they are configuration, not code constants (Go Live)."
+        ]
+      },
+      {
+        "title": "4. One envelope, way C: compositeTemplates and sequence",
+        "minutes": 20,
+        "steps": [
+          "Build one envelope from a compositeTemplates array: a serverTemplates entry pointing at your template (sequence 1) plus an inlineTemplates entry (sequence 2) that supplies the actual recipient for role signer.",
+          "Add a second composite template that contains only an extra document (your PDF again) so the envelope has two documents.",
+          "Send and open the envelope: check that recipients come from the inline template and that both documents are present.",
+          "Swap the sequence numbers (inline 1, server 2) and observe which values win."
+        ],
+        "api": "POST {base_uri}/restapi/v2.1/accounts/{accountId}/envelopes\n{\n  \"status\": \"sent\",\n  \"compositeTemplates\": [\n    {\"compositeTemplateId\": \"1\",\n     \"serverTemplates\": [{\"sequence\": \"1\", \"templateId\": \"{templateId}\"}],\n     \"inlineTemplates\": [{\"sequence\": \"2\", \"recipients\": {\"signers\": [{\"recipientId\": \"1\", \"roleName\": \"signer\", \"name\": \"Lab Signer\", \"email\": \"{signerEmail}\"}]}}]},\n    {\"compositeTemplateId\": \"2\",\n     \"inlineTemplates\": [{\"sequence\": \"1\", \"recipients\": {\"signers\": [{\"recipientId\": \"1\", \"roleName\": \"signer\", \"name\": \"Lab Signer\", \"email\": \"{signerEmail}\"}]}}],\n     \"document\": {\"documentId\": \"2\", \"name\": \"Extra doc\", \"fileExtension\": \"pdf\", \"documentBase64\": \"{pdfBase64}\"}}\n  ]\n}",
+        "observe": [
+          "Templates are overlaid in sequence order: a higher sequence number is applied later and overrides earlier values.",
+          "Each composite template contributes its documents; the recipients are merged by recipientId/roleName."
+        ],
+        "examTraps": [
+          "Scenario mixes 'several server templates', 'template plus an ad hoc document' or 'same template twice with different people' -> compositeTemplates.",
+          "Docusign recommends composite templates even for simple envelopes because they scale to later requirements."
+        ]
+      },
+      {
+        "title": "5. Embedded signing: clientUserId, createRecipient, returnUrl events",
+        "minutes": 20,
+        "steps": [
+          "Create a sent envelope whose signer has clientUserId 1001 (any string you control). Note that no signing email is sent.",
+          "Request a recipient view with the same email, userName and clientUserId plus returnUrl http://localhost:3000/ds-return and authenticationMethod none.",
+          "Open the returned url within 5 minutes, sign, and look at the browser address bar after redirect: event=signing_complete.",
+          "Request a new view, open it, and choose Finish Later / Other Actions > Decline on separate attempts to see event=cancel and event=decline.",
+          "Request a view, wait more than 5 minutes, then open it; also try reopening a URL you already used.",
+          "Compare with d:/Docusign exam/docusign-node-quickstart/app/embeddedSigning.js."
+        ],
+        "api": "POST {base_uri}/restapi/v2.1/accounts/{accountId}/envelopes   (signer has \"clientUserId\": \"1001\")\n\nPOST {base_uri}/restapi/v2.1/accounts/{accountId}/envelopes/{envelopeId}/views/recipient\n{\n  \"returnUrl\": \"http://localhost:3000/ds-return?state=123\",\n  \"authenticationMethod\": \"none\",\n  \"email\": \"{signerEmail}\",\n  \"userName\": \"Lab Signer\",\n  \"clientUserId\": \"1001\"\n}",
+        "observe": [
+          "Response: {\"url\": \"https://demo.docusign.net/Signing/...\"}.",
+          "After the session Docusign redirects to returnUrl with ?event=... appended (signing_complete, cancel, decline, exception, fax_pending, session_timeout, ttl_expired, viewing_complete and others).",
+          "Expired or reused URLs fail; you must call createRecipient again."
+        ],
+        "examTraps": [
+          "clientUserId on the recipient makes it an embedded (captive) signer: no Docusign email, your app authenticates the user.",
+          "email, userName and clientUserId in createRecipient must match the recipient exactly.",
+          "The signing URL is valid for 5 minutes and single-use: generate it only when the user clicks Sign, never in advance or in an email.",
+          "The returnUrl event parameter is a hint for UX; confirm the real status with Connect, not by trusting the redirect."
+        ]
+      },
+      {
+        "title": "6. Focused view vs classic view",
+        "minutes": 15,
+        "steps": [
+          "Repeat exercise 5 but add frameAncestors [\"http://localhost:3000\", \"https://apps-d.docusign.com\"] and messageOrigins [\"https://apps-d.docusign.com\"] to createRecipient.",
+          "Read focusedView.js and app/views/pages/examples/eg044Embed.ejs in the quickstart: the URL is passed to Docusign JS (https://js-d.docusign.com/bundle.js in demo), loadDocuSign(integrationKey), then signing.mount and signing.on('sessionEnd').",
+          "If you can run the quickstart locally, run the focused view example and look at the sessionEnd event in the browser console (sessionEndType signing_complete).",
+          "List which features force classic view."
+        ],
+        "api": "POST {base_uri}/restapi/v2.1/accounts/{accountId}/envelopes/{envelopeId}/views/recipient\n{\n  \"returnUrl\": \"http://localhost:3000/ds-return\",\n  \"authenticationMethod\": \"none\",\n  \"email\": \"{signerEmail}\", \"userName\": \"Lab Signer\", \"clientUserId\": \"1001\",\n  \"frameAncestors\": [\"http://localhost:3000\", \"https://apps-d.docusign.com\"],\n  \"messageOrigins\": [\"https://apps-d.docusign.com\"]\n}",
+        "observe": [
+          "Focused view shows only the document and a navigation button; with no tabs it falls back to a click-to-agree experience.",
+          "Events (ready, sessionEnd) arrive in JavaScript instead of only via the returnUrl redirect.",
+          "Classic view is a redirect or an iframe to the signing URL."
+        ],
+        "examTraps": [
+          "Focused view needs frameAncestors (your site plus apps-d / apps.docusign.com) and messageOrigins; production needs a valid HTTPS domain.",
+          "Payment tabs, ID verification (identityVerification), some SBS providers and AI-Assisted Review require classic view.",
+          "In production the JS bundle and frame ancestor hosts change from js-d / apps-d to js / apps."
+        ]
+      },
+      {
+        "title": "7. Embedded sending: draft + createSender",
+        "minutes": 15,
+        "steps": [
+          "Create an envelope with status created (document and recipient, no tabs).",
+          "Request a sender view with a returnUrl.",
+          "Open the URL: drag a signature field onto the document and click Send.",
+          "Check the address bar after redirect and then Envelopes:get to confirm the status is sent.",
+          "Compare with embeddedSending.js in the quickstart."
+        ],
+        "api": "POST {base_uri}/restapi/v2.1/accounts/{accountId}/envelopes   (\"status\": \"created\")\n\nPOST {base_uri}/restapi/v2.1/accounts/{accountId}/envelopes/{envelopeId}/views/sender\n{\"returnUrl\": \"http://localhost:3000/ds-return\"}",
+        "observe": [
+          "The sender view only works on a draft (created) envelope; on a sent envelope the call fails.",
+          "Your user prepares, tags and sends inside your app without opening the Docusign web app."
+        ],
+        "examTraps": [
+          "Scenario 'let our staff review and place fields before sending, inside our portal' -> draft envelope + EnvelopeViews:createSender, not createRecipient.",
+          "Embedded sending is about the sender; embedded signing (clientUserId) is about the signer. They are independent and can be combined."
+        ]
+      },
+      {
+        "title": "8. Changing in-flight envelopes: void, lock, correct, resend",
+        "minutes": 20,
+        "steps": [
+          "Send an envelope to yourself and do not sign it.",
+          "Lock it, read the lockToken, then try to update the email subject without the X-DocuSign-Edit header (fails) and with it (succeeds). Delete the lock.",
+          "Correct the signer's email: update the recipient with resend_envelope=true and confirm a fresh email arrives at the new address.",
+          "Open the correct view (createCorrect) to see the UI version of the same change.",
+          "Void the envelope with a reason; then try to update it again and note the error. Try to void a draft and note the error."
+        ],
+        "api": "POST {base_uri}/restapi/v2.1/accounts/{accountId}/envelopes/{envelopeId}/lock\n{\"lockDurationInSeconds\": \"300\", \"lockedByApp\": \"Lab\"}\n\nPUT .../envelopes/{envelopeId}\nX-DocuSign-Edit: {\"LockToken\": \"{lockToken}\", \"LockDurationInSeconds\": \"300\"}\n{\"emailSubject\": \"Corrected subject\"}\n\nDELETE .../envelopes/{envelopeId}/lock   (same X-DocuSign-Edit header)\n\nPUT .../envelopes/{envelopeId}/recipients?resend_envelope=true\n{\"signers\": [{\"recipientId\": \"1\", \"email\": \"{newEmail}\", \"name\": \"Lab Signer\"}]}\n\nPOST .../envelopes/{envelopeId}/views/correct\n{\"returnUrl\": \"http://localhost:3000/ds-return\"}\n\nPUT .../envelopes/{envelopeId}\n{\"status\": \"voided\", \"voidedReason\": \"Lab test\"}",
+        "observe": [
+          "Lock is temporary and returns a lockToken; other editors are blocked until it expires or is deleted.",
+          "Void is permanent and terminal: recipients are notified and nothing can be signed afterwards.",
+          "resend_envelope=true re-notifies recipients after a correction.",
+          "Completed or voided envelopes reject recipient and tab changes."
+        ],
+        "examTraps": [
+          "'Stop others editing while my app makes changes' = lock; 'cancel this agreement for good' = void with voidedReason.",
+          "You cannot update a recipient who has already completed, or add tabs to an envelope in a terminal state.",
+          "Wrong email on a sent envelope: correct the recipient (and resend); do not void and recreate unless the content must change."
+        ]
+      },
+      {
+        "title": "9. Saturday lab: bulk send end to end",
+        "minutes": 60,
+        "steps": [
+          "Confirm your demo user has bulk sending enabled (user permission bulkSendingEnabled) and that Document Visibility is Off in Sending Settings.",
+          "Create a bulk send list with three bulkCopies, each with its own recipient for roleName signer (use plus-addresses).",
+          "Create a draft envelope whose signer is a placeholder (name Multi Bulk Recipient::signer, roleName signer) with a signHere tab.",
+          "Attach the list to the envelope as an envelope custom field named mailingListId with the list ID as value.",
+          "Run the bulk send test call with the envelopeId and read canBeSent and validationErrors. Break the list on purpose (for example a tab label that is not in the envelope) and run the test again.",
+          "Fix it, send the batch, keep the batchId and check batch status until queued reaches 0.",
+          "Open the three mailboxes: each recipient has a separate envelope.",
+          "Compare with bulkSendEnvelope.js in the quickstart."
+        ],
+        "api": "POST {base_uri}/restapi/v2.1/accounts/{accountId}/bulk_send_lists\n{\"name\": \"lab-list\", \"bulkCopies\": [\n  {\"recipients\": [{\"roleName\": \"signer\", \"name\": \"Alice\", \"email\": \"{email1}\"}], \"customFields\": []},\n  {\"recipients\": [{\"roleName\": \"signer\", \"name\": \"Bob\", \"email\": \"{email2}\"}], \"customFields\": []},\n  {\"recipients\": [{\"roleName\": \"signer\", \"name\": \"Cara\", \"email\": \"{email3}\"}], \"customFields\": []}]}\n\nPOST .../envelopes   (\"status\": \"created\", signer {\"name\": \"Multi Bulk Recipient::signer\", \"email\": \"multiBulkRecipients-signer@docusign.com\", \"roleName\": \"signer\", \"recipientId\": \"1\"})\n\nPOST .../envelopes/{envelopeId}/custom_fields\n{\"textCustomFields\": [{\"name\": \"mailingListId\", \"required\": \"false\", \"show\": \"false\", \"value\": \"{bulkSendListId}\"}]}\n\nPOST .../bulk_send_lists/{bulkSendListId}/test\n{\"envelopeOrTemplateId\": \"{envelopeId}\"}\n\nPOST .../bulk_send_lists/{bulkSendListId}/send\n{\"envelopeOrTemplateId\": \"{envelopeId}\", \"batchName\": \"lab-batch\"}\n\nGET .../bulk_send_batch/{bulkSendBatchId}",
+        "observe": [
+          "Create list returns the list ID; test returns a boolean (canBeSent) plus validation errors; send returns a batchId.",
+          "Batch status shows counts of sent, queued and failed envelopes plus error details.",
+          "Validation rules: unique recipient IDs, unique tab labels per recipient, every recipient/tab label pair and custom field name in the list must exist in the envelope."
+        ],
+        "examTraps": [
+          "Same document, many independent recipients who each get their own envelope -> bulk send; one document signed by a fixed group -> one envelope with several recipients.",
+          "Bulk send is asynchronous and queued; track results with batch status and Connect, not by polling every envelope.",
+          "Always run the test call before sending when the envelope or list may have changed.",
+          "Bulk sending needs the user permission and plan feature; large batches need planning around queue limits and API limits."
+        ]
+      },
+      {
+        "title": "10. Review: pick the envelope model",
+        "minutes": 15,
+        "steps": [
+          "Without looking at notes, write one sentence for each scenario: (a) HR offer letter from one fixed template; (b) a template plus a custom side letter uploaded per deal; (c) a policy update sent to 2,000 customers; (d) staff must place fields before sending; (e) customer signs inside the mobile app; (f) contract must not be signed any more.",
+          "Map each to: templateId+templateRoles, compositeTemplates, bulk send, draft+createSender, clientUserId+createRecipient, void.",
+          "Re-run whichever exercise you hesitated on."
+        ],
+        "api": "No new call. Reuse the calls from exercises 2-9.",
+        "observe": [
+          "Most eSignature questions are 'which model or which call' decisions, not syntax."
+        ],
+        "examTraps": [
+          "Answers that poll Envelopes:get in a loop or generate signing URLs ahead of time are almost always wrong.",
+          "Multiple-answer questions: check each option on its own against the scenario."
+        ]
+      }
+    ],
+    "cleanup": [
+      "Void any test envelopes still in process and delete drafts you no longer need.",
+      "Delete the bulk send list (DELETE .../bulk_send_lists/{bulkSendListId}) and any test templates.",
+      "Delete any envelope locks you created.",
+      "Keep the integration key, but rotate or delete the secret if it was ever exposed outside Postman."
+    ],
+    "takeaways": [
+      "Base URI comes from /oauth/userinfo; the REST path is /restapi/v2.1/accounts/{accountId}/...",
+      "status created = draft (prepare, generate, embedded send, bulk send); status sent = send now.",
+      "templateId+templateRoles is simplest; compositeTemplates combines templates and documents, with sequence deciding overrides.",
+      "clientUserId makes an embedded signer; createRecipient URL is valid 5 minutes, single-use, generated just in time.",
+      "Focused view = Docusign JS + frameAncestors/messageOrigins; payments, IDV and AI-Assisted Review need classic view.",
+      "Embedded sending = draft envelope + EnvelopeViews:createSender.",
+      "Lock is temporary, void is permanent; correct recipients and resend rather than recreate.",
+      "Bulk send = list -> placeholder envelope (mailingListId) -> test -> send -> batch status, tracked with Connect."
+    ]
+  },
+  "connect_golive": {
+    "title": "Lab 3: Docusign Connect + Go Live",
+    "weeks": "Week 3",
+    "goal": "Receive real Connect messages, break the listener on purpose and recover, so that envelope-level versus account-level configuration, JSON SIM, HMAC and retries are things you have seen rather than memorised. Then walk the Go Live screens and the monitoring tools, and list exactly what changes when an integration moves to production.",
+    "setup": [
+      "Zero-code listener: open https://webhook.site and copy your unique URL as {listenerUrl}. It shows each request's headers and raw body.",
+      "Optional code listener (Saturday lab): Node 18+, npm init, npm install express, and ngrok (or any HTTPS tunnel) to expose http://localhost:3000 as an https URL.",
+      "Your demo user must be an account administrator for the account-level parts (Settings > Connect and the ConnectConfigurations API). Developer accounts are admin by default.",
+      "Optional: import the Connect Webhooks Postman collection used in the official course (Developer Center Postman workspace) and set accountId, integration key and secret in its environment.",
+      "Reference code in this project: d:/Docusign exam/docusign-node-quickstart/app/lib/connect/examples/validateWebhookMessage.js (HMAC check). Do not copy any credentials from the quickstart config."
+    ],
+    "exercises": [
+      {
+        "title": "1. Envelope-level webhook with eventNotification",
+        "minutes": 20,
+        "steps": [
+          "Create and send an envelope that includes an eventNotification object pointing at {listenerUrl}, JSON SIM (restv2.1), events envelope-sent, envelope-delivered, envelope-completed and recipient-completed.",
+          "Watch webhook.site: envelope-sent arrives within seconds.",
+          "Open and sign the envelope; watch the remaining events arrive.",
+          "Send a second envelope without eventNotification and confirm that nothing arrives for it."
+        ],
+        "api": "POST {base_uri}/restapi/v2.1/accounts/{accountId}/envelopes\n{\n  \"emailSubject\": \"Connect lab\", \"status\": \"sent\",\n  \"documents\": [...], \"recipients\": {...},\n  \"eventNotification\": {\n    \"url\": \"{listenerUrl}\",\n    \"requireAcknowledgment\": \"true\",\n    \"loggingEnabled\": \"true\",\n    \"deliveryMode\": \"SIM\",\n    \"eventData\": {\"version\": \"restv2.1\", \"format\": \"json\", \"includeData\": [\"recipients\"]},\n    \"events\": [\"envelope-sent\", \"envelope-delivered\", \"envelope-completed\", \"recipient-completed\"]\n  }\n}",
+        "observe": [
+          "Each message is one event: event, apiVersion, uri, retryCount, configurationId, generatedDateTime and a data object with accountId, userId, envelopeId (plus envelopeSummary when included).",
+          "Only this envelope publishes; the configuration lives inside the envelope definition."
+        ],
+        "examTraps": [
+          "One integration, only its own envelopes, no admin rights -> envelope-level eventNotification.",
+          "Envelope-level configurations cannot be paused and are not listed with account configurations.",
+          "Connect messages do not count against your API rate limits; polling does."
+        ]
+      },
+      {
+        "title": "2. Account-level custom configuration (UI and API)",
+        "minutes": 20,
+        "steps": [
+          "In eSignature Admin go to Settings > Connect > Add Configuration > Custom. Name it, set the URL to {listenerUrl}, choose JSON SIM / REST v2.1, enable Envelope and Recipient events (Sent, Delivered, Completed), tick Require Acknowledgement and Enable Log, and save.",
+          "Send any envelope from the web app (no API) and watch webhook.site: the account configuration fires for every user's envelope.",
+          "Create a second configuration through the API with allowEnvelopePublish true, then update it to allowEnvelopePublish false and send another envelope. Compare.",
+          "List configurations with GET .../connect and note the connectId values."
+        ],
+        "api": "POST {base_uri}/restapi/v2.1/accounts/{accountId}/connect\n{\n  \"configurationType\": \"custom\",\n  \"name\": \"lab-json-sim\",\n  \"urlToPublishTo\": \"{listenerUrl}\",\n  \"allUsers\": \"true\",\n  \"allowEnvelopePublish\": \"true\",\n  \"enableLog\": \"true\",\n  \"requiresAcknowledgement\": \"true\",\n  \"deliveryMode\": \"SIM\",\n  \"eventData\": {\"version\": \"restv2.1\"},\n  \"events\": [\"envelope-sent\", \"envelope-delivered\", \"envelope-completed\"]\n}\n\nGET {base_uri}/restapi/v2.1/accounts/{accountId}/connect",
+        "observe": [
+          "The API call needs an account administrator and Connect enabled on the account.",
+          "allowEnvelopePublish false keeps the configuration but stops it publishing.",
+          "configurationType custom = account-level; customrecipient = Recipient Connect (fires when chosen users receive envelopes)."
+        ],
+        "examTraps": [
+          "'Notify our ERP of every completed envelope, including those sent from the web app' -> account-level custom configuration, not eventNotification.",
+          "Organization-level Connect covers several accounts and is always JSON SIM.",
+          "If a configuration exists but nothing arrives, check allowEnvelopePublish, the event list, user selection and whether it is paused."
+        ]
+      },
+      {
+        "title": "3. JSON SIM vs legacy XML",
+        "minutes": 15,
+        "steps": [
+          "Clone your account configuration in the UI but choose the legacy XML format (if still offered in your demo account) and point it at a second webhook.site URL.",
+          "Send one envelope and compare the two payloads side by side: size, structure and number of messages per event.",
+          "Read the JSON SIM event model page on the Developer Center and note the includeData options (recipients, tabs, documents, custom_fields, extensions...).",
+          "Delete or disable the XML configuration."
+        ],
+        "api": "Same POST .../connect body as exercise 2; for legacy use the UI format choice. JSON SIM is identified by deliveryMode SIM + eventData.version restv2.1.",
+        "observe": [
+          "JSON SIM messages are event-focused, smaller and customizable; legacy XML sends a whole envelope status document.",
+          "Aggregate delivery (bundling events) exists only for legacy XML."
+        ],
+        "examTraps": [
+          "Advantages of JSON SIM: one message per event, smaller payloads, choose included data, supported at every level, required for extension-executed events (connected fields).",
+          "Legacy XML is deprecated; choose it only for an existing SOAP/XML integration that cannot change."
+        ]
+      },
+      {
+        "title": "4. HMAC set-up and seeing the signature header",
+        "minutes": 15,
+        "steps": [
+          "In Settings > Connect > Connect Keys (HMAC) add a secret key and copy it once into a local .env file (never into notes).",
+          "Edit your account configuration and enable Include HMAC Signature. Save.",
+          "Send an envelope and in webhook.site find the header X-DocuSign-Signature-1.",
+          "Add a second secret key and look for X-DocuSign-Signature-2 on the next message (one header per active key, which allows key rotation)."
+        ],
+        "api": "Configuration flag (API): \"includeHMAC\": \"true\" on the ConnectConfigurations body.\nHeader received: X-DocuSign-Signature-1: {base64 HMAC-SHA256 of the raw body}",
+        "observe": [
+          "The signature is base64(HMAC-SHA256(secret, raw request body bytes)).",
+          "Several keys produce several numbered headers; any one matching is enough."
+        ],
+        "examTraps": [
+          "HMAC proves the message came from Docusign and was not altered; it is the standard way to secure a listener, alongside HTTPS, Basic auth, mutual TLS or OAuth for Connect.",
+          "Rotation: add the new key, deploy code that accepts either, then delete the old key."
+        ]
+      },
+      {
+        "title": "5. Saturday lab: Node listener, raw-body HMAC check, failures and republish",
+        "minutes": 60,
+        "steps": [
+          "Write a tiny Express app: app.post('/connect', express.raw({type: '*/*'}), handler). In the handler compute base64 HMAC-SHA256 of req.body (a Buffer) with your secret and compare to the X-DocuSign-Signature-1 header with crypto.timingSafeEqual (same logic as validateWebhookMessage.js).",
+          "If valid, push the parsed JSON to an in-memory queue and return 200 immediately; process the queue afterwards.",
+          "Start ngrok http 3000 and set the configuration URL to https://{ngrokHost}/connect. Send an envelope and confirm verification succeeds.",
+          "Break it on purpose: replace express.raw with express.json and recompute the HMAC over JSON.stringify(req.body). Note that verification fails or is fragile because the bytes changed.",
+          "Make the handler return 500 for every message (or stop the app). Send an envelope. Open the Connect Dashboard / Connect logs and the failure log via API.",
+          "Restore the handler, then republish the failed envelope with retry_queue and watch it arrive. Note retryCount in the payload.",
+          "Implement idempotency: store a key such as envelopeId + event + generatedDateTime and skip duplicates; resend the same event via republish to prove the duplicate is ignored."
+        ],
+        "api": "GET {base_uri}/restapi/v2.1/accounts/{accountId}/connect/failures?from_date=2026-11-01\n\nPUT {base_uri}/restapi/v2.1/accounts/{accountId}/connect/envelopes/{envelopeId}/retry_queue\n\nPUT {base_uri}/restapi/v2.1/accounts/{accountId}/connect/envelopes/retry_queue\n{\"envelopeIds\": [\"{envelopeId}\"]}\n\nHistorical republish to any URL:\nPOST {base_uri}/restapi/v2.1/accounts/{accountId}/connect/envelopes/publish/historical\n{\"envelopes\": [\"{envelopeId}\"], \"config\": {\"configurationType\": \"custom\", \"name\": \"replay\", \"urlToPublishTo\": \"{listenerUrl}\", \"allowEnvelopePublish\": \"true\", \"deliveryMode\": \"SIM\", \"eventData\": {\"version\": \"restv2.1\", \"format\": \"json\"}}}",
+        "observe": [
+          "Any non-2xx response or timeout is a failed delivery. With requiresAcknowledgement, Docusign retries with exponential back-off: about 5 min, 10 min, 20 min, 40 min, 1 h, 2 h, 1 day, then daily for up to 15 days.",
+          "Failures appear in the failure log and the Connect Dashboard (retry count, error message); if Require Acknowledgement is off, the Dashboard shows no error data.",
+          "HMAC over the raw bytes verifies; HMAC over re-serialized JSON may not."
+        ],
+        "examTraps": [
+          "Return 200 fast and process asynchronously; slow processing inside the request causes timeouts and retries.",
+          "Make processing idempotent: retries and republishes deliver the same event more than once, and order is not guaranteed.",
+          "Verify HMAC on the raw body before parsing; reject on mismatch.",
+          "Missed events after an outage: republish from the failure log (retry_queue) or use listStatusChanges with overlapping time windows, not tight polling."
+        ]
+      },
+      {
+        "title": "6. Go Live walkthrough: Apps and Keys, classification, Start Go live",
+        "minutes": 20,
+        "steps": [
+          "Open Apps and Keys and edit your lab integration key. Find the section 'How will you use this integration?' (Integration Type) and read the four classifications.",
+          "For each classification write one scenario: private custom integration, third-party integration key, public integration, embedded integration.",
+          "Open Actions next to the key and find Start Go live. Read the screens up to the point where you must log in to a production account (do not submit unless you have one).",
+          "Write the order of steps from memory: create key and finish testing in demo -> set classification -> Start Go live -> log in to production account as admin and select it -> review -> key promoted -> add production secrets/RSA keys and redirect URIs."
+        ],
+        "api": "UI only: https://apps-d.docusign.com/admin/apps-and-keys > Actions > Start Go live",
+        "observe": [
+          "The classification must be chosen before Go Live can be completed.",
+          "The submitter must be an admin of the target production account; there is no fee to submit, but production accounts may cost money.",
+          "The old 20-successful-API-calls requirement no longer applies."
+        ],
+        "examTraps": [
+          "Private custom integration = used by your (or your customers') employees; Third-party integration key = a partner app that needs your own key; Public integration = one app for many customers via the Partner Program; Embedded integration = ISV embed where customers use your Docusign account.",
+          "The production plan must include every feature the app used in demo (for example data verification, bulk send, web forms).",
+          "Go Live review can fail on polling violations, so design with Connect first."
+        ]
+      },
+      {
+        "title": "7. Monitoring tools: request logging (50 logs), API Dashboard, API Usage Center",
+        "minutes": 20,
+        "steps": [
+          "In the eSignature web app: initials menu > My Preferences, find Request Logging and select Enable Logging, make three API calls from Postman, then Download the zip and open one log file.",
+          "Note the counter 'Clear # of 50 Logs' and clear the logs.",
+          "In Admin > Apps and Keys scroll to the API Dashboard: view the timeline of successful and failed requests for your key and drill into a failed request (make one fail on purpose with a bad envelopeId).",
+          "In Admin > API Usage Center look at calls by integration key, limit status and the efficiency score; open Actions > View Efficiency Score for your app and read the factors."
+        ],
+        "api": "UI only. Generate one failure for the dashboards:\nGET {base_uri}/restapi/v2.1/accounts/{accountId}/envelopes/00000000-0000-0000-0000-000000000000",
+        "observe": [
+          "Request logging is off by default, available to any user, and keeps up to 50 requests.",
+          "The API Dashboard shows up to 90 days of request history for apps you have access to.",
+          "Efficiency score factors include blocked calls, burst/hourly limit exceeded, excessive document, envelope, status and recipient-status requests, requests for nonexistent envelopes, excessive requests per envelope, and low call activity."
+        ],
+        "examTraps": [
+          "Support staff without integration access debug with Request Logging; developers with key access use the API Dashboard.",
+          "Low efficiency score -> fix the flagged factors (usually polling and repeated document downloads) before asking for a higher hourly limit."
+        ]
+      },
+      {
+        "title": "8. Rate limits and polling rules",
+        "minutes": 15,
+        "steps": [
+          "Make any eSignature call in Postman and open the response headers: X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset.",
+          "Convert the reset value (Unix seconds) to a time and confirm it is the top of the next hour.",
+          "Read the same headers being logged in d:/Docusign exam/docusign-node-quickstart/app/lib/webforms/examples/createRemoteInstance.js.",
+          "Write the polling rule and a catch-up design: Connect first; for gaps, Envelopes:listStatusChanges with from_date set a little earlier than the last successful run."
+        ],
+        "api": "GET {base_uri}/restapi/v2.1/accounts/{accountId}/envelopes?from_date={lastRunMinus5Minutes}\n(inspect response headers X-RateLimit-Limit / X-RateLimit-Remaining / X-RateLimit-Reset)",
+        "observe": [
+          "Default hourly limit is 3,000 calls per account per hour, shared by all integrations, reset on the hour; over the limit, calls are blocked until the next hour.",
+          "Burst limit: 500 calls per 30 seconds in production (200 in demo).",
+          "Polling: at most one status GET per envelope every 15 minutes; violations return errors such as Hourly_Envelope_Polling_Limit_Exceeded and can fail Go Live review."
+        ],
+        "examTraps": [
+          "Answers that poll each envelope every minute are wrong; use Connect.",
+          "Aim for 5 or fewer API calls to create and send an envelope (build it in one Envelopes:create call).",
+          "Raising the hourly limit yourself needs: plan includes limit management, you are admin, no Support-set limit, efficient apps and enough call history."
+        ]
+      },
+      {
+        "title": "9. What changes in production: the cut-over checklist",
+        "minutes": 15,
+        "steps": [
+          "Make a two-column table, demo vs production, for every value your lab apps used.",
+          "Fill in: auth host account-d.docusign.com -> account.docusign.com; base_uri demo.docusign.net -> whatever /oauth/userinfo returns (na2, na3, eu, ...); accountId and userId -> production values; secret keys and RSA key pairs -> new ones created in production Apps and Keys; redirect URIs -> production URLs; template IDs, brand IDs, web form IDs -> production IDs; Connect configurations -> recreate in production with production listener URLs and HMAC keys; Docusign JS js-d -> js and frameAncestors apps-d -> apps; Web Forms base apps-d -> apps; IAM APIs api-d -> api.",
+          "Mark which values belong in configuration rather than code (all of them)."
+        ],
+        "api": "GET https://account.docusign.com/oauth/userinfo   (production; use the returned base_uri)",
+        "observe": [
+          "The integration key GUID is promoted, but secrets, RSA keys and account-specific IDs are not reused from demo."
+        ],
+        "examTraps": [
+          "After Go Live: switch auth host, read base_uri from userinfo, regenerate secrets/RSA keys, update redirect URIs, and replace demo template IDs and other account-specific IDs.",
+          "JWT consent must also be granted again in production (individual or admin consent)."
+        ]
+      }
+    ],
+    "cleanup": [
+      "Delete or disable the lab Connect configurations (Settings > Connect or DELETE .../connect/{connectId}) so they stop posting to webhook.site.",
+      "Delete HMAC keys you created for the lab and wipe the local .env file.",
+      "Clear the failure log entries (DELETE .../connect/failures/all) and the request logs.",
+      "Stop ngrok and the Node listener."
+    ],
+    "takeaways": [
+      "Only your app's envelopes -> eventNotification; every envelope in the account -> account-level custom configuration (admin); several accounts -> org-level (JSON SIM).",
+      "Use JSON SIM (deliveryMode SIM, eventData.version restv2.1); legacy XML only for existing SOAP integrations.",
+      "Verify X-DocuSign-Signature-1 as base64 HMAC-SHA256 of the raw body before parsing.",
+      "Return 200 fast, queue the work, and make processing idempotent; non-2xx or timeouts are retried for up to 15 days.",
+      "Recover missed events with the failure log + retry_queue republish, or listStatusChanges with overlapping windows.",
+      "3,000 calls/hour per account, burst 500/30 s (200 in demo), poll an envelope at most once per 15 minutes.",
+      "Pick the right classification (private custom, third-party key, public, embedded) before Start Go live; submitter must be production admin.",
+      "Request Logging (50 logs, any user), API Dashboard (key owners, 90 days), API Usage Center (efficiency score) are the troubleshooting trio.",
+      "Production cut-over: account.docusign.com, base_uri from userinfo, new secrets/RSA keys, production redirect URIs and template IDs."
+    ]
+  },
+  "features_webforms": {
+    "title": "Lab 4: eSignature Features & Web Forms",
+    "weeks": "Week 4",
+    "goal": "Add the features that scenario questions ask about most: the right recipient authentication for the risk, branding, web forms with and without an envelope, and connected fields. Each exercise shows which property or call the feature hangs on, so you can match a scenario to it quickly.",
+    "setup": [
+      "Reuse the Postman (or API Request Builder) set-up from Lab 1-2 with a valid token that includes the signature scope; web forms calls also need the webforms scopes your Postman collection or the quickstart requests (check the Web Forms API auth page).",
+      "Have a phone that can receive SMS for the phone authentication exercise.",
+      "In the web app open Forms (web forms module) to confirm web forms are available in your developer account (they are in all developer accounts, but only on some production plans).",
+      "Reference code in this project: d:/Docusign exam/docusign-node-quickstart/app/lib/eSignature/examples/ (accessCodeAuthentication.js, phoneAuthentication.js, kbaAuthentication.js, idvAuthentication.js, createBrand.js, applyBrandToEnvelope.js), app/lib/webforms/examples/ (createInstance.js, createRemoteInstance.js), app/views/pages/webforms-examples/eg001WebFormEmbed.ejs, and app/lib/connectedFields/examples/setConnectedFields.js. Do not copy credentials from the quickstart config."
+    ],
+    "exercises": [
+      {
+        "title": "1. Access code: the lightest enforced authentication",
+        "minutes": 15,
+        "steps": [
+          "Send an envelope whose signer has accessCode set.",
+          "Open the email: the signer must type the code before seeing the document. Enter a wrong code first, then the right one.",
+          "Look at the certificate of completion after signing: the authentication is recorded."
+        ],
+        "api": "POST {base_uri}/restapi/v2.1/accounts/{accountId}/envelopes\nsigner: {\"email\": \"{signerEmail}\", \"name\": \"Lab Signer\", \"recipientId\": \"1\", \"accessCode\": \"4821\", \"tabs\": {...}}",
+        "observe": [
+          "The code is not sent by Docusign; you share it out of band (phone call, separate message)."
+        ],
+        "examTraps": [
+          "Low-risk document but you still want a shared secret -> access code, not KBA or IDV.",
+          "An access code sent in the same email as the signing link adds no security."
+        ]
+      },
+      {
+        "title": "2. Phone (SMS) authentication via identityVerification.workflowId",
+        "minutes": 20,
+        "steps": [
+          "List the identity verification workflows available to your account.",
+          "Find the workflow whose defaultName is Phone Authentication and copy its workflowId.",
+          "Send an envelope with identityVerification.workflowId set and a phone_number_list input option containing your phone number.",
+          "Open the envelope and complete the SMS (or voice) code step."
+        ],
+        "api": "GET {base_uri}/restapi/v2.1/accounts/{accountId}/identity_verification\n\nsigner:\n{\"email\": \"{signerEmail}\", \"name\": \"Lab Signer\", \"recipientId\": \"1\",\n \"identityVerification\": {\"workflowId\": \"{phoneWorkflowId}\", \"steps\": null,\n   \"inputOptions\": [{\"name\": \"phone_number_list\", \"valueType\": \"PhoneNumberList\",\n     \"phoneNumberList\": [{\"countryCode\": \"{countryCode}\", \"number\": \"{phoneNumber}\"}]}]}}",
+        "observe": [
+          "IdentityVerifications:list returns the workflows (phone, IDV and others) with workflowId and defaultName.",
+          "Phone authentication is a second factor on top of email."
+        ],
+        "examTraps": [
+          "Phone authentication and IDV are both configured through identityVerification.workflowId taken from IdentityVerifications:list; do not hard-code workflow IDs across environments.",
+          "SMS authentication may cost extra in production."
+        ]
+      },
+      {
+        "title": "3. KBA and IDV: when heavy authentication fits",
+        "minutes": 20,
+        "steps": [
+          "Read kbaAuthentication.js: the signer gets idCheckConfigurationName (ID Check) and requireIdLookup true. Send one with a US test identity only if you are comfortable; otherwise just inspect the request.",
+          "In the identity_verification list from exercise 2 look for the Docusign ID Verification workflow. If it is missing, IDV is not enabled in your demo account (it is not by default; ask your account manager).",
+          "If IDV is present, send an envelope with only identityVerification.workflowId set to the IDV workflow and open it in classic view to see the ID capture step.",
+          "Write when each method fits: access code, phone, KBA, IDV."
+        ],
+        "api": "KBA signer: {\"recipientId\": \"1\", \"email\": \"{signerEmail}\", \"name\": \"Lab Signer\", \"idCheckConfigurationName\": \"ID Check\", \"requireIdLookup\": \"true\"}\n\nIDV signer: {\"recipientId\": \"1\", \"email\": \"{signerEmail}\", \"name\": \"Lab Signer\", \"identityVerification\": {\"workflowId\": \"{idvWorkflowId}\"}}",
+        "observe": [
+          "KBA asks public-record questions and works for US identities only.",
+          "IDV checks a government photo ID or eID; it is the only method not enabled by default in demo.",
+          "IDV cannot be used with focused view; use classic view."
+        ],
+        "examTraps": [
+          "Non-US signers -> KBA is wrong; use IDV or phone.",
+          "High-value or regulated agreement needing proof of identity -> IDV; do not pick KBA or access code just because they are cheaper.",
+          "Match the method to the document's risk; heavy methods on low-risk documents are a wrong answer."
+        ]
+      },
+      {
+        "title": "4. authenticationMethod only records, and ID Evidence",
+        "minutes": 15,
+        "steps": [
+          "Create an embedded signing envelope (clientUserId) as in Lab 1-2 exercise 5.",
+          "Call createRecipient twice on fresh envelopes: once with authenticationMethod none, once with authenticationMethod Password (pretending your app used a password login).",
+          "Sign both and compare the certificates of completion: the method is written down, but Docusign enforced nothing.",
+          "Read the ID Evidence API overview on the Developer Center: after an IDV-authenticated signing, an app with the right permissions can retrieve the evidence (ID images and verification events) for audit."
+        ],
+        "api": "POST {base_uri}/restapi/v2.1/accounts/{accountId}/envelopes/{envelopeId}/views/recipient\n{\"returnUrl\": \"http://localhost:3000/ds-return\", \"authenticationMethod\": \"Password\",\n \"email\": \"{signerEmail}\", \"userName\": \"Lab Signer\", \"clientUserId\": \"1001\"}",
+        "observe": [
+          "authenticationMethod (with optional authenticationInstant, assertionId, securityDomain) is recorded on the certificate as your app's own authentication."
+        ],
+        "examTraps": [
+          "authenticationMethod does not enforce authentication; to require a check by Docusign use access code, phone, KBA or IDV on the recipient.",
+          "Need the actual ID images and events after IDV for an audit -> ID Evidence API, not the envelope documents."
+        ]
+      },
+      {
+        "title": "5. Branding: create a brand and apply brandId",
+        "minutes": 15,
+        "steps": [
+          "Create a brand in Settings > Brands (or via the API) with a logo and a color.",
+          "List brands and copy the brandId.",
+          "Send an envelope with brandId set and open it: email and signing page use the brand.",
+          "Compare with createBrand.js and applyBrandToEnvelope.js in the quickstart."
+        ],
+        "api": "POST {base_uri}/restapi/v2.1/accounts/{accountId}/brands\n{\"brandName\": \"Lab Brand\", \"defaultBrandLanguage\": \"en\"}\n\nGET {base_uri}/restapi/v2.1/accounts/{accountId}/brands\n\nPOST .../envelopes\n{\"brandId\": \"{brandId}\", \"emailSubject\": \"Branded\", \"status\": \"sent\", \"documents\": [...], \"recipients\": {...}}",
+        "observe": [
+          "A brand controls logos, colors, email and signing resource files and destination URLs (for example after signing).",
+          "Brands can also be applied to templates and assigned to groups."
+        ],
+        "examTraps": [
+          "Different look per business unit or customer -> separate brands, chosen with brandId per envelope (or per template / group).",
+          "Brand IDs are account-specific; update them at Go Live."
+        ]
+      },
+      {
+        "title": "6. Web form configuration: standalone vs template-based, getForm field names",
+        "minutes": 20,
+        "steps": [
+          "In the web app Forms module create a template-based web form from an eSignature template (fields FullName, PhoneNumber, Company, JobTitle, a checkbox, signature). Publish it.",
+          "Create a second, standalone web form with two fields and publish it.",
+          "Call listForms with a search term and copy each formId.",
+          "Call getForm for each and find the field names you will use as formValues keys, and whether the form is template-based or standalone."
+        ],
+        "api": "Base: https://apps-d.docusign.com/api/webforms/v1.1/accounts/{accountId}\n\nGET {webformsBase}/forms?search=Lab\nGET {webformsBase}/forms/{formId}",
+        "observe": [
+          "Template-based configurations generate an envelope after submission; standalone configurations only collect data (no envelope).",
+          "Field names in getForm are the keys formValues must use."
+        ],
+        "examTraps": [
+          "Need data collection only, no signature -> standalone web form; need a signed agreement from form data -> template-based.",
+          "The Web Forms API base is {base_uri}/api/webforms/v1.1 on apps-d / apps.docusign.com, not /restapi on demo.docusign.net, and it routes to the right production data center itself."
+        ]
+      },
+      {
+        "title": "7. Saturday lab: web form instances, embedded and remote",
+        "minutes": 45,
+        "steps": [
+          "Embedded: call createInstance on the template-based form with clientUserId and formValues to prefill. Keep formUrl and instanceToken from the response.",
+          "Render it: run the quickstart web forms example 1 (eg001WebFormEmbed.ejs uses loadDocuSign(integrationKey) then docusign.webforms({url: formUrl, options: {instanceToken}}).mount(...)), or read that file if you cannot run it.",
+          "Fill and submit the form, then sign. Call getInstance and read status and envelopes[].",
+          "Remote: call createInstance with sendOption now and recipients[] (roleName signer, name, email). Check your mailbox.",
+          "Call getInstance for the remote instance before and after you complete it.",
+          "Create an instance of the standalone form, submit it and confirm envelopes is empty.",
+          "Try adding authenticationMethod to the remote createInstance and note that recording recipient authentication is only for embedded template-based instances."
+        ],
+        "api": "Embedded:\nPOST {webformsBase}/forms/{formId}/instances\n{\"clientUserId\": \"1234-5678\", \"formValues\": {\"Company\": \"Tally\", \"JobTitle\": \"Programmer Writer\", \"PhoneNumber\": \"555-555-5555\", \"Yes\": [\"Yes\"]}, \"expirationOffset\": 24}\n\nRemote:\nPOST {webformsBase}/forms/{formId}/instances\n{\"sendOption\": \"now\", \"formValues\": {\"Company\": \"Tally\"}, \"recipients\": [{\"roleName\": \"signer\", \"name\": \"Lab Signer\", \"email\": \"{signerEmail}\"}]}\n\nRead:\nGET {webformsBase}/forms/{formId}/instances/{instanceId}",
+        "observe": [
+          "Embedded response includes formUrl and instanceToken for Docusign JS; remote instances email the recipients.",
+          "status moves through INITIATED, INPROGRESS, SUBMITTED (or EXPIRED / FAILED); the instance also shows instanceRecipientStatus, formValues and envelopes[].",
+          "Embedded template-based: the envelope is created when the first user submits. Remote: the envelope is created when createInstance is processed."
+        ],
+        "examTraps": [
+          "User is in your app -> embedded instance with clientUserId (max 100 characters) rendered by Docusign JS; user is reached by email -> remote instance with sendOption and recipients[].roleName.",
+          "Prefill with formValues using field names from Configurations:getForm.",
+          "Track results with Instances:getInstance / listInstances (status, envelopes) rather than guessing from the browser.",
+          "authenticationMethod records are supported only for embedded signing of template-based forms, not remote or standalone."
+        ]
+      },
+      {
+        "title": "8. Connected Fields send flow",
+        "minutes": 20,
+        "steps": [
+          "Connected fields need a connected fields extension app installed on the account (App Center). If your demo account has none, do this as a reading exercise with setConnectedFields.js.",
+          "Get the tab groups: TabInfo:GetConnectedFieldsTabGroups on the IAM API host returns the apps and their tabs with extensionData.",
+          "Pick an app and copy, for its tab, the extensionData values (extensionGroupId, publisherName, applicationName, actionName, actionInputKey, actionContract, extensionName, extensionContract, requiredForExtension, connectionInstances connectionKey/connectionValue).",
+          "Create the envelope with a text tab whose extensionData holds those values, then sign it and watch the verification in the signing UI.",
+          "With your Connect configuration from Lab 3 subscribed to extension events, look for the extension-executed message."
+        ],
+        "api": "SDK: client.connectedFields.tabInfo.getConnectedFieldsTabGroups({accountId})  (IAM API host https://api-d.docusign.com/v1 in demo, https://api.docusign.com/v1 in production)\n\nPOST {base_uri}/restapi/v2.1/accounts/{accountId}/envelopes\ntextTabs: [{\"tabLabel\": \"{tabLabel}\", \"documentId\": \"1\", \"anchorString\": \"/sn1/\", \"anchorYOffset\": \"30\",\n  \"extensionData\": {\"extensionGroupId\": \"...\", \"publisherName\": \"...\", \"applicationName\": \"...\", \"actionName\": \"...\",\n    \"actionInputKey\": \"...\", \"actionContract\": \"...\", \"extensionName\": \"...\", \"extensionContract\": \"...\",\n    \"requiredForExtension\": \"true\", \"connectionInstances\": [{\"connectionKey\": \"...\", \"connectionValue\": \"...\"}]}}]",
+        "observe": [
+          "The verify action runs when the signer completes the required fields; result and message show in the signing UI, envelope history and certificate of completion.",
+          "The extension-executed event arrives only on a JSON SIM configuration."
+        ],
+        "examTraps": [
+          "Order: GetConnectedFieldsTabGroups -> copy extensionData into the tabs -> Envelopes:create.",
+          "Connected fields are not supported in Maestro workflows; verification results need JSON SIM Connect.",
+          "Verification against an internal system of record usually means a private extension app."
+        ]
+      }
+    ],
+    "cleanup": [
+      "Void test envelopes that are still in process.",
+      "Unpublish or delete the lab web forms if you do not want them in the Forms list.",
+      "Delete the lab brand (Settings > Brands or DELETE .../brands/{brandId}).",
+      "Remove your phone number from any saved notes and delete local .env files."
+    ],
+    "takeaways": [
+      "Match authentication to risk: access code (light, out of band), phone/SMS, KBA (US only), IDV (government ID, not enabled by default in demo).",
+      "Phone and IDV use identityVerification.workflowId from IdentityVerifications:list.",
+      "authenticationMethod on createRecipient only records your app's authentication; it enforces nothing.",
+      "ID Evidence API retrieves IDV evidence (images and events) for audit.",
+      "Branding: create a brand, apply it with brandId on the envelope, template or group.",
+      "Standalone web form = data only, no envelope; template-based = envelope after submission.",
+      "Embedded instance = clientUserId + Docusign JS; remote instance = sendOption + recipients[].roleName.",
+      "Prefill with formValues (names from getForm); read status and envelopes with getInstance.",
+      "Connected fields: GetConnectedFieldsTabGroups -> extensionData -> Envelopes:create; results via extension-executed (JSON SIM)."
+    ]
+  }
+}

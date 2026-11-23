@@ -7,3 +7,5 @@ tmp/
 .docusign-browser-profile*/
 playwright/
 quiz-app/output/
+quiz-app/public/pdf/
+quiz-app/dist/pdf/

@@ -1,0 +1,1665 @@
+[
+  {
+    "paper": "E",
+    "length": "long",
+    "style": "design",
+    "domain": "Go Live Process",
+    "topic": "Polling violations in Go-Live review",
+    "stem": "Corvane Lettings runs a tenant-screening portal. While an application waits for signatures, a background timer asks Docusign for that agreement's status every 10 minutes so leasing agents see near-real-time progress. Every one of these calls succeeds and the account stays far below its hourly allowance, yet the Go-Live review of the portal's integration key flags the app. The portal is written in .NET and hosted in Azure, and the agents work from three regional offices. What should the team change before resubmitting?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Leave the timer as it is, because every call succeeds and the account stays well under its 3,000-per-hour allowance, and ask Docusign Support for a manual review of the key instead"
+      },
+      {
+        "id": "B",
+        "text": "Keep the 10-minute timer but raise the account's hourly limit in the API Usage Center, so that the status calls are no longer treated as excessive during the review"
+      },
+      {
+        "id": "C",
+        "text": "Receive status changes through Connect notifications instead of the timer, and if a fallback check must remain, space it at least 20 minutes apart for each agreement"
+      },
+      {
+        "id": "D",
+        "text": "Change the timer to 15 minutes per agreement, and also poll immediately whenever an agent clicks Refresh, so agents still see near-real-time progress"
+      }
+    ],
+    "correct": "C",
+    "answerText": "Receive status changes through Connect notifications instead of the timer, and if a fallback check must remain, space it at least 20 minutes apart for each agreement",
+    "explanation": "Apps may make only one status GET per envelope per 15 minutes; extra calls do not fail but are flagged as rate-limit violations that can fail the Go-Live review. The clue 'every 10 minutes' with 'calls succeed' points to this rule; Docusign recommends Connect, or polling at 20-minute intervals.",
+    "whyNotOthers": "C is right because Connect pushes each change without counting against limits, and any fallback check stays well inside the polling rule. The trap is D: a 15-minute timer looks compliant, but the on-demand Refresh polls bring the frequency back above one call per envelope per 15 minutes. A ignores the flagged polling pattern, and B fails because raising the hourly limit does not change the per-envelope polling rule.",
+    "optionExplanations": {
+      "A": "Succeeding calls and a low hourly total do not matter: exceeding one status GET per envelope per 15 minutes is flagged even though the request succeeds.",
+      "B": "The hourly account limit and the per-envelope polling rule are separate; raising one does not excuse the other.",
+      "C": "Correct. Connect pushes status changes without polling; any fallback poll should run at 20-minute intervals.",
+      "D": "The 15-minute timer alone would respect the rule, but the extra on-demand Refresh polls break the one-status-call-per-envelope-per-15-minutes limit again; Connect gives near-real-time updates without polling."
+    },
+    "trapOption": "D",
+    "importance": "HIGH",
+    "decode": {
+      "needs": "Stop per-envelope status polling more often than every 15 minutes; use Connect (fallback poll at 20 minutes).",
+      "clues": [
+        "timer every 10 minutes per agreement -> violates one status GET per envelope per 15 minutes",
+        "calls succeed but review flags the app -> polling violations are flagged, not rejected",
+        ".NET, Azure, three offices -> red herrings"
+      ]
+    },
+    "concept": {
+      "title": "Polling rule and Go-Live review",
+      "line": "One status GET per envelope per 15 minutes; excess calls succeed but are flagged and can fail Go-Live. Use Connect or 20-minute polls."
+    }
+  },
+  {
+    "paper": "E",
+    "length": "long",
+    "style": "design",
+    "domain": "Go Live Process",
+    "topic": "Classification: public vs embedded",
+    "stem": "Tidewater Systems sells a cloud property-management suite to hundreds of letting agencies. Every agency already pays for its own Docusign subscription. Tidewater wants each agency's office manager to authorize the suite once against the agency's own Docusign account; after that, tenancy agreements are signed inside the suite's own screens through embedded signing, with no email links. Tidewater has joined the Docusign Partner Program and expects referral revenue as agency usage grows. Its developers are based in two countries. Which classification should Tidewater choose for the integration key?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Embedded integration, because tenancy agreements are signed inside the suite's own screens through embedded signing instead of through links in Docusign emails"
+      },
+      {
+        "id": "B",
+        "text": "Private custom integration, because the office managers who use the suite are employees of Tidewater's customers rather than members of the public"
+      },
+      {
+        "id": "C",
+        "text": "Third-party integration key, because each agency must authorize Tidewater's suite before it can send agreements from the agency's own account"
+      },
+      {
+        "id": "D",
+        "text": "Public integration, because many separate Docusign customers connect the suite to accounts they own, which is the partner model that earns referral revenue"
+      }
+    ],
+    "correct": "D",
+    "answerText": "Public integration, because many separate Docusign customers connect the suite to accounts they own, which is the partner model that earns referral revenue",
+    "explanation": "A public integration serves many Docusign customers who authorize it against their own accounts, and it earns referral revenue through the Partner Program. The clues 'own Docusign subscription', 'authorize once' and 'referral revenue' decide it; embedded signing is a signing experience, not a classification.",
+    "whyNotOthers": "D is right because the agencies use their own accounts and Tidewater is a referral partner. The trap is A: 'Embedded integration' means customers without accounts use features through the ISV's own account under an ISV Embed licence, which has nothing to do with embedded signing. B fails because a multi-customer product with referral revenue is public, and C fails because a third-party key is one a customer creates to plug into someone else's partner app.",
+    "optionExplanations": {
+      "A": "Embedded integration is the ISV Embed model where customers have no accounts and use the ISV's account; embedded signing does not decide the classification.",
+      "B": "Private custom fits apps built for your own or one customer's employees, not a product many Docusign customers authorize for referral revenue.",
+      "C": "A third-party integration key is created by a customer who must supply its own key to a partner's app.",
+      "D": "Correct. Many Docusign customers authorize the suite against their own accounts, and Tidewater earns referral revenue as a partner."
+    },
+    "trapOption": "A",
+    "importance": "HIGH",
+    "decode": {
+      "needs": "Classify a multi-customer product whose customers use their own Docusign accounts: Public integration.",
+      "clues": [
+        "each agency pays for its own subscription -> customers use their own accounts",
+        "authorize the suite once -> customers connect the integration to their accounts",
+        "referral revenue, Partner Program -> Public integration",
+        "signed inside the suite's screens -> embedded signing, a red herring for classification"
+      ]
+    },
+    "concept": {
+      "title": "Embedded signing is not classification",
+      "line": "Public integration: many customers authorize it on their own accounts. Embedded integration: customers lack accounts and use yours."
+    }
+  },
+  {
+    "paper": "E",
+    "length": "short",
+    "style": "fact",
+    "domain": "Go Live Process",
+    "topic": "Burst limit cannot be changed",
+    "stem": "An eligible administrator is raising the account's hourly API limit in the API Usage Center. What can she do about the 30-second burst limit shown in the same API Limit panel?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Nothing there; the burst limit cannot be changed"
+      },
+      {
+        "id": "B",
+        "text": "It rises in proportion to the new hourly limit"
+      },
+      {
+        "id": "C",
+        "text": "It can be raised in steps of 100 calls"
+      },
+      {
+        "id": "D",
+        "text": "It can be raised only in the production environment"
+      }
+    ],
+    "correct": "A",
+    "answerText": "Nothing there; the burst limit cannot be changed",
+    "explanation": "The API Limit panel shows both values, but only the hourly limit can be updated; Docusign states that you cannot change the burst limit.",
+    "whyNotOthers": "A is right because the burst limit is fixed (500 per 30 seconds in production, 200 in the developer environment). The trap is B: it sounds logical that a higher hourly limit raises the burst, but it does not. C and D invent controls that do not exist.",
+    "optionExplanations": {
+      "A": "Correct. The burst limit is displayed but cannot be changed through limit management.",
+      "B": "Raising the hourly limit does not change the burst limit.",
+      "C": "There is no burst-limit slider; only the hourly limit changes, in steps of 500.",
+      "D": "The burst limit cannot be changed in either environment."
+    },
+    "trapOption": "B",
+    "importance": "MEDIUM",
+    "concept": {
+      "title": "Burst limit is fixed",
+      "line": "API limit management changes only the hourly call limit; the 30-second burst limit cannot be changed."
+    }
+  },
+  {
+    "paper": "E",
+    "length": "long",
+    "style": "design",
+    "domain": "Go Live Process",
+    "topic": "Userinfo call frequency (JWT)",
+    "stem": "Brackenridge Health's unattended claims-intake service runs on a container platform and impersonates one of 40 regional coordinators, depending on which region a claim belongs to. It caches each coordinator's access token until it expires, but before processing every single claim it calls /oauth/userinfo to rediscover the base URI. At month end the service handles tens of thousands of claims an hour and starts receiving HTTP 429 responses with the error principal_throttled. The containers restart about once a week for patching. What is the best fix?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Call /oauth/userinfo each time a coordinator's token is renewed instead of per claim, because the base URI can change whenever Docusign issues a new token"
+      },
+      {
+        "id": "B",
+        "text": "Call /oauth/userinfo once per impersonated coordinator after each service restart, cache the returned base URI, and reuse it for all of that coordinator's claims"
+      },
+      {
+        "id": "C",
+        "text": "Ask an administrator to raise the account's hourly API limit in the API Usage Center, because user info requests count against that hourly allowance"
+      },
+      {
+        "id": "D",
+        "text": "Switch the service to Authorization Code Grant so that user info is requested only when a coordinator signs in interactively at the start of a shift"
+      }
+    ],
+    "correct": "B",
+    "answerText": "Call /oauth/userinfo once per impersonated coordinator after each service restart, cache the returned base URI, and reuse it for all of that coordinator's claims",
+    "explanation": "Docusign limits /oauth/userinfo requests per user and per integration key and returns 429 principal_throttled when they are exceeded. For JWT apps the guideline is to call userinfo once per impersonated user per application restart; the clue 'before every single claim' is the problem.",
+    "whyNotOthers": "B is right because it follows the JWT guideline and base URIs change rarely, so caching is safe. The trap is A: it sounds disciplined, but Docusign says JWT apps should not call userinfo each time a new token is obtained. C fails because the userinfo limits are separate from the account's eSignature hourly limit, and D fails because the service is unattended, so no coordinator is there to sign in.",
+    "optionExplanations": {
+      "A": "For JWT Grant, Docusign says not to call userinfo every time a new token is obtained; once per user per restart is enough.",
+      "B": "Correct. One userinfo call per impersonated user per restart, with the base URI cached, is the documented pattern.",
+      "C": "principal_throttled comes from the separate userinfo limits, which the API Usage Center hourly limit does not raise.",
+      "D": "An unattended service has no person to sign in, so Authorization Code Grant does not fit."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "Reduce /oauth/userinfo calls: once per impersonated user per restart for JWT; cache base_uri.",
+      "clues": [
+        "429 principal_throttled -> userinfo request limit exceeded",
+        "userinfo before every claim -> far too frequent",
+        "unattended service, 40 coordinators -> JWT Grant with several impersonated users",
+        "weekly restarts -> a natural point to refresh the cached base URI"
+      ]
+    },
+    "concept": {
+      "title": "Userinfo once per user",
+      "line": "JWT apps call /oauth/userinfo once per impersonated user per restart and cache base_uri; overuse returns 429 principal_throttled."
+    }
+  },
+  {
+    "paper": "E",
+    "length": "long",
+    "style": "design",
+    "domain": "Go Live Process",
+    "topic": "Migrating users and Connect after Go-Live",
+    "stem": "Ferncliff Water's billing platform went live last week with JWT Grant. The team added an RSA key pair to the production copy of the key, changed the OAuth host, and now builds API URLs from userinfo. Two problems remain. Token requests fail because the JWT's sub still holds the user ID of 'billing-svc', the user it impersonated in the sandbox. And although invoices now go out from production, the finance system never hears about completed invoices; in testing it did, through an account-wide webhook the team set up in the sandbox's admin settings. Which two actions fix these problems? (Select two)",
+    "options": [
+      {
+        "id": "A",
+        "text": "Add the finance system's listener URL to the production key's redirect URIs, because redirect URIs are not copied by Go-Live and also govern where webhook messages may be sent"
+      },
+      {
+        "id": "B",
+        "text": "Create the billing-svc user in the production account (or pick an existing production user), put that user's production user ID in sub, and obtain that user's consent in production"
+      },
+      {
+        "id": "C",
+        "text": "Run Start Go live again for the same key, because a second promotion copies the sandbox's users and their consent records into the production account"
+      },
+      {
+        "id": "D",
+        "text": "Wait for the nightly synchronisation between the environments, which copies account settings such as Connect configurations into production within 24 hours"
+      },
+      {
+        "id": "E",
+        "text": "Recreate the account-level Connect configuration in the production account's admin settings, pointing at the finance system's listener with the same events selected"
+      }
+    ],
+    "correct": "B,E",
+    "correctAnswers": [
+      "B",
+      "E"
+    ],
+    "answerText": "Create the billing-svc user in the production account (or pick an existing production user), put that user's production user ID in sub, and obtain that user's consent in production; Recreate the account-level Connect configuration in the production account's admin settings, pointing at the finance system's listener with the same events selected",
+    "explanation": "Production account settings and data are separate from the developer account, so users and settings such as Connect configurations must be migrated after Go-Live. The clues 'sub still holds the sandbox user ID' and 'webhook set up in the sandbox's admin settings' show what was never moved.",
+    "whyNotOthers": "B and E are right: the production user has a different user ID that needs its own consent, and an account-level Connect configuration lives in the account where it was created. The trap is A: redirect URIs really are not copied, but they are OAuth return addresses and have nothing to do with where Connect posts. C fails because Go-Live copies only the key, and D fails because no synchronisation between environments exists.",
+    "optionExplanations": {
+      "A": "Redirect URIs are OAuth settings for returning users after sign-in; Connect delivery is set in the Connect configuration.",
+      "B": "Correct. Users must be migrated; sub must be the production user's ID, and consent must be granted in production.",
+      "C": "Go-Live duplicates only the integration key; it never copies users or consent.",
+      "D": "There is no synchronisation of settings between developer and production accounts.",
+      "E": "Correct. Account settings such as Connect configurations must be recreated in the production account."
+    },
+    "trapOption": "A",
+    "importance": "HIGH",
+    "decode": {
+      "needs": "Migrate users (new production user ID plus consent) and recreate account settings like Connect in production.",
+      "clues": [
+        "sub still holds the sandbox user ID -> production users have different IDs",
+        "account-wide webhook set up in the sandbox admin -> account-level Connect configuration stays in the developer account",
+        "RSA key and OAuth host already done -> those are not the remaining problems"
+      ]
+    },
+    "concept": {
+      "title": "Migrate users and settings",
+      "line": "After Go-Live, production users, consent and account settings such as Connect configurations must be set up separately."
+    }
+  },
+  {
+    "paper": "E",
+    "length": "short",
+    "style": "fact",
+    "domain": "Go Live Process",
+    "topic": "Per-envelope burst GET error",
+    "stem": "A branch tablet app reloads one envelope's details, documents and recipients in a tight loop while a customer waits, sending dozens of GET requests for that single envelope within a few seconds. Which error is it most likely to receive?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Hourly_Envelope_Polling_Limit_Exceeded"
+      },
+      {
+        "id": "B",
+        "text": "Burst_APIInvocation_Envelope_Limit_Exceeded"
+      },
+      {
+        "id": "C",
+        "text": "Hourly_APIInvocation_Envelope_Limit_Exceeded"
+      },
+      {
+        "id": "D",
+        "text": "Burst_Envelope_Polling_Limit_Exceeded"
+      }
+    ],
+    "correct": "D",
+    "answerText": "Burst_Envelope_Polling_Limit_Exceeded",
+    "explanation": "Too many GET requests for one envelope (including its documents and recipients) within a 30-second burst period return Burst_Envelope_Polling_Limit_Exceeded. The clues are GET and 'within a few seconds'.",
+    "whyNotOthers": "D is right because the calls are GETs in a short burst. The trap is B: it is a burst error too, but APIInvocation errors are for PUT requests. A and C are hourly errors, and C is also for PUTs.",
+    "optionExplanations": {
+      "A": "This is the hourly GET error; the calls here happen within seconds.",
+      "B": "APIInvocation errors count PUT requests; these are GETs.",
+      "C": "This is the hourly PUT error; wrong method and wrong time window.",
+      "D": "Correct. Too many GETs for one envelope within 30 seconds produce this burst polling error."
+    },
+    "trapOption": "B",
+    "importance": "MEDIUM",
+    "concept": {
+      "title": "Per-envelope error codes",
+      "line": "Polling errors count GETs per envelope; APIInvocation errors count PUTs. Burst means 30 seconds, Hourly means one hour."
+    }
+  },
+  {
+    "paper": "E",
+    "length": "long",
+    "style": "design",
+    "domain": "Go Live Process",
+    "topic": "Production account for a public integration",
+    "stem": "Quillon, a four-person startup, has built a contract-review add-on that it will offer to many Docusign customers, who will each connect it to their own accounts. The key is already classified correctly and the founders want to launch in six weeks. Quillon has no Docusign production account of any kind. The CTO suggests signing up for a free trial production account this afternoon so that he can press Start Go live today. The add-on is written in Python and hosted on a managed cloud platform. What should Quillon do?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Sign up for the free trial production account, make the CTO its administrator, and promote the key into it, since any production account in which he is an admin can manage a promoted key"
+      },
+      {
+        "id": "B",
+        "text": "Apply to the Partner Program now, as joining can take weeks, and promote the key into the complimentary partner account, or a paid one, where the submitter is an admin"
+      },
+      {
+        "id": "C",
+        "text": "Promote the key into the developer account Quillon already has, because a public integration is managed from the developer environment until its first customer connects"
+      },
+      {
+        "id": "D",
+        "text": "Skip the production account for now, because Docusign promotes public integrations on the partner's behalf once the listing is approved, so no management account is needed"
+      }
+    ],
+    "correct": "B",
+    "answerText": "Apply to the Partner Program now, as joining can take weeks, and promote the key into the complimentary partner account, or a paid one, where the submitter is an admin",
+    "explanation": "Each production key must belong to a paid or partner production account in which the submitter is an administrator, and a public integration requires the Partner Program, whose complimentary partner account can manage the key. The clue 'six weeks' matters because joining the program can take several weeks.",
+    "whyNotOthers": "B is right because it meets both the account rule and the partner requirement in time. The trap is A: being an admin is necessary, but a free trial is not a paid or partner production account. C fails because promotion always goes into a production account, and D invents an automatic promotion that does not exist.",
+    "optionExplanations": {
+      "A": "A free trial is neither a paid nor a partner production account, so it cannot manage the promoted key.",
+      "B": "Correct. Partner Program members get a complimentary partner production account to manage keys; apply early because it can take weeks.",
+      "C": "Go-Live promotes the key into a production account; the developer account cannot be the target.",
+      "D": "Every promoted key needs a paid or partner production management account; Docusign does not promote it for you."
+    },
+    "trapOption": "A",
+    "importance": "HIGH",
+    "decode": {
+      "needs": "Have a paid or partner production account (submitter is admin) before Go-Live; public apps need the Partner Program.",
+      "clues": [
+        "many customers connect their own accounts -> public integration, Partner Program required",
+        "no production account, free trial idea -> must be paid or partner production account",
+        "launch in six weeks -> partner enrolment can take weeks, so apply early",
+        "Python, managed cloud -> red herrings"
+      ]
+    },
+    "concept": {
+      "title": "Paid or partner production account",
+      "line": "A promoted key must be managed by a paid or partner production account in which the submitter is an administrator."
+    }
+  },
+  {
+    "paper": "F",
+    "length": "long",
+    "style": "design",
+    "domain": "Go Live Process",
+    "topic": "Classification: private custom with outside signers",
+    "stem": "Ashgrove Mortgage's in-house team has built a loan-origination tool used only by Ashgrove's own underwriters and loan processors. The tool sends disclosures to thousands of outside borrowers each month, and some borrowers sign on a tablet in the branch. Ashgrove pays for its own Docusign production account, has no plans to sell the tool, and does not belong to any partner program. When creating the integration key, which option should the developer pick under 'How will you use this integration?'",
+    "options": [
+      {
+        "id": "A",
+        "text": "Private custom integration, because the tool is used directly by Ashgrove's own employees, whoever the people signing the documents may be"
+      },
+      {
+        "id": "B",
+        "text": "Public integration, because the disclosures are signed by thousands of members of the public who are outside the Ashgrove organization"
+      },
+      {
+        "id": "C",
+        "text": "Embedded integration, because some borrowers sign inside Ashgrove's own branch tablet experience instead of opening an email link"
+      },
+      {
+        "id": "D",
+        "text": "Third-party integration key, because the borrowers are third parties to Ashgrove and the key is registered on their behalf"
+      }
+    ],
+    "correct": "A",
+    "answerText": "Private custom integration, because the tool is used directly by Ashgrove's own employees, whoever the people signing the documents may be",
+    "explanation": "Classification follows who uses the integration and the business model: a tool used directly by your own employees is a private custom integration. The clue 'used only by Ashgrove's own underwriters and loan processors' decides; who signs is irrelevant.",
+    "whyNotOthers": "A is right because the users are Ashgrove's employees and nothing is sold. The trap is B: 'public' describes an integration offered to many Docusign customers through the Partner Program, not one whose signers are members of the public. C fails because Ashgrove is not an ISV Embed partner offering its account to customers, and D fails because a third-party key is one you supply to someone else's partner app.",
+    "optionExplanations": {
+      "A": "Correct. The tool is used directly by Ashgrove's employees, which is the private custom integration case.",
+      "B": "Public integration means many Docusign customers authorize your product on their own accounts; signers do not count.",
+      "C": "Embedded integration is the ISV Embed licence model; in-person or embedded signing does not decide it.",
+      "D": "A third-party integration key is created to plug into a partner's app; borrowers are just signers."
+    },
+    "trapOption": "B",
+    "importance": "HIGH",
+    "decode": {
+      "needs": "Classify by who uses the integration: own employees -> Private custom integration.",
+      "clues": [
+        "used only by Ashgrove's own underwriters -> employees are the users",
+        "thousands of outside borrowers sign -> signers do not change the classification",
+        "tablet in the branch -> in-person or embedded signing, a red herring",
+        "no partner program, not sold -> not public or embedded"
+      ]
+    },
+    "concept": {
+      "title": "Classify by users, not signers",
+      "line": "Classification depends on who uses the integration and the business model, not on who signs the documents."
+    }
+  },
+  {
+    "paper": "F",
+    "length": "long",
+    "style": "design",
+    "domain": "Go Live Process",
+    "topic": "Document download limits",
+    "stem": "At Pellham Insurance, when a large commercial policy is fully signed, up to 30 underwriters, brokers and auditors open it from the policy system within the first hour. Each click makes the policy system fetch the envelope's combined PDF straight from Docusign. Since go-live, many of these clicks fail with API_REQUEST_IS_THROTTLED and 'GetDocument call blocked', even though the account used only about a third of its hourly allowance. The policy system already receives Connect messages. What should the team do?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Ask an administrator to raise the account's hourly API limit in the API Usage Center, so that the extra document requests fit inside a larger allowance"
+      },
+      {
+        "id": "B",
+        "text": "Switch the policy system from the combined PDF to the ZIP archive option, which is counted separately, and keep fetching the file from Docusign on every click"
+      },
+      {
+        "id": "C",
+        "text": "Download the completed documents once when the completion message arrives, store them in the policy system, and serve every later viewer from that stored copy"
+      },
+      {
+        "id": "D",
+        "text": "Add a retry loop that repeats each blocked download every few seconds until Docusign returns the file, so that every viewer eventually sees the document"
+      }
+    ],
+    "correct": "C",
+    "answerText": "Download the completed documents once when the completion message arrives, store them in the policy system, and serve every later viewer from that stored copy",
+    "explanation": "Docusign limits concurrent downloads of the same document (for the combined option, three in progress per hour) and blocks the excess with API_REQUEST_IS_THROTTLED. The clues 'same envelope, 30 viewers in an hour' and 'only a third of the hourly allowance' point to the per-document download limit, which caching solves.",
+    "whyNotOthers": "C is right because one download per completed envelope removes the repeated requests. The trap is B: archive downloads are counted separately, but they have their own limit of 10 per hour, so 30 viewers would still be blocked. A fails because the hourly limit is not the cause, and D adds more blocked calls, which also lowers the efficiency score.",
+    "optionExplanations": {
+      "A": "The account is far below its hourly limit; this is the per-document download limit.",
+      "B": "The archive type has its own counter but still allows only 10 in-progress downloads per hour, so 30 viewers fail.",
+      "C": "Correct. Fetch the documents once, triggered by Connect, and serve viewers from your own store.",
+      "D": "Retrying blocked downloads only produces more blocked calls and hurts efficiency."
+    },
+    "trapOption": "B",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "Avoid repeated downloads of the same document: download once on completion and cache it.",
+      "clues": [
+        "GetDocument call blocked, API_REQUEST_IS_THROTTLED -> document download limit",
+        "30 viewers of the same envelope in an hour -> concurrent downloads of one document",
+        "a third of the hourly allowance -> not the account hourly limit",
+        "already receives Connect messages -> use the completion event as the trigger"
+      ]
+    },
+    "concept": {
+      "title": "Cache completed documents",
+      "line": "Downloads of the same document are capped per hour; fetch completed documents once and serve users from your system."
+    }
+  },
+  {
+    "paper": "F",
+    "length": "short",
+    "style": "fact",
+    "domain": "Go Live Process",
+    "topic": "Where classification is set",
+    "stem": "Where do you choose an integration key's classification, which must be set before the key can complete Go-Live?",
+    "options": [
+      {
+        "id": "A",
+        "text": "In the production account, while selecting it during Start Go live"
+      },
+      {
+        "id": "B",
+        "text": "On the developer key, under 'How will you use this integration?'"
+      },
+      {
+        "id": "C",
+        "text": "In the review form Docusign emails after the automated review"
+      },
+      {
+        "id": "D",
+        "text": "In the API Usage Center, on the key's efficiency details page"
+      }
+    ],
+    "correct": "B",
+    "answerText": "On the developer key, under 'How will you use this integration?'",
+    "explanation": "When you add an app and integration key in the developer account, you select an option under 'How will you use this integration?'; Go-Live cannot complete without it.",
+    "whyNotOthers": "B is right because classification is part of the key's settings in the developer account. The trap is A: you do pick the production account during Start Go live, but the classification is already set by then, and a mismatch with the account type causes an error. C and D are not places where classification is set.",
+    "optionExplanations": {
+      "A": "Selecting the production account happens after classification; a mismatch there produces an error.",
+      "B": "Correct. The classification is chosen on the key under 'How will you use this integration?' in the developer account.",
+      "C": "No emailed form sets the classification.",
+      "D": "The API Usage Center shows efficiency, not classification."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "concept": {
+      "title": "Classification set in developer account",
+      "line": "Choose the classification under 'How will you use this integration?' on the developer key before Go-Live."
+    }
+  },
+  {
+    "paper": "F",
+    "length": "long",
+    "style": "design",
+    "domain": "Go Live Process",
+    "topic": "OAuth 2.0 required for Go-Live",
+    "stem": "Halvard Freight's nightly settlement job was written years ago and authenticates by sending a service user's email and password in an X-DocuSign-Authentication header. Nobody is at the keyboard when it runs at 02:00. The company is moving the job to a new integration key, and the key fails the Go-Live review with a message about authentication. The job runs on Linux and handles about 400 envelopes a night. What is the best way to get the key through review?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Keep the header-based login but move the stored password into a secrets vault, because the review fails only on credentials that are kept in plain text"
+      },
+      {
+        "id": "B",
+        "text": "Resubmit the key with a smaller nightly volume, because the review rejects legacy authentication only when the job sends hundreds of envelopes per run"
+      },
+      {
+        "id": "C",
+        "text": "Move the job to Authorization Code Grant, so that an operator signs in once before 02:00 and the job then uses that access token for the night's run"
+      },
+      {
+        "id": "D",
+        "text": "Move the job to JWT Grant with an RSA key pair and one-time consent from the service user, since review requires OAuth 2.0 and no person is present"
+      }
+    ],
+    "correct": "D",
+    "answerText": "Move the job to JWT Grant with an RSA key pair and one-time consent from the service user, since review requires OAuth 2.0 and no person is present",
+    "explanation": "Go-Live requires REST integrations to use OAuth 2.0 (or obtain a policy exception), so the legacy header login must go. The clue 'nobody is at the keyboard' makes JWT Grant the right OAuth flow.",
+    "whyNotOthers": "D is right because JWT Grant is OAuth 2.0 and needs no person after the one-time consent. The trap is C: it is also OAuth 2.0, but it depends on an operator signing in every night, which does not fit an unattended job. A and B keep legacy authentication, which the review rejects whatever the storage or volume.",
+    "optionExplanations": {
+      "A": "Legacy header authentication fails the review however the password is stored; OAuth 2.0 is required.",
+      "B": "Volume does not matter; legacy authentication is rejected outright.",
+      "C": "Authorization Code Grant is OAuth 2.0, but it needs a person to sign in, which an unattended 02:00 job lacks.",
+      "D": "Correct. JWT Grant satisfies the OAuth 2.0 requirement and suits a job with no user present."
+    },
+    "trapOption": "C",
+    "importance": "HIGH",
+    "decode": {
+      "needs": "Replace legacy header authentication with OAuth 2.0; unattended job -> JWT Grant.",
+      "clues": [
+        "X-DocuSign-Authentication with email and password -> legacy authentication",
+        "fails Go-Live review about authentication -> OAuth 2.0 is required",
+        "nobody at the keyboard at 02:00 -> JWT Grant",
+        "Linux, 400 envelopes -> red herrings"
+      ]
+    },
+    "concept": {
+      "title": "OAuth 2.0 required",
+      "line": "Go-Live requires OAuth 2.0; legacy header authentication fails review unless a policy exception is granted."
+    }
+  },
+  {
+    "paper": "F",
+    "length": "long",
+    "style": "design",
+    "domain": "Go Live Process",
+    "topic": "Document upload limits",
+    "stem": "Each quarter, Marlowe Energy's billing platform sends updated terms to about 900 business customers. The run attaches the same 4 MB terms-and-conditions PDF to every envelope and uses 100 parallel workers; each Envelopes:create call takes about 20 seconds to upload and process, so the run stays well inside the burst limit. Partway through, some requests fail with UNSPECIFIED_ERROR and the message 'PDF validation failed', yet the same PDF opens fine and succeeds when it is resent later on its own. What is the most likely cause and fix?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Too many in-progress uploads of identical document bytes; keep concurrent uploads of that one file under 70 by using fewer workers"
+      },
+      {
+        "id": "B",
+        "text": "The PDF is larger than the API allows for a single upload; compress it below the limit and resend all 900 requests in parallel again"
+      },
+      {
+        "id": "C",
+        "text": "The account hit its 30-second burst limit; read X-BurstLimit-Remaining and pause the workers whenever it gets close to zero before continuing"
+      },
+      {
+        "id": "D",
+        "text": "The account's hourly API limit was exceeded mid-run; ask an administrator to raise it with Update Hourly Limit in the API Usage Center"
+      }
+    ],
+    "correct": "A",
+    "answerText": "Too many in-progress uploads of identical document bytes; keep concurrent uploads of that one file under 70 by using fewer workers",
+    "explanation": "Docusign allows at most 70 in-progress uploads of the same document bytes within an hour (and within six hours); excess uploads are blocked with UNSPECIFIED_ERROR 'PDF validation failed'. The clues 'same PDF', '100 parallel workers' and 'succeeds when resent later' identify it.",
+    "whyNotOthers": "A is right because the error is the same-document upload limit, fixed by limiting concurrency. The trap is C: throttling is the right instinct, but the stem says the run stays inside the burst limit, and burst errors look different. B fails because 4 MB is far below the 32 MB API upload limit, and D fails because hourly-limit errors say the hourly invocations were exceeded.",
+    "optionExplanations": {
+      "A": "Correct. More than 70 in-progress uploads of identical bytes are blocked with 'PDF validation failed'.",
+      "B": "4 MB is well below the 32 MB per-upload API limit, and the same file succeeds later.",
+      "C": "The stem rules out the burst limit, and burst errors are not reported as 'PDF validation failed'.",
+      "D": "Exceeding the hourly limit returns a 'maximum number of hourly API invocations' error, not a PDF error."
+    },
+    "trapOption": "C",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "Limit concurrent uploads of the same document bytes (max 70 in progress).",
+      "clues": [
+        "same 4 MB PDF in every envelope -> identical document bytes",
+        "100 parallel workers, 20 seconds each -> about 100 in-progress uploads of one file",
+        "PDF validation failed, fine when resent alone -> upload limit, not a broken file",
+        "well inside the burst limit -> not a rate limit"
+      ]
+    },
+    "concept": {
+      "title": "Same-document upload limit",
+      "line": "At most 70 in-progress uploads of the same document bytes; excess calls fail with 'PDF validation failed'."
+    }
+  },
+  {
+    "paper": "F",
+    "length": "short",
+    "style": "fact",
+    "domain": "Go Live Process",
+    "topic": "Burst limit headers",
+    "stem": "Which two response headers tell an app how close the account is to its 30-second call ceiling? (Select two)",
+    "options": [
+      {
+        "id": "A",
+        "text": "X-BurstLimit-Limit"
+      },
+      {
+        "id": "B",
+        "text": "X-RateLimit-Remaining"
+      },
+      {
+        "id": "C",
+        "text": "X-RateLimit-Reset"
+      },
+      {
+        "id": "D",
+        "text": "X-BurstLimit-Remaining"
+      },
+      {
+        "id": "E",
+        "text": "X-RateLimit-Limit"
+      }
+    ],
+    "correct": "A,D",
+    "correctAnswers": [
+      "A",
+      "D"
+    ],
+    "answerText": "X-BurstLimit-Limit; X-BurstLimit-Remaining",
+    "explanation": "The burst limit is reported by X-BurstLimit-Limit (200 developer, 500 production) and X-BurstLimit-Remaining for the current 30-second span.",
+    "whyNotOthers": "A and D are right because they are the burst headers. The trap is B: it also reports remaining calls, but for the hourly limit. C and E also belong to the hourly limit.",
+    "optionExplanations": {
+      "A": "Correct. X-BurstLimit-Limit gives the 30-second maximum for all apps on the account.",
+      "B": "X-RateLimit-Remaining counts what is left of the hourly limit, not the burst limit.",
+      "C": "X-RateLimit-Reset is the timestamp when the hourly limit resets.",
+      "D": "Correct. X-BurstLimit-Remaining gives the calls left in the current 30-second span.",
+      "E": "X-RateLimit-Limit is the hourly limit (3,000 by default)."
+    },
+    "trapOption": "B",
+    "importance": "MEDIUM",
+    "concept": {
+      "title": "RateLimit vs BurstLimit headers",
+      "line": "X-RateLimit-* headers describe the hourly limit; X-BurstLimit-Limit and -Remaining describe the 30-second burst limit."
+    }
+  },
+  {
+    "paper": "F",
+    "length": "long",
+    "style": "design",
+    "domain": "Go Live Process",
+    "topic": "Consent in production",
+    "stem": "Rothwell Bank's document-generation service went live yesterday. It uses JWT Grant to act as a dedicated system user. The developer has added a new RSA key pair to the production copy of the key, changed the OAuth host and the aud claim to account.docusign.com, and set sub to the system user's production user ID. Token requests now fail with consent_required. In the developer sandbox, the system user granted consent months ago. Rothwell's Docusign organization has a claimed domain and an organization administrator. What should the team do?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Run Start Go live again, so that the consent granted in the developer sandbox is copied across to the production copy of the integration key"
+      },
+      {
+        "id": "B",
+        "text": "Generate another RSA key pair in production, because consent_required means the JWT was signed with a key that production does not recognise"
+      },
+      {
+        "id": "C",
+        "text": "Obtain consent in production, either as admin consent for the key's scopes from the organization administrator or as the system user's own consent"
+      },
+      {
+        "id": "D",
+        "text": "Change the aud claim back to account-d.docusign.com, because consent is always recorded against the developer authentication service"
+      }
+    ],
+    "correct": "C",
+    "answerText": "Obtain consent in production, either as admin consent for the key's scopes from the organization administrator or as the system user's own consent",
+    "explanation": "Production and developer OAuth settings are separate, so consent given in the sandbox does not apply to production. The clue 'consent_required' after the RSA key, host and sub are fixed leaves consent; with a claimed domain, the organization administrator can grant admin consent proactively.",
+    "whyNotOthers": "C is right because consent must exist in production. The trap is A: it assumes Go-Live copies OAuth state, but it copies only the key value. B fails because a key-pair problem is a different error and the pair is already in production, and D would send production tokens to the developer service.",
+    "optionExplanations": {
+      "A": "Go-Live duplicates only the key; no consent or other OAuth settings are copied, and repeating it changes nothing.",
+      "B": "consent_required is about missing consent, and a production RSA key pair is already in place.",
+      "C": "Correct. Consent must be granted in production; an org admin with a claimed domain can grant admin consent.",
+      "D": "Production requires account.docusign.com; the developer host would not issue production tokens."
+    },
+    "trapOption": "A",
+    "importance": "HIGH",
+    "decode": {
+      "needs": "After Go-Live, grant consent again in production (admin consent or individual consent).",
+      "clues": [
+        "consent_required after RSA, host, aud and sub are fixed -> consent missing in production",
+        "consented in the sandbox months ago -> sandbox consent does not carry over",
+        "claimed domain, organization administrator -> admin consent is possible"
+      ]
+    },
+    "concept": {
+      "title": "Consent does not carry over",
+      "line": "Developer and production OAuth settings are separate; JWT users must grant consent again in production."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "short",
+    "style": "fact",
+    "domain": "Go Live Process",
+    "topic": "Starting Go-Live",
+    "stem": "From where does a developer start the Go-Live request for an eSignature integration key?",
+    "options": [
+      {
+        "id": "A",
+        "text": "The production account's Apps and Keys: Add App and Integration Key, then paste the developer key"
+      },
+      {
+        "id": "B",
+        "text": "A Docusign Support case asking for the key to be copied into production"
+      },
+      {
+        "id": "C",
+        "text": "The developer account's API Usage Center: Actions > Promote to production"
+      },
+      {
+        "id": "D",
+        "text": "The developer account's Apps and Keys: Actions > Start Go live, then log in to the production account"
+      }
+    ],
+    "correct": "D",
+    "answerText": "The developer account's Apps and Keys: Actions > Start Go live, then log in to the production account",
+    "explanation": "Go-Live starts in the developer account's Apps and Keys list: Actions > Start Go live, then you log in to and select the production account that will host the key.",
+    "whyNotOthers": "D is right because promotion starts from the key in the developer account. The trap is A: the key does end up in the production Apps and Keys, but you do not add it there by hand. B is the route for some other APIs such as the Web Forms API, not for eSignature keys, and C names a tool that only reports usage.",
+    "optionExplanations": {
+      "A": "You do not paste keys into production; Go-Live duplicates the key into the selected production account.",
+      "B": "A Support case is used for some APIs, such as Web Forms, but eSignature keys use Start Go live.",
+      "C": "The API Usage Center monitors efficiency and limits; it has no promote action.",
+      "D": "Correct. Actions > Start Go live in the developer Apps and Keys, then log in and select the production account."
+    },
+    "trapOption": "A",
+    "importance": "HIGH",
+    "concept": {
+      "title": "Start Go live in developer account",
+      "line": "Go-Live is started from the key in the developer account's Apps and Keys via Actions > Start Go live."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "long",
+    "style": "design",
+    "domain": "Go Live Process",
+    "topic": "Promoted key serves any account",
+    "stem": "Greywell Group's contract portal went live into the parent company's production account, which now manages the key. Greywell has just set up a separate production account for a newly formed business unit, with its own administrators and billing. Staff in that unit will sign in to the same portal with Authorization Code Grant. The project manager has budgeted two weeks for 'a second Go-Live into the new account' and asks whether it is needed. The portal's hosting contract renews next month. What is the right plan?",
+    "options": [
+      {
+        "id": "A",
+        "text": "No second Go-Live: the promoted key can call any production account, so the unit's staff sign in, consent, and the portal uses their base URI"
+      },
+      {
+        "id": "B",
+        "text": "Run Start Go live again and select the new account, because a promoted key can call only the production account into which it was originally promoted"
+      },
+      {
+        "id": "C",
+        "text": "Create a new integration key in the new account and take it through Go-Live, because each production account must manage its own key for its own users"
+      },
+      {
+        "id": "D",
+        "text": "Move the business unit's users into the parent account, because one integration key cannot serve users who belong to two different production accounts"
+      }
+    ],
+    "correct": "A",
+    "answerText": "No second Go-Live: the promoted key can call any production account, so the unit's staff sign in, consent, and the portal uses their base URI",
+    "explanation": "A promoted key is tied to one production account only for management purposes; after promotion it can make API calls against any production account. The clue 'separate production account' tempts a second promotion that is not needed.",
+    "whyNotOthers": "A is right because management account and calling account are different ideas. The trap is B: the key is linked to the account it was promoted into, but only for management. C and D add work based on the same misunderstanding.",
+    "optionExplanations": {
+      "A": "Correct. The key can call any production account; users of the new account simply authenticate and consent.",
+      "B": "The promotion account manages the key; it does not restrict which accounts the key can call.",
+      "C": "A second key is unnecessary; one key can serve users of many production accounts.",
+      "D": "There is no need to merge accounts; one key works across production accounts."
+    },
+    "trapOption": "B",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "Know that a promoted key is managed by one account but can call any production account.",
+      "clues": [
+        "key managed by the parent's account -> management account only",
+        "separate production account for the new unit -> another account the same key can call",
+        "Authorization Code Grant -> users sign in and consent; base URI from userinfo",
+        "hosting contract renewal -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "Management account vs calling account",
+      "line": "A promoted key belongs to one production account for management but can call any production account."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "long",
+    "style": "design",
+    "domain": "Go Live Process",
+    "topic": "Admin rights on the production account",
+    "stem": "Imogen, a developer at Calloway Foods, created the developer account with her personal developer email. She starts Go-Live for the procurement app, logs in with her work email to Calloway's paid production account, where she is an ordinary sender, and cannot complete the promotion. The account administrator works in the finance department. Imogen wonders whether she must rebuild everything under a developer account that uses her work email, which would delay the launch by a week. What should she do?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Recreate the developer account and the key under her work email, because the developer and production logins must share the same email address for the promotion to work"
+      },
+      {
+        "id": "B",
+        "text": "Ask the production account's administrator to give her administrator rights there, then select the account again; her developer login may keep a different email"
+      },
+      {
+        "id": "C",
+        "text": "Ask the administrator to add API access to her sender permission set, since API access is the only permission that the promotion checks on the production account"
+      },
+      {
+        "id": "D",
+        "text": "Change the key's classification to Third-party integration key, because only that classification can be promoted by a user who is not an administrator"
+      }
+    ],
+    "correct": "B",
+    "answerText": "Ask the production account's administrator to give her administrator rights there, then select the account again; her developer login may keep a different email",
+    "explanation": "The person selecting the production account must be an administrator of it, and the production account may use a different email from the developer account. The clue 'ordinary sender' is the blocker.",
+    "whyNotOthers": "B is right because admin rights are the missing requirement. The trap is C: API access sounds relevant, but the rule is administrator access to the production account. A fails because different emails are explicitly allowed, and D misuses classification, which describes the business model, not permissions.",
+    "optionExplanations": {
+      "A": "Docusign allows the production account to use a different email from the developer account.",
+      "B": "Correct. Administrator access to the selected production account is required; the emails may differ.",
+      "C": "The requirement is administrator access, not an API-access permission.",
+      "D": "Classification reflects the business model and never removes the admin requirement."
+    },
+    "trapOption": "C",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "The submitter must be an admin of the chosen production account; emails may differ from the developer account.",
+      "clues": [
+        "ordinary sender in the production account -> not an administrator",
+        "personal email in the developer account, work email in production -> allowed",
+        "administrator in finance -> the person who can grant admin rights"
+      ]
+    },
+    "concept": {
+      "title": "Admin of production account",
+      "line": "Only an administrator of a paid or partner production account can select it during Go-Live; emails may differ."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "short",
+    "style": "fact",
+    "domain": "Go Live Process",
+    "topic": "Classification requirements",
+    "stem": "Which two statements about integration key classifications are accurate? (Select two)",
+    "options": [
+      {
+        "id": "A",
+        "text": "A private custom integration may be used only by your own employees, never by your customers' employees"
+      },
+      {
+        "id": "B",
+        "text": "A third-party integration key is what an ISV chooses when it ships its own key inside its product"
+      },
+      {
+        "id": "C",
+        "text": "A public integration requires joining the Docusign Partner Program"
+      },
+      {
+        "id": "D",
+        "text": "With a public integration, customers use the features through your Docusign account"
+      },
+      {
+        "id": "E",
+        "text": "An embedded integration requires an ISV Embed partner licence"
+      }
+    ],
+    "correct": "C,E",
+    "correctAnswers": [
+      "C",
+      "E"
+    ],
+    "answerText": "A public integration requires joining the Docusign Partner Program; An embedded integration requires an ISV Embed partner licence",
+    "explanation": "Public integrations require the Docusign Partner Program, and embedded integrations (customers use your account) require ISV Embed partnership with a special licence.",
+    "whyNotOthers": "C and E are right. The trap is A: private custom does cover your own employees, but also your customers' employees. B reverses the third-party case, where a customer supplies its own key to a partner's app, and D describes the embedded model, not the public one.",
+    "optionExplanations": {
+      "A": "Private custom integrations cover your employees or your customers' employees.",
+      "B": "A third-party key is supplied by a customer to someone else's partner integration, not shipped by the ISV.",
+      "C": "Correct. Launching a public integration requires the Docusign Partner Program.",
+      "D": "Using the features through your account is the embedded model; public customers use their own accounts.",
+      "E": "Correct. The embedded model requires an ISV Embed partner licence."
+    },
+    "trapOption": "A",
+    "importance": "HIGH",
+    "concept": {
+      "title": "Classification requirements",
+      "line": "Public needs the Partner Program; Embedded needs an ISV Embed licence; Private custom covers your or customers' employees."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "long",
+    "style": "design",
+    "domain": "Go Live Process",
+    "topic": "Troubleshooting a failed review",
+    "stem": "Okafor's expense-approval app has failed its Go-Live review twice. The message says some of the app's recent API activity broke the rules, but it does not say which calls. Okafor is an administrator in both the developer and the production accounts and wants to see exactly which of the reviewed transactions caused the failure before he changes any code. He has also noticed that the review page sometimes looks stale after he has been away from his desk. What should he do first?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Turn on API request logging in My Preferences, rerun the app's test scenario, and download the captured log, which keeps up to 50 requests"
+      },
+      {
+        "id": "B",
+        "text": "Open the API Usage Center in the production account and read the app's efficiency score, because the review is based on production traffic"
+      },
+      {
+        "id": "C",
+        "text": "Select DOWNLOAD LOGS in the Review Results window for the reviewed transactions, refreshing first if the session timed out"
+      },
+      {
+        "id": "D",
+        "text": "Delete the key and create a new one, because a key that has failed review twice stays locked until Docusign Support resets it"
+      }
+    ],
+    "correct": "C",
+    "answerText": "Select DOWNLOAD LOGS in the Review Results window for the reviewed transactions, refreshing first if the session timed out",
+    "explanation": "Docusign's Go-Live troubleshooting advice is to download the log of the reviewed transactions with DOWNLOAD LOGS in the Review Results window, and to refresh or use a private window if the admin console session has timed out. The clue is 'exactly which of the reviewed transactions'.",
+    "whyNotOthers": "C is right because it gives the exact transactions the review judged. The trap is A: request logging is a real debugging tool, but it captures new requests, not the ones the review examined. B fails because the app is not live in production yet, and D invents a lock rule.",
+    "optionExplanations": {
+      "A": "Request logging records new requests from now on (up to 50), not the transactions the review assessed.",
+      "B": "The app has not gone live, so production efficiency data does not describe the failed review.",
+      "C": "Correct. DOWNLOAD LOGS in Review Results returns the reviewed transactions; refresh if the session timed out.",
+      "D": "No such lock exists; fix the issues found in the log and resubmit."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "Find the calls that failed the Go-Live review: DOWNLOAD LOGS in the Review Results window.",
+      "clues": [
+        "exactly which reviewed transactions -> review log, not a new capture",
+        "page looks stale after time away -> admin console session timeout, refresh",
+        "admin in both accounts -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "Review Results logs",
+      "line": "To see why Go-Live review failed, download the reviewed transactions with DOWNLOAD LOGS in Review Results."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "short",
+    "style": "fact",
+    "domain": "Go Live Process",
+    "topic": "Review Passed status",
+    "stem": "An integration key's Go-Live status in Apps and Keys shows Review Passed. What does this status mean?",
+    "options": [
+      {
+        "id": "A",
+        "text": "The key is enabled in production and appears in the production account"
+      },
+      {
+        "id": "B",
+        "text": "The app's recent API calls are still being checked against the requirements"
+      },
+      {
+        "id": "C",
+        "text": "The app needs a manual review; submit the linked form with more account details"
+      },
+      {
+        "id": "D",
+        "text": "The review lapsed because the key was not promoted within 90 days"
+      },
+      {
+        "id": "E",
+        "text": "It passed and awaits promotion into a production account you administer"
+      }
+    ],
+    "correct": "E",
+    "answerText": "It passed and awaits promotion into a production account you administer",
+    "explanation": "Review Passed means the app passed and is ready to be duplicated into a production account of your choice, in which you must be an administrator.",
+    "whyNotOthers": "E is right. The trap is A: 'passed' sounds like done, but that describes Live, which comes after you select the production account. B is Under Review, C is Declined and D is Review Expired.",
+    "optionExplanations": {
+      "A": "This describes Live, which comes after promotion.",
+      "B": "This describes Under Review.",
+      "C": "This describes Declined.",
+      "D": "This describes Review Expired.",
+      "E": "Correct. Review Passed waits for you to confirm and select a production account where you are an admin."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "concept": {
+      "title": "Go-Live status sequence",
+      "line": "Under Review -> Review Passed (select a production account) -> Live; Declined means manual review, Review Expired after 90 days."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "long",
+    "style": "design",
+    "domain": "Go Live Process",
+    "topic": "Partner account and demo key use",
+    "stem": "Lindqvist Software, an ISV in the Docusign partner program, promoted its HR product's key into the complimentary partner production account last month. The sales team now wants to run live prospect demos and new-hire training from that partner account because 'it is production and looks real'. QA also asks where to run the weekly checks that catch Docusign platform changes before customers do. The company has offices in Stockholm and Austin. What should the integration lead decide?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Run prospect demos and training from the partner production account, and run QA's weekly checks against a customer's production account with that customer's permission"
+      },
+      {
+        "id": "B",
+        "text": "Run demos, training and weekly regression in the partner production account, because the developer copy of the key stops working once the key has been promoted"
+      },
+      {
+        "id": "C",
+        "text": "Run demos and training in a developer account, but run weekly regression in the partner production account so that the tests reflect the live platform"
+      },
+      {
+        "id": "D",
+        "text": "Keep demos, training and weekly regression testing in the developer environment with the demo copy of the key, and use the partner account only to manage production keys"
+      }
+    ],
+    "correct": "D",
+    "answerText": "Keep demos, training and weekly regression testing in the developer environment with the demo copy of the key, and use the partner account only to manage production keys",
+    "explanation": "The complimentary partner account exists to manage production keys, not to send envelopes; demos and training belong in a developer account, and the still-working demo copy of the key should be used for weekly regression testing. The clues are 'complimentary partner account' and 'weekly checks'.",
+    "whyNotOthers": "D is right because it follows each documented rule. The trap is C: it gets demos right but puts regression into the partner account, which is not for sending. A sends from the partner account and tests in a customer's account, and B is wrong because the demo copy of the key keeps working after promotion.",
+    "optionExplanations": {
+      "A": "The partner account is not for sending envelopes, and testing in a customer's account is not the documented approach.",
+      "B": "The demo copy of the key keeps working after Go-Live; it is duplicated, not moved.",
+      "C": "Weekly regression belongs in the developer environment, not in the key-management partner account.",
+      "D": "Correct. Developer environment for demos, training and weekly regression; partner account for key management only."
+    },
+    "trapOption": "C",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "Use the partner production account only to manage keys; demos, training and regression use the developer environment.",
+      "clues": [
+        "complimentary partner production account -> for managing keys, not sending envelopes",
+        "weekly checks for platform changes -> regression testing with the demo key",
+        "Stockholm and Austin offices -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "Partner account manages keys",
+      "line": "ISV partner production accounts manage keys; demos, training and weekly regression run in the developer environment."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "short",
+    "style": "fact",
+    "domain": "Go Live Process",
+    "topic": "Changing the hourly limit",
+    "stem": "An eligible administrator raises the account's hourly API limit in the API Usage Center. Which statement is accurate?",
+    "options": [
+      {
+        "id": "A",
+        "text": "The limit changes in steps of 500 and takes effect within about 10 minutes"
+      },
+      {
+        "id": "B",
+        "text": "The limit changes in steps of 1,000 and takes effect at the start of the next day"
+      },
+      {
+        "id": "C",
+        "text": "The limit changes in steps of 500, and the 30-second burst limit rises in proportion"
+      },
+      {
+        "id": "D",
+        "text": "The limit can be set to any value up to 10,000 once Support approves the request"
+      }
+    ],
+    "correct": "A",
+    "answerText": "The limit changes in steps of 500 and takes effect within about 10 minutes",
+    "explanation": "Limit management lets an eligible admin drag a slider in increments of 500, up to the plan's maximum, and the change takes effect within 10 minutes without Docusign intervention.",
+    "whyNotOthers": "A is right. The trap is C: the step size is correct, but the burst limit cannot be changed. B has the wrong step and timing, and D wrongly adds Support approval, which limit management avoids.",
+    "optionExplanations": {
+      "A": "Correct. Increments of 500, effective within about 10 minutes.",
+      "B": "The step is 500 and changes apply within minutes, not the next day.",
+      "C": "The burst limit is fixed and does not follow the hourly limit.",
+      "D": "No Support approval is needed within the plan's maximum; going above it requires Support."
+    },
+    "trapOption": "C",
+    "importance": "LOW",
+    "concept": {
+      "title": "Hourly limit changes",
+      "line": "Eligible admins change the hourly limit in 500-call steps, up to the plan maximum, effective within about 10 minutes."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "long",
+    "style": "fact",
+    "domain": "Go Live Process",
+    "topic": "Contact Support button in API Limit",
+    "stem": "Rosa administers Brindle Retail's production account and opens the API Usage Center to raise the hourly limit before the holiday peak. In the API Limit panel she sees a Contact Support button and a limit expiration date where she expected an Update Hourly Limit button. Her plan includes API limit management, her apps score well, and they have made plenty of calls this week. The account has four sending users in two stores. What does the panel tell her?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Her plan does not include limit management after all, so the panel offers Support as the only route to a higher limit"
+      },
+      {
+        "id": "B",
+        "text": "Docusign Support has set a temporary hourly limit, and she can change the limit herself after the expiration date shown"
+      },
+      {
+        "id": "C",
+        "text": "One or more apps have efficiency issues that must be fixed before the hourly limit can be changed"
+      },
+      {
+        "id": "D",
+        "text": "Her apps have not made enough calls in the last seven days for Docusign to analyse their efficiency"
+      }
+    ],
+    "correct": "B",
+    "answerText": "Docusign Support has set a temporary hourly limit, and she can change the limit herself after the expiration date shown",
+    "explanation": "A Contact Support button with a limit expiration date means Docusign Support has set a temporary limit; she can change the limit after it expires. The clue is 'expiration date'.",
+    "whyNotOthers": "B is right. The trap is A: when the plan lacks limit management, the API Limit panel shows no button at all. C would show an Improve App Efficiency window after selecting Update Hourly Limit, and D would show a message about insufficient calls; the stem also rules both out.",
+    "optionExplanations": {
+      "A": "Without limit management in the plan, the panel shows no button rather than a Contact Support button.",
+      "B": "Correct. A Support-set temporary limit shows Contact Support and an expiration date; she can change it afterwards.",
+      "C": "Efficiency issues produce the Improve App Efficiency window, and the stem says the apps score well.",
+      "D": "Too little call history produces a message when updating; the stem says the apps made plenty of calls."
+    },
+    "trapOption": "A",
+    "importance": "LOW",
+    "decode": {
+      "needs": "Read the API Limit panel: Contact Support plus expiration date means a Support-set temporary limit.",
+      "clues": [
+        "Contact Support button with a limit expiration date -> temporary limit set by Support",
+        "plan includes limit management, apps score well, plenty of calls -> other blockers ruled out",
+        "four users in two stores -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "Support-set temporary limit",
+      "line": "A Support-set temporary limit blocks self-service changes until it expires; the panel then shows Contact Support."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "long",
+    "style": "design",
+    "domain": "Go Live Process",
+    "topic": "Improve App Efficiency window",
+    "stem": "Before a planning-permit campaign, Hatherleigh Council's administrator selects Update Hourly Limit, but an Improve App Efficiency window appears and lists three of the council's six apps. The campaign starts in three weeks. The biggest offender is the permits app, which makes most of the council's calls; the other two listed apps are small and rarely used. The council's IT team is also migrating email providers this month. What approach gives the best chance of raising the limit in time?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Fix the two small apps first because they are quickest to change, then retry Update Hourly Limit the next morning, when every score will have been recalculated"
+      },
+      {
+        "id": "B",
+        "text": "Disable the three listed apps for a week so that they stop making calls, which removes them from the window and unlocks Update Hourly Limit"
+      },
+      {
+        "id": "C",
+        "text": "Fix each listed app's API Efficiency issues, permits app first, and check daily, as scores need about 48 hours to start improving and eight days in full"
+      },
+      {
+        "id": "D",
+        "text": "Fix the permits app's recommended issues first, then retry Update Hourly Limit an hour later, because efficiency scores are recalculated at the top of every hour"
+      }
+    ],
+    "correct": "C",
+    "answerText": "Fix each listed app's API Efficiency issues, permits app first, and check daily, as scores need about 48 hours to start improving and eight days in full",
+    "explanation": "Docusign advises working through each listed app's API Efficiency recommendations, highest call volume first, and checking daily; scores start improving after about 48 hours and fully reflect changes in up to eight days. The clue 'three weeks' fits that timeline.",
+    "whyNotOthers": "C is right because it follows the documented order and timeline. The trap is D: it prioritises the right app but assumes hourly recalculation, which is wrong. A starts with the low-volume apps, which slows progress, and B is not a documented fix and could leave too little call history for analysis.",
+    "optionExplanations": {
+      "A": "Docusign recommends fixing the highest-volume apps first, and scores do not fully update overnight.",
+      "B": "Switching apps off is not a documented fix and may leave too little call history for analysis.",
+      "C": "Correct. Fix each app's recommendations, highest volume first; allow about 48 hours to start and up to eight days.",
+      "D": "Scores are not recalculated hourly; improvement starts after about 48 hours."
+    },
+    "trapOption": "D",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "Unlock a limit increase by fixing flagged apps' efficiency issues, highest volume first, and allowing days for scores.",
+      "clues": [
+        "Improve App Efficiency window -> efficiency issues block the limit change",
+        "permits app makes most calls -> fix highest volume first",
+        "three weeks -> enough for scores to update (48 hours to start, up to 8 days)",
+        "email migration -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "Efficiency before limit increase",
+      "line": "Flagged apps must be fixed before the limit rises; scores improve after about 48 hours and fully within eight days."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "short",
+    "style": "fact",
+    "domain": "Go Live Process",
+    "topic": "API Dashboard",
+    "stem": "A developer wants a timeline of one integration's successful and failed requests over the last two months, with a call log she can filter by response code. Which tool provides this?",
+    "options": [
+      {
+        "id": "A",
+        "text": "API request logging under My Preferences"
+      },
+      {
+        "id": "B",
+        "text": "The API Dashboard under Admin > Apps and Keys"
+      },
+      {
+        "id": "C",
+        "text": "The API Usage Center's API Calls graph"
+      },
+      {
+        "id": "D",
+        "text": "The Connect logs in eSignature Admin"
+      }
+    ],
+    "correct": "B",
+    "answerText": "The API Dashboard under Admin > Apps and Keys",
+    "explanation": "The API Dashboard shows a timeline of successful and failed requests for an integration for up to the last 90 days, plus a call log filterable by time interval and response code.",
+    "whyNotOthers": "B is right because of the 90-day range and response-code filter. The trap is C: the API Usage Center also charts calls with a succeeded or failed view, but its date ranges go back only 30 days. A keeps up to 50 requests, and D covers webhook deliveries, not API calls.",
+    "optionExplanations": {
+      "A": "Request logging keeps at most 50 requests, not a two-month timeline.",
+      "B": "Correct. The API Dashboard covers up to 90 days and filters the call log by response code.",
+      "C": "The API Usage Center's date ranges stop at 30 days, so two months is out of reach.",
+      "D": "Connect logs describe webhook deliveries, not the app's API requests."
+    },
+    "trapOption": "C",
+    "importance": "MEDIUM",
+    "concept": {
+      "title": "API Dashboard scope",
+      "line": "The API Dashboard shows up to 90 days of successful and failed requests per integration, filterable by response code."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "long",
+    "style": "design",
+    "domain": "Go Live Process",
+    "topic": "Stop polling terminal envelopes",
+    "stem": "Pendleford Estates' records system keeps a table of every agreement it has ever sent, about 9,000 rows. Each night an unattended job walks the whole table and requests each agreement's status one by one, including agreements that were completed or voided months ago. The job now hits the account's hourly ceiling and squeezes out the daytime lettings app. Connect cannot be used yet because the security review of the listener is still open. The records system runs on an on-premises SQL server. What should the job do instead?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Spread the 9,000 individual status requests evenly across the night, so that no single hour goes over the account's 3,000-call allowance"
+      },
+      {
+        "id": "B",
+        "text": "Pause about 1.2 seconds between individual status requests, so that the job never comes near the 30-second burst limit while it walks the table"
+      },
+      {
+        "id": "C",
+        "text": "Ask an administrator to raise the hourly limit, so that the nightly job and the daytime app both fit, and leave the job's logic unchanged"
+      },
+      {
+        "id": "D",
+        "text": "Skip agreements already completed, declined or voided, and check the rest with one listStatusChanges call covering the time since the last run"
+      }
+    ],
+    "correct": "D",
+    "answerText": "Skip agreements already completed, declined or voided, and check the rest with one listStatusChanges call covering the time since the last run",
+    "explanation": "Docusign says not to poll an object once it has reached a terminal state, and to use list methods with a time span instead of per-envelope calls when Connect is unavailable. The clue 'completed or voided months ago' shows the waste.",
+    "whyNotOthers": "D is right because it removes thousands of pointless calls. The trap is B: pacing is good practice, but the problem is the hourly total, not the burst rate. A still makes 9,000 needless calls, and C raises the limit without fixing an inefficient app, which also blocks the limit increase.",
+    "optionExplanations": {
+      "A": "Spreading the same 9,000 calls still wastes the allowance on agreements that can never change.",
+      "B": "Pacing avoids burst errors but does not reduce the hourly total, which is the real problem.",
+      "C": "An inefficient app is exactly what blocks Update Hourly Limit; fix the calls instead.",
+      "D": "Correct. Never poll terminal envelopes; one listStatusChanges call covers the rest."
+    },
+    "trapOption": "B",
+    "importance": "HIGH",
+    "decode": {
+      "needs": "Stop polling envelopes in a terminal state; use one listStatusChanges call for the rest.",
+      "clues": [
+        "completed or voided months ago -> terminal state, never changes",
+        "one by one for 9,000 rows -> per-envelope polling instead of a list call",
+        "Connect cannot be used yet -> efficient polling is the fallback",
+        "on-premises SQL server -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "No polling of terminal envelopes",
+      "line": "Do not poll envelopes in a terminal state; batch remaining status checks with listStatusChanges."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "long",
+    "style": "design",
+    "domain": "Go Live Process",
+    "topic": "listStatusChanges include parameter",
+    "stem": "Whitmore Legal's matter-management system refreshes a signing dashboard every 30 minutes. Each refresh calls Envelopes:listStatusChanges to find changed envelopes, then makes a separate recipients call and a separate custom-fields call for every changed envelope. On busy days the app's efficiency score drops because of excessive recipient status requests. The firm's network policy forbids any inbound traffic and any cloud relay, so webhooks are not an option. The dashboard is used by about 60 partners. What change best reduces the calls?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Use the include parameter on the listStatusChanges call to return recipients and custom fields with the changed envelopes in one response"
+      },
+      {
+        "id": "B",
+        "text": "Keep the extra per-envelope calls but refresh every 15 minutes instead of 30, so that each refresh has fewer changed envelopes to process"
+      },
+      {
+        "id": "C",
+        "text": "Drop listStatusChanges and call EnvelopeRecipients:list for every active envelope at each refresh, so that recipient data is always complete"
+      },
+      {
+        "id": "D",
+        "text": "Add an envelope-level eventNotification to each new envelope for recipient events, which avoids creating an account-wide webhook configuration"
+      }
+    ],
+    "correct": "A",
+    "answerText": "Use the include parameter on the listStatusChanges call to return recipients and custom fields with the changed envelopes in one response",
+    "explanation": "In eSignature REST API v2.1 the include parameter of Envelopes:listStatusChanges returns subsidiary objects such as recipients and custom fields in the same response. The clue 'separate recipients call for every changed envelope' is the waste to remove.",
+    "whyNotOthers": "A is right because one call replaces many. The trap is D: envelope-level webhooks avoid polling, but they still need inbound traffic, which the policy forbids. B doubles the refreshes without removing per-envelope calls, and C replaces one list call with many per-envelope calls.",
+    "optionExplanations": {
+      "A": "Correct. include returns recipients and custom fields with listStatusChanges, removing per-envelope calls.",
+      "B": "More frequent refreshes add calls and keep the per-envelope pattern.",
+      "C": "Polling recipients for every active envelope is exactly the excessive recipient status pattern.",
+      "D": "eventNotification is still a webhook that needs inbound delivery, which the network policy forbids."
+    },
+    "trapOption": "D",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "Fetch recipients and custom fields inside listStatusChanges with include instead of per-envelope calls.",
+      "clues": [
+        "separate recipients call per changed envelope -> excessive recipient status requests",
+        "no inbound traffic or cloud relay -> no Connect or eventNotification",
+        "every 30 minutes -> refresh rate is not the problem"
+      ]
+    },
+    "concept": {
+      "title": "Use include on list calls",
+      "line": "Use the include parameter on listStatusChanges to fetch recipients and other objects in one call."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "short",
+    "style": "fact",
+    "domain": "Go Live Process",
+    "topic": "Missing rate-limit headers",
+    "stem": "Some Docusign API responses arrive without the X-RateLimit headers. How should the app track its remaining hourly allowance?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Treat the allowance as reset to the full hourly limit"
+      },
+      {
+        "id": "B",
+        "text": "Call a dedicated limits endpoint to fetch the current counters"
+      },
+      {
+        "id": "C",
+        "text": "Assume the limit has been reached and pause until the next hour"
+      },
+      {
+        "id": "D",
+        "text": "Retry the call until a response includes the headers again"
+      },
+      {
+        "id": "E",
+        "text": "Keep using the values from the most recent response that had them"
+      }
+    ],
+    "correct": "E",
+    "answerText": "Keep using the values from the most recent response that had them",
+    "explanation": "Rate-limit headers are not included with every response; when they are missing, the most recently received values are still valid.",
+    "whyNotOthers": "E is right. The trap is A: missing headers do not mean the counter reset; the hourly reset happens only at the top of the hour. B invents an endpoint, C pauses needlessly, and D wastes calls.",
+    "optionExplanations": {
+      "A": "The allowance resets only at the top of the hour, not when headers are missing.",
+      "B": "The documented source is the response headers; no counter endpoint is described for this.",
+      "C": "Missing headers do not mean the limit is reached.",
+      "D": "Retrying to get headers wastes calls and lowers efficiency.",
+      "E": "Correct. If a response lacks the headers, the last values received are still valid."
+    },
+    "trapOption": "A",
+    "importance": "LOW",
+    "concept": {
+      "title": "Rate-limit headers not always present",
+      "line": "Not every response carries X-RateLimit headers; reuse the most recent values received."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "long",
+    "style": "design",
+    "domain": "Go Live Process",
+    "topic": "Ramping a large migration",
+    "stem": "Thornbury Housing will move the metadata of 25,000 signed tenancy agreements from Docusign into a new system of record over one weekend, using an unattended script. The same production account also serves a tenant-facing kiosk app and the lettings team's CRM integration all weekend. The architect wants the migration to finish without starving the other apps or getting blocked, and the CFO has asked for the work to be logged for audit. Which two practices should the script follow? (Select two)",
+    "options": [
+      {
+        "id": "A",
+        "text": "Register the script under its own integration key, so that its calls draw on a fresh 3,000-per-hour allowance that does not affect the kiosk or the CRM"
+      },
+      {
+        "id": "B",
+        "text": "Read X-RateLimit-Remaining and X-RateLimit-Reset on responses and, once the hourly allowance is used up, make no further calls until the reset time"
+      },
+      {
+        "id": "C",
+        "text": "When a call is blocked by the hourly limit, retry it immediately in a tight loop so that the script grabs capacity as soon as it frees up"
+      },
+      {
+        "id": "D",
+        "text": "Fetch each agreement's metadata with separate per-envelope GET calls rather than list calls, since smaller requests count less against the limit"
+      },
+      {
+        "id": "E",
+        "text": "Start at a modest call rate and ramp up gradually, logging usage and alerting when the account nears its hourly limit so that the other apps keep headroom"
+      }
+    ],
+    "correct": "B,E",
+    "correctAnswers": [
+      "B",
+      "E"
+    ],
+    "answerText": "Read X-RateLimit-Remaining and X-RateLimit-Reset on responses and, once the hourly allowance is used up, make no further calls until the reset time; Start at a modest call rate and ramp up gradually, logging usage and alerting when the account nears its hourly limit so that the other apps keep headroom",
+    "explanation": "Docusign recommends reading the limit headers and pausing until the reset once the limit is reached, logging and alerting near the limit, and scaling up gradually. The clue 'same production account also serves the kiosk and CRM' shows the shared allowance.",
+    "whyNotOthers": "B and E are right. The trap is A: the hourly limit belongs to the account and is shared by all its apps, so a new key adds no allowance. C produces blocked calls that hurt efficiency, and D increases the call count because every request counts the same.",
+    "optionExplanations": {
+      "A": "The hourly limit is per account and shared by every app, so a separate key gives no extra allowance.",
+      "B": "Correct. Read the headers and stop calling until the reset once the allowance is exhausted.",
+      "C": "Tight retries after a block create more blocked calls and lower the efficiency score.",
+      "D": "Every request counts as one call; per-envelope GETs multiply the total.",
+      "E": "Correct. Ramp up gradually, log usage and alert near the limit."
+    },
+    "trapOption": "A",
+    "importance": "HIGH",
+    "decode": {
+      "needs": "Run a bulk job inside the shared account limit: read headers, pause at the limit, ramp up and alert.",
+      "clues": [
+        "same account serves kiosk and CRM -> hourly limit shared by all apps",
+        "without getting blocked -> read X-RateLimit headers and pause at the limit",
+        "logged for audit -> red herring (usage logging is also good practice)"
+      ]
+    },
+    "concept": {
+      "title": "Shared limit, gradual scaling",
+      "line": "The hourly limit is shared by all apps on an account; read headers, pause at the limit and scale up gradually."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "short",
+    "style": "fact",
+    "domain": "Go Live Process",
+    "topic": "Integration keys per account",
+    "stem": "What is the maximum number of integration keys that can be created for one eSignature account?",
+    "options": [
+      {
+        "id": "A",
+        "text": "25"
+      },
+      {
+        "id": "B",
+        "text": "40"
+      },
+      {
+        "id": "C",
+        "text": "50"
+      },
+      {
+        "id": "D",
+        "text": "75"
+      },
+      {
+        "id": "E",
+        "text": "100"
+      }
+    ],
+    "correct": "E",
+    "answerText": "100",
+    "explanation": "eSignature account limits allow up to 100 integration keys (and 100 Connect configurations, 50 signing groups) per account.",
+    "whyNotOthers": "E is right. The trap is C: 50 is the signing-group limit, a nearby account limit. A, B and D are not documented limits.",
+    "optionExplanations": {
+      "A": "Not a documented limit; the maximum is 100.",
+      "B": "Not a documented limit; the maximum is 100.",
+      "C": "50 is the signing-group limit, not the integration-key limit.",
+      "D": "Not a documented limit; the maximum is 100.",
+      "E": "Correct. An account can have up to 100 integration keys."
+    },
+    "trapOption": "C",
+    "importance": "LOW",
+    "concept": {
+      "title": "Account limits",
+      "line": "Per account: up to 100 integration keys, 100 Connect configurations and 50 signing groups."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "long",
+    "style": "design",
+    "domain": "Go Live Process",
+    "topic": "Web Forms API go-live",
+    "stem": "Crestmoor Clinics built a patient-intake process with the Web Forms API in its developer account: staff send each patient a web form, and a consent agreement is generated after submission. The clinic has taken eSignature integrations live before through Apps and Keys. Its production plan was bought two years ago for basic sending. Go-live is due in a month, and the clinic is also opening a new site with its own reception staff. What should the team plan?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Press Start Go live in Apps and Keys as for its eSignature apps; the web form configurations are copied into production together with the integration key"
+      },
+      {
+        "id": "B",
+        "text": "Recreate each web form by hand in the production account first, then press Start Go live so that the review can see the forms working in production"
+      },
+      {
+        "id": "C",
+        "text": "Confirm the production plan includes the Web Forms API, request go-live through a Support case, and move each form configuration by download and upload"
+      },
+      {
+        "id": "D",
+        "text": "Change nothing in the plan, because the Web Forms API is part of every production plan, and copy the forms with the eSignature template migration tool"
+      }
+    ],
+    "correct": "C",
+    "answerText": "Confirm the production plan includes the Web Forms API, request go-live through a Support case, and move each form configuration by download and upload",
+    "explanation": "The Web Forms API is available in all developer accounts but only in certain production plans; its go-live is requested through a Docusign Support case, and web form configurations must be downloaded from the developer environment and uploaded to production. The clue 'plan bought for basic sending' makes the plan check essential.",
+    "whyNotOthers": "C is right because it covers plan, route and migration. The trap is A: Start Go live is the eSignature route, and configurations are never copied with the key. B also relies on Start Go live, and D wrongly assumes every plan includes Web Forms.",
+    "optionExplanations": {
+      "A": "Web Forms go-live is requested through Support, and configurations are never copied with the key.",
+      "B": "Rebuilding by hand is unnecessary, and Start Go live is not the Web Forms route.",
+      "C": "Correct. Check the plan, request go-live through Support, and transfer configuration files.",
+      "D": "Web Forms API is only in certain production plans, and configurations move by download and upload."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "Plan a Web Forms API go-live: plan includes Web Forms, Support case, move configuration files.",
+      "clues": [
+        "Web Forms API in the developer account -> available in all developer accounts, not all production plans",
+        "plan bought for basic sending -> check the plan includes the Web Forms API",
+        "went live through Apps and Keys before -> Web Forms uses a Support case instead",
+        "new site opening -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "Web Forms API go-live",
+      "line": "Web Forms API go-live needs a plan that includes it, a Support case, and configurations moved by download and upload."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "short",
+    "style": "fact",
+    "domain": "Go Live Process",
+    "topic": "Finding the production base URI",
+    "stem": "Besides calling /oauth/userinfo, where can a developer find the base URI of the production account that hosts the app?",
+    "options": [
+      {
+        "id": "A",
+        "text": "The developer account's Apps and Keys page, which shows the production URI after promotion"
+      },
+      {
+        "id": "B",
+        "text": "The email Docusign sends when the key's status changes to Live"
+      },
+      {
+        "id": "C",
+        "text": "The API Limit panel of the API Usage Center"
+      },
+      {
+        "id": "D",
+        "text": "The Account Base URI section of the production account's Apps and Keys page"
+      }
+    ],
+    "correct": "D",
+    "answerText": "The Account Base URI section of the production account's Apps and Keys page",
+    "explanation": "The production data center for API calls can be taken from base_uri in /oauth/userinfo or from the Account Base URI section of the Apps and Keys page in the production account.",
+    "whyNotOthers": "D is right. The trap is A: Apps and Keys is the right page, but in the developer account it shows the developer base URI. B and C do not show base URIs.",
+    "optionExplanations": {
+      "A": "The developer account's Apps and Keys shows the developer environment's base URI, not production's.",
+      "B": "The Live notification does not provide the account base URI.",
+      "C": "The API Limit panel shows hourly and burst limits only.",
+      "D": "Correct. The production account's Apps and Keys page lists the Account Base URI."
+    },
+    "trapOption": "A",
+    "importance": "MEDIUM",
+    "concept": {
+      "title": "Production base URI sources",
+      "line": "Get the production base URI from /oauth/userinfo (cached) or from Account Base URI in production Apps and Keys."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "long",
+    "style": "design",
+    "domain": "Go Live Process",
+    "topic": "Caching access tokens",
+    "stem": "Moreton Logistics' unattended dispatch service uses JWT Grant to send delivery agreements on behalf of whichever of five depot managers owns each shipment. It currently requests a brand-new access token before every single API call, even for the same depot manager seconds apart, and authentication traffic now dwarfs the eSignature calls. The service runs on three load-balanced nodes in the company's own data center and is monitored by a small operations team. What is the recommended pattern?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Cache an access token for each depot manager and reuse it for every call until it is close to expiry, requesting a new one only then or after a restart"
+      },
+      {
+        "id": "B",
+        "text": "Request one new token per minute for each depot manager, which keeps every token fresh while cutting authentication traffic sharply"
+      },
+      {
+        "id": "C",
+        "text": "Switch to Authorization Code Grant with refresh tokens, so each depot manager signs in once and the service refreshes the token before every call"
+      },
+      {
+        "id": "D",
+        "text": "Use a single token obtained for one depot manager for all shipments, because any token issued to the key can send on behalf of every user"
+      }
+    ],
+    "correct": "A",
+    "answerText": "Cache an access token for each depot manager and reuse it for every call until it is close to expiry, requesting a new one only then or after a restart",
+    "explanation": "Docusign's guidelines say not to run an OAuth flow unless the previous token has expired or is about to, a different user's token is needed, or the app restarted; apps that switch between impersonated users should cache each user's token. The clue is 'brand-new token before every single call'.",
+    "whyNotOthers": "A is right because each manager's token is reused until near expiry. The trap is B: it cuts traffic, but it still requests tokens that are not needed. C needs people to sign in to an unattended service and still refreshes per call, and D sends as the wrong user, because a JWT token acts only for the user named in sub.",
+    "optionExplanations": {
+      "A": "Correct. Cache one token per impersonated user and request a new one only near expiry or after a restart.",
+      "B": "Fixed-interval renewal still requests tokens while valid ones exist.",
+      "C": "No one is available to sign in, and refreshing before every call is the same waste.",
+      "D": "A token represents the impersonated user only; agreements would go out as the wrong depot manager."
+    },
+    "trapOption": "B",
+    "importance": "MEDIUM",
+    "decode": {
+      "needs": "Cache JWT access tokens per impersonated user; request a new one only near expiry or after a restart.",
+      "clues": [
+        "new token before every call -> unnecessary OAuth flows",
+        "five depot managers -> several impersonated users, cache a token per user",
+        "three load-balanced nodes, own data center -> red herring"
+      ]
+    },
+    "concept": {
+      "title": "Cache tokens per user",
+      "line": "Request a new access token only when the old one is near expiry, a different user is needed, or the app restarts."
+    }
+  },
+  {
+    "paper": "T",
+    "length": "short",
+    "style": "fact",
+    "domain": "Go Live Process",
+    "topic": "What the raised limit covers",
+    "stem": "An account's hourly limit has been raised to 5,000 through API limit management. Which calls count toward those 5,000?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Only eSignature REST API calls; SOAP calls have their own allowance"
+      },
+      {
+        "id": "B",
+        "text": "Only calls made by the integration key whose owner raised the limit"
+      },
+      {
+        "id": "C",
+        "text": "All eSignature REST and SOAP calls, plus /oauth/userinfo requests"
+      },
+      {
+        "id": "D",
+        "text": "Every Docusign API, including the Admin, Rooms and Click APIs"
+      },
+      {
+        "id": "E",
+        "text": "eSignature REST and SOAP calls combined, from all of the account's apps"
+      }
+    ],
+    "correct": "E",
+    "answerText": "eSignature REST and SOAP calls combined, from all of the account's apps",
+    "explanation": "Limit updates apply to the eSignature REST API and the eSignature SOAP API together, counting calls from all apps associated with the account.",
+    "whyNotOthers": "E is right. The trap is C: REST and SOAP is correct, but userinfo requests have their own separate limits per user and per integration key. A leaves out SOAP, B treats the limit as per key, and D extends it beyond eSignature.",
+    "optionExplanations": {
+      "A": "Limit updates cover REST and SOAP together; SOAP is not separate.",
+      "B": "The hourly limit is per account, shared by all its apps.",
+      "C": "Userinfo requests have their own per-user and per-key limits.",
+      "D": "Limit management applies to eSignature REST and SOAP calls only.",
+      "E": "Correct. A raised limit counts eSignature REST and SOAP calls from all apps on the account."
+    },
+    "trapOption": "C",
+    "importance": "LOW",
+    "concept": {
+      "title": "Scope of the hourly limit",
+      "line": "A raised hourly limit covers eSignature REST and SOAP calls combined, from all apps on the account."
+    }
+  }
+]

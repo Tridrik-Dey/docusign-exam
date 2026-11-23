@@ -1,0 +1,614 @@
+[
+ {
+  "n": 1,
+  "part": "1",
+  "stem": "Robin, a university developer, is integrating a financial aid Web Form into the university website. The goal is to embed the form directly into the application's UI for a seamless experience. Which component must Robin use alongside the Web Forms API call to render the unique instance URL within the custom webpage?",
+  "options": {
+   "A": "The eSignature REST API EnvelopeViews: create endpoint",
+   "B": "The Docusign JS client SDK",
+   "C": "The Responsive Signing feature",
+   "D": "The Workflow Designer embed feature"
+  },
+  "answer": "B",
+  "explanation": "Why each option — and what it does: A EnvelopeViews:create generates an embedded signing/sending URL for an envelope (the eSignature signing ceremony). It is not the mechanism for rendering a Web Form instance inside a custom page — Web Forms have their own embedding path via the JS SDK. B Correct. The Docusign JS client SDK takes the unique Web Form instance URL returned by the Web Forms API and renders it inline within the host page, giving the embedded, seamless experience. C Responsive Signing is a display capability that makes the signing experience adapt to screen size (mobile-friendly HTML rather than fixed PDF). It is a rendering style for signing, not the tool that embeds a Web Form. D There is no 'Workflow Designer embed feature' used for this; Workflow/Maestro designers build multi-step flows. It is a distractor invented to sound plausible."
+ },
+ {
+  "n": 2,
+  "part": "1",
+  "stem": "A banking application runs a daily automated process to generate compliance reports and void expired agreements using a system sender account without direct user login. Which OAuth 2.0 flow is recommended for this non-interactive service integration?",
+  "options": {
+   "A": "Confidential Authorization Code Grant",
+   "B": "Implicit Grant",
+   "C": "Public Authorization Code Grant",
+   "D": "JSON Web Token Grant"
+  },
+  "answer": "D",
+  "explanation": "Why each option — and what it does: A Confidential Auth Code Grant requires an interactive user to log in and consent through a browser. This process has no human at the keyboard, so it doesn't fit. B Implicit Grant is a browser-based, user-interactive flow (now largely deprecated) for clients that can't store secrets. Again, it needs a user present. C Public Auth Code Grant is also user-interactive — designed for apps that can't keep a secret (SPAs/mobile). Not for unattended service automation. D Correct. JWT Grant is the service-account / machine-to-machine flow. It uses an RSA key pair to obtain a token with no interactive login — ideal for scheduled, headless processes. Docusign Developer — Combined Q&A with Explanations Page 2"
+ },
+ {
+  "n": 3,
+  "part": "1",
+  "stem": "A developer is designing a single-page application (SPA) that runs entirely in the user's browser to send documents. Due to the architecture, a secret key cannot be securely stored. Which OAuth 2.0 flow does Docusign recommend for authenticating individual users in this scenario?",
+  "options": {
+   "A": "Confidential Authorization Code Grant",
+   "B": "Implicit Grant",
+   "C": "JSON Web Token Grant",
+   "D": "Public Authorization Code Grant"
+  },
+  "answer": "D",
+  "explanation": "Why each option — and what it does: A Confidential Auth Code Grant requires a securely stored client secret — impossible in a pure browser SPA, which is exactly the constraint stated. B Implicit Grant was the old answer for SPAs but is now deprecated due to security weaknesses (token exposure in the URL). Docusign recommends Public Auth Code Grant with PKCE instead. C JWT Grant is for unattended service accounts, not for authenticating individual interactive users. D Correct. Public Authorization Code Grant (with PKCE) is the recommended flow for clients that cannot store a secret while still authenticating each individual user interactively. n Close-call: B (Implicit) vs D (Public Auth Code). Both target browser apps that can't hold a secret. Implicit is the historically 'correct'-sounding choice but is deprecated; Docusign now recommends Public Auth Code Grant + PKCE — so D is current best practice."
+ },
+ {
+  "n": 4,
+  "part": "1",
+  "stem": "A workflow needs to automatically archive the final signed agreement document to Google Drive after all recipients complete the signing step. Which specific type of step must the workflow designer add to achieve this action?",
+  "options": {
+   "A": "Extension step",
+   "B": "Get Signatures step",
+   "C": "Add a Branching Rule step",
+   "D": "Collect Data with Web Forms step"
+  },
+  "answer": "A",
+  "explanation": "Why each option — and what it does: A Correct. An Extension step invokes an extension app (here a File IO / archive type extension) to push the completed document to an external system like Google Drive. B Get Signatures step is what collects signatures from recipients — it's the signing action, not the post-signing archive action. C A Branching Rule step adds conditional logic (if/then routing) to the workflow; it doesn't move documents anywhere. D Collect Data with Web Forms gathers input from a participant via a form; it has nothing to do with archiving the finished document. Docusign Developer — Combined Q&A with Explanations Page 3"
+ },
+ {
+  "n": 5,
+  "part": "1",
+  "stem": "A developer is building a custom integration that requires real-time updates for a specific envelope created using the eSignature REST API, overriding any existing account-level configuration. Which method must the developer use to configure this webhook?",
+  "options": {
+   "A": "Include the eventNotification object within the envelope creation request body",
+   "B": "Use the Maestro API to create a custom workflow instance containing the Connect listener URL",
+   "C": "Configure a dedicated webhook listener URL within the Docusign Admin settings for the specific Envelope ID",
+   "D": "Base the envelope on a Docusign web form that has Connect enabled"
+  },
+  "answer": "A",
+  "explanation": "Why each option — and what it does: A Correct. Adding an eventNotification object to the envelope create payload sets up an envelope-level (per-envelope) Connect webhook that overrides the account-level config for that envelope. B Maestro is for orchestrating multi-step workflows, not for attaching a webhook to a single eSignature envelope. C Docusign Admin lets you configure account-level Connect, but you cannot register a listener for one specific Envelope ID there — per-envelope config is done in the API request body. D Web forms are a different sending model; basing the envelope on a web form does not give you envelope-specific webhook override."
+ },
+ {
+  "n": 6,
+  "part": "1",
+  "stem": "To receive messages for Docusign Connect events related to Docusign workflows, what specific Connect configuration detail is required?",
+  "options": {
+   "A": "The messages must exclude all envelope and recipient data.",
+   "B": "The messages must have retries enabled.",
+   "C": "The messages must be authenticated using HMAC.",
+   "D": "The messages must use the JSON SIM format."
+  },
+  "answer": "D",
+  "explanation": "Why each option — and what it does: A Excluding envelope/recipient data is an optional payload-trimming choice, not a requirement — and you usually want that data. B Retries improve delivery reliability and are recommended, but they are not the specific required detail for receiving workflow (Maestro) events. C HMAC authentication is a security best practice for verifying message authenticity, but it is optional, not the mandatory format requirement for workflow events. D Correct. Maestro/workflow events are only delivered in the JSON SIM (Simplified Information Model) message format, so that format is required. Docusign Developer — Combined Q&A with Explanations Page 4"
+ },
+ {
+  "n": 7,
+  "part": "1",
+  "stem": "A developer needs to create 100 unique web form instances for participants in an internal compliance process using the Web Forms API. They also need to ensure the internal system can uniquely map and track the status of each form instance back to the individual user record. Which parameter must be supplied in the Instances:createInstance request?",
+  "options": {
+   "A": "The participant's email address, which serves as the unique key for all Docusign objects",
+   "B": "The web form configuration ID, which allows one-to-one mapping for tracking purposes",
+   "C": "A unique clientUserId value generated by the developer's internal systems",
+   "D": "The API Account ID, which distinguishes instances created under different developer sandboxes"
+  },
+  "answer": "C",
+  "explanation": "Why each option — and what it does: A Email is not a guaranteed-unique key in Docusign (the same person can appear many times), and it is not the parameter used to correlate instances to your backend records. B The web form configuration ID identifies which form template is being instantiated — it's the same across all 100 instances, so it cannot map to individual users. C Correct. A developer-generated clientUserId is the unique correlation key you attach so each instance maps one-to-one to a user record in your database. D The API Account ID identifies the whole account, not an individual instance or user — useless for per-user tracking."
+ },
+ {
+  "n": 8,
+  "part": "1",
+  "stem": "A critical agreement has been sent using the eSignature REST API. The legal team identifies a fatal error before any recipient signs. The agreement must be canceled permanently. Which status value should the integration set in an Envelopes:update request to immediately cancel the agreement?",
+  "options": {
+   "A": "voided",
+   "B": "created",
+   "C": "purged",
+   "D": "deleted"
+  },
+  "answer": "A",
+  "explanation": "Why each option — and what it does: A Correct. Setting status to 'voided' cancels an in-process envelope, stops the signing, and notifies recipients. It is the proper cancel action. B 'created' is the draft state — setting an already-sent envelope back to created is not how you cancel it. C 'purged' relates to document retention/removal of envelope documents after completion, not to cancelling an active agreement. D 'deleted' moves an envelope to the folder/recycle-bin sense; it is not the valid status value for cancelling a sent envelope (and 'voided' is the documented cancel value). n Close-call: A (voided) vs D (deleted). 'Deleted' sounds like 'cancel permanently,' but the documented status to stop/cancel a sent, unsigned envelope is 'voided.' Docusign Developer — Combined Q&A with Explanations Page 5"
+ },
+ {
+  "n": 9,
+  "part": "1",
+  "stem": "A developer promotes an integration key to production during go-live. The integration uses the Confidential Auth Code Grant flow, which relies on a secret key and a redirect URI configured in Apps and Keys. Which statement accurately describes the configuration state of these OAuth parameters in production immediately after the integration key duplication?",
+  "options": {
+   "A": "Configuration parameters such as secrets and redirect URIs are not copied over and must be set up manually in production",
+   "B": "Only the redirect URIs are automatically copied over, but the secret key must be regenerated in production",
+   "C": "Production automatically generates new placeholder values for secrets and redirect URIs, which should not be modified",
+   "D": "The integration key, secrets, and redirect URIs are all duplicated to production, ensuring immediate functionality"
+  },
+  "answer": "A",
+  "explanation": "Why each option — and what it does: A Correct. Go-live carries the integration key's identity, but secrets and redirect URIs are not migrated — you must recreate them manually in the production environment. B Redirect URIs are not auto-copied either; both secrets and redirect URIs need manual setup. C Production does not auto-generate untouchable placeholders; you configure these values yourself. D This is the trap 'everything just works' answer — but secrets/redirect URIs are deliberately not duplicated for security, so the app will not work until configured."
+ },
+ {
+  "n": 10,
+  "part": "1",
+  "stem": "A developer is building a corporate web portal where employees log in individually to send internal NDAs. The integration server is secured and can safely store client credentials. Which authentication flow should be implemented?",
+  "options": {
+   "A": "Confidential Authorization Code Grant",
+   "B": "JSON Web Token Grant",
+   "C": "Implicit Grant",
+   "D": "Public Authorization Code Grant"
+  },
+  "answer": "A",
+  "explanation": "Why each option — and what it does: A Correct. Individual interactive user login + a secure server that can store a secret = Confidential Authorization Code Grant, the recommended flow for this exact case. B JWT Grant is for unattended service accounts with no interactive user — but here each employee logs in individually. C Implicit Grant is a deprecated browser flow for clients that can't store secrets; the server here can store secrets. D Public Auth Code Grant is for clients that cannot store a secret (SPA/mobile). Since the server is secured and can store credentials, the Confidential variant is preferred. n Close-call: A (Confidential) vs D (Public) Auth Code. The deciding clue is 'server can safely store client credentials' fi Confidential. If it couldn't store a secret, the answer would flip to Public. Docusign Developer — Combined Q&A with Explanations Page 6"
+ },
+ {
+  "n": 11,
+  "part": "1",
+  "stem": "Nadia completed go-live for an app that uses the template reference model to create envelopes. What additional template configuration must she perform in production so the integration works as it did in development?",
+  "options": {
+   "A": "Convert her code to composite templates mode, because the template reference model is not supported in production.",
+   "B": "Delete the dev template, rebuild it in production, then update her app to reference the new production template ID.",
+   "C": "Update her app to reference the template ID, which was automatically deployed to production during go-live.",
+   "D": "Deploy the template to production, then update her app to reference the new production template ID."
+  },
+  "answer": "D",
+  "explanation": "Why each option — and what it does: A The template reference model is fully supported in production; no need to switch to composite templates. B You don't need to delete the development template. You deploy/copy it to production — destroying the dev copy is unnecessary and risky. C Templates are NOT automatically deployed during go-live (only the integration key identity is). So there is no auto-deployed ID to reference. D Correct. You must explicitly deploy the template to production, which yields a new production template ID, and then point your app at that new ID. n Close-call: B vs D. Both involve getting the template into production and updating the ID. D is correct because it 'deploys' (copies) the template; B wrongly tells you to delete and rebuild from scratch."
+ },
+ {
+  "n": 12,
+  "part": "1",
+  "stem": "A developer uses the Direct Documents Model to send a standard PDF contract and wants signing fields (tabs) to stay accurately placed even if minor content revisions shift page text. What is the recommended tab placement strategy?",
+  "options": {
+   "A": "Using anchorString with anchorUnits and anchorX/YOffset properties for autoplace",
+   "B": "Leveraging Docusign AI to automatically place the required tabs",
+   "C": "Retrieving the field values from a web form",
+   "D": "Using xPosition and yPosition properties for Fixed Positioning"
+  },
+  "answer": "A",
+  "explanation": "Why each option — and what it does: A Correct. Anchor (string-based) tagging places tabs relative to text in the document, so when text reflows the tabs move with it. Offsets fine-tune the position. B There isn't a standard 'Docusign AI auto-place tabs' feature for this purpose in the Direct Documents Model; it's a distractor. C Web form field values are unrelated to placing signature tabs on a PDF in this model. D Fixed positioning (xPosition/yPosition) pins tabs to absolute coordinates — which is exactly what breaks when content shifts. It's the opposite of what's needed. Docusign Developer — Combined Q&A with Explanations Page 7"
+ },
+ {
+  "n": 13,
+  "part": "1",
+  "stem": "A developer implements a webhook listener to track the lifecycle of Maestro workflow instances. Which required event message format must be used in the Docusign Connect configuration to receive Maestro events like workflow-completed?",
+  "options": {
+   "A": "JSON SIM event message format",
+   "B": "JSON Aggregated format",
+   "C": "XML SIM format",
+   "D": "XML Aggregated format"
+  },
+  "answer": "A",
+  "explanation": "Why each option — and what it does: A Correct. Maestro/workflow events are delivered only in JSON SIM (Simplified Information Model) format. B 'JSON Aggregated' is not the format used for Maestro events; SIM is the per-event model required here. C XML SIM is the legacy XML message model for eSignature Connect, but Maestro events require JSON, not XML. D XML Aggregated is likewise a legacy/eSignature-oriented option and not valid for Maestro workflow events."
+ },
+ {
+  "n": 14,
+  "part": "1",
+  "stem": "A developer is building an app that displays a list of active legal provisions across the organization's agreements, using the Agreement Manager API as the source of agreement data. What is the key advantage of the Agreement Manager API over the eSignature REST API for this purpose?",
+  "options": {
+   "A": "The Agreement Manager API allows unlimited daily calls, bypassing rate limits",
+   "B": "The eSignature API does not support JWT auth when sending agreement data.",
+   "C": "Agreement Manager API automatically retrieves structured, AI-extracted data",
+   "D": "The Agreement Manager API requires fewer OAuth scopes than the eSignature API"
+  },
+  "answer": "C",
+  "explanation": "Why each option — and what it does: A No API offers 'unlimited' calls; rate limits still apply. This is a false claim. B The eSignature API does support JWT authentication, so this statement is simply incorrect. C Correct. The Agreement Manager (IAM) API exposes structured, AI-extracted agreement data (parties, dates, clauses/provisions), which the raw eSignature API does not surface. D Scope count is not the meaningful differentiator and isn't the documented advantage. Docusign Developer — Combined Q&A with Explanations Page 8"
+ },
+ {
+  "n": 15,
+  "part": "1",
+  "stem": "A developer is creating a custom sales dashboard with a button that triggers a Docusign workflow to send account-opening documents to prospects. Which start method must be specified for the workflow configuration?",
+  "options": {
+   "A": "From an API call",
+   "B": "From an Event",
+   "C": "From within Workflow Builder",
+   "D": "From a Link"
+  },
+  "answer": "A",
+  "explanation": "Why each option — and what it does: A Correct. A custom app/button that programmatically kicks off the workflow uses the 'From an API call' start method. B 'From an Event' starts a workflow in response to a Docusign event/trigger, not a user clicking a button in your own dashboard. C 'From within Workflow Builder' means manually starting it inside Docusign's UI — not programmatic. D 'From a Link' starts the workflow when someone opens a shared trigger URL; it's used for embedding/iframe link scenarios, not a backend API-driven button. n Close-call: A (From an API call) vs D (From a Link). Both can launch a workflow from a portal. Use 'API call' when your server initiates it programmatically; use 'Link' when you hand the user a URL/iframe to start it. Here a dashboard button triggering it = API call."
+ },
+ {
+  "n": 16,
+  "part": "1",
+  "stem": "A developer designs a workflow where a sales renewal is identified by querying the Agreement Manager API for upcoming expiration dates, which then triggers an automated renewal process (prefilling new documents and handling signatures). Which Docusign service is the recommended mechanism for programmatically initiating the multi-step renewal workflow?",
+  "options": {
+   "A": "Workflow Builder API",
+   "B": "Web Forms API",
+   "C": "eSignature REST API",
+   "D": "Connected Fields API"
+  },
+  "answer": "A",
+  "explanation": "Why each option — and what it does: A Correct. The Workflow Builder (Maestro) API is the service for programmatically launching a multi-step orchestrated workflow. B Web Forms API creates/embeds individual web form instances — a single data-collection step, not the multi-step orchestration engine. C The eSignature REST API handles a single envelope's signing; it doesn't orchestrate a multi-step renewal flow on its own. D Connected Fields API validates/connects field data to external systems; it isn't the workflow-initiation mechanism. Docusign Developer — Combined Q&A with Explanations Page 9"
+ },
+ {
+  "n": 17,
+  "part": "1",
+  "stem": "A developer is implementing an embedded sending experience. Which parameter must be included in the recipient definition when creating the envelope to signal that the user will be embedded rather than remote?",
+  "options": {
+   "A": "recipientId",
+   "B": "clientUserId",
+   "C": "returnUrl",
+   "D": "accountId"
+  },
+  "answer": "B",
+  "explanation": "Why each option — and what it does: A recipientId just numbers/identifies each recipient within the envelope; it does not mark them as embedded. B Correct. Setting clientUserId on the recipient flags them as a captive/embedded recipient (vs. remote), which is what enables the embedded session. C returnUrl tells Docusign where to redirect after signing; it's supplied when generating the view, not the flag that makes the recipient embedded. D accountId identifies the Docusign account, not an embedded recipient."
+ },
+ {
+  "n": 18,
+  "part": "1",
+  "stem": "An HR process builder configures a Docusign workflow for onboarding. It must first capture sensitive personal information, then verify the participant's government-issued ID. Which sequence is best practice?",
+  "options": {
+   "A": "Set Up Invite step followed by Add a Branching Rule step",
+   "B": "Collect Data with Web Forms step followed by Verify Someone's Identity step",
+   "C": "ID Verification step followed by Collect Data with Web Forms step",
+   "D": "Get Signatures step followed by Collect Data with Web Forms step"
+  },
+  "answer": "B",
+  "explanation": "Why each option — and what it does: A Invite + Branching Rule are setup/routing steps; neither collects personal data nor verifies ID, so this doesn't satisfy the requirement. B Correct. Collect Data (Web Forms) gathers the personal info first, then Verify Someone's Identity (ID Verification) confirms the government ID — matching the required order. C This reverses the requested order (verifies ID before collecting the data). The scenario explicitly wants data capture first. D Get Signatures is a signing step, not identity verification, and the order/intent don't match the requirement. n Close-call: B vs C. Both pair data collection with identity verification; the difference is ORDER. The scenario says collect data FIRST, then verify ID fi B. Docusign Developer — Combined Q&A with Explanations Page 10"
+ },
+ {
+  "n": 19,
+  "part": "1",
+  "stem": "A developer needs real-time updates for envelopes sent across three different Docusign accounts under a single corporate entity, to centralize logging and monitoring. Which Connect configuration should be implemented?",
+  "options": {
+   "A": "Recipient Connect",
+   "B": "Envelope-Level Sender Connect",
+   "C": "Organization-Level Connect",
+   "D": "Account-Level Connect"
+  },
+  "answer": "C",
+  "explanation": "Why each option — and what it does: A Recipient Connect is not the construct for centralizing across accounts; it doesn't aggregate multiple accounts' events. B Envelope-Level Sender Connect applies per single envelope, not across all envelopes in multiple accounts. C Correct. Organization-Level Connect spans every account under the corporate org, centralizing event delivery exactly as required. D Account-Level Connect covers only one account — you'd have to configure all three separately, which isn't the single centralized solution requested."
+ },
+ {
+  "n": 20,
+  "part": "1",
+  "stem": "After a successful POST to Envelopes:create for an embedded recipient, what is the next API step required to initiate the signing session?",
+  "options": {
+   "A": "Redirect the user's browser to docusign.net/embedded.",
+   "B": "Display the sending interface to the user to enter tab information.",
+   "C": "Send an email notification to the recipient with the signing link.",
+   "D": "Make an API call to request the signing URL."
+  },
+  "answer": "D",
+  "explanation": "Why each option — and what it does: A There is no generic docusign.net/embedded redirect; the signing URL must be generated per recipient via an API call, then you redirect to that returned URL. B Entering tab information is a sending/preparation activity, not the step that launches an embedded signing session. C Embedded (captive) signing deliberately does NOT email a link — the host app controls the redirect. Emailing is the remote-signing pattern. D Correct. You call the recipient view endpoint (e.g., EnvelopeViews:createRecipient) to get a short-lived signing URL, then redirect the embedded user to it. Docusign Developer — Combined Q&A with Explanations Page 11"
+ },
+ {
+  "n": 21,
+  "part": "2",
+  "stem": "Within the actions object of the manifest, what is the primary purpose of the connectionsReference property?",
+  "options": {
+   "A": "It specifies the OAuth scopes required to connect to the external API.",
+   "B": "It indicates whether the app is Public or Private.",
+   "C": "It defines the endpoint URL for the external API call.",
+   "D": "It links an action definition to auth credentials defined in a connections object."
+  },
+  "answer": "D",
+  "explanation": "Why each option — and what it does: A Scopes are part of the connections/auth definition itself, not the job of connectionsReference, which only points to that definition. B Public vs Private is set by the app's distribution/classification, not by connectionsReference. C The endpoint URL is defined in the action's params (e.g., the action referencing an external platform endpoint), not by connectionsReference. D Correct. connectionsReference is the pointer that ties an action to the authentication credentials declared in the connections object, so the action knows which auth to use."
+ },
+ {
+  "n": 22,
+  "part": "2",
+  "stem": "How do extension apps enable developers to expand their solution's visibility and reach?",
+  "options": {
+   "A": "They allow the use of Implicit Grant flow for automated server-side integrations.",
+   "B": "They involve publishing applications directly to the Docusign App Center, accessing a large customer base.",
+   "C": "They support extending Docusign agreement APIs with custom endpoints.",
+   "D": "They grant automated access to all Docusign APIs without requiring individual scope definition."
+  },
+  "answer": "B",
+  "explanation": "Why each option — and what it does: A Implicit Grant is a browser user flow and is deprecated; it's not how extension apps gain reach, and it isn't used for automated server-side integrations. B Correct. Publishing to the Docusign App Center exposes the app to Docusign's large global customer base — that's the visibility/reach mechanism. C This describes a technical capability, not how reach/visibility is expanded; and it's loosely worded. Distribution via the App Center is the reach answer. D No app gets blanket access to all APIs without scopes; scopes are always required. False claim. Docusign Developer — Combined Q&A with Explanations Page 12"
+ },
+ {
+  "n": 23,
+  "part": "2",
+  "stem": "A sales team uses Maestro to automate contract generation. They need a workflow to automatically retrieve a client's current pricing tier and contract duration from their internal ERP to dynamically generate pre-filled documents. Which IAM solution segment is crucial for executing this reading task within the workflow?",
+  "options": {
+   "A": "File IO extension app",
+   "B": "Identity Verification step",
+   "C": "Data IO extension app",
+   "D": "Docusign Connect webhook listener"
+  },
+  "answer": "C",
+  "explanation": "Why each option — and what it does: A File IO handles moving documents/files (archive, retrieve files), not reading structured data fields like pricing tier from an ERP. B Identity Verification confirms who a person is; unrelated to reading ERP data. C Correct. Data IO extension apps read/write structured data to and from external systems — exactly what's needed to pull pricing tier and duration from the ERP. D Connect is an outbound webhook for event notifications; it pushes events out, it doesn't pull/read data into the workflow."
+ },
+ {
+  "n": 24,
+  "part": "2",
+  "stem": "A third-party API used by an extension app accepts XML payloads, but Docusign requires the external response in a specific JSON schema. What infrastructure component should the developer deploy to handle this data translation?",
+  "options": {
+   "A": "OAuth 2.0 Identity Provider",
+   "B": "Docusign Connect listener",
+   "C": "API proxy",
+   "D": "Custom schema"
+  },
+  "answer": "C",
+  "explanation": "Why each option — and what it does: A An identity provider handles authentication/tokens, not payload format translation. B A Connect listener receives Docusign event webhooks; it isn't a translation layer between the extension and a third-party API. C Correct. An API proxy sits between Docusign and the third-party service, transforming XML to the required JSON schema (and vice versa). D Defining a custom schema just describes the expected shape of data; it doesn't perform the runtime XML-to-JSON conversion. A proxy does the actual translation. Docusign Developer — Combined Q&A with Explanations Page 13"
+ },
+ {
+  "n": 25,
+  "part": "2",
+  "stem": "A developer is configuring the connections object for OAuth 2.0 in their extension app manifest. Which four essential parameters must they obtain from the external API service or identity provider to configure the authorization flow successfully?",
+  "options": {
+   "A": "Publisher name, App name, Short description, and Long description",
+   "B": "Client ID, Client Secret, Token URL, and Authorization URL",
+   "C": "Client ID, Public key, JWT, and Authorization URL",
+   "D": "Integration Key, API Account ID, Redirect URI, and Docusign scopes"
+  },
+  "answer": "B",
+  "explanation": "Why each option — and what it does: A These are App Center listing/marketing metadata, not OAuth flow parameters. B Correct. A standard OAuth 2.0 authorization-code setup needs Client ID, Client Secret, Token URL, and Authorization URL from the external provider. C JWT and a public key belong to the JWT/assertion flow, not the standard authorization-code connection parameters being configured here. D These are Docusign-side identifiers (your integration key, account, redirect, Docusign scopes) — not the credentials you obtain FROM the external API/identity provider."
+ },
+ {
+  "n": 26,
+  "part": "2",
+  "stem": "Which IT infrastructure change is required to ensure Docusign can reliably send requests to an external API service and users can install an extension app?",
+  "options": {
+   "A": "Configure network firewall",
+   "B": "Enable CORS on the endpoint",
+   "C": "Implement multi-factor authentication",
+   "D": "Add a CNAME entry to DNS"
+  },
+  "answer": "A",
+  "explanation": "Why each option — and what it does: A Correct. The firewall must be configured to allow Docusign's outbound requests to reach the external endpoint; otherwise calls are blocked. B CORS governs browser-based cross-origin requests; Docusign's server-to-server calls to the extension aren't subject to browser CORS, so it's not the required change. C MFA is about user authentication security, not about allowing Docusign to reach the endpoint. D A CNAME/DNS record may help with naming but isn't the required infrastructure change to permit Docusign's traffic — firewall allowance is. Docusign Developer — Combined Q&A with Explanations Page 14"
+ },
+ {
+  "n": 27,
+  "part": "2",
+  "stem": "A software vendor wants Docusign customers globally to integrate their compliance document storage service within Maestro workflows. How should the developer configure the app distribution?",
+  "options": {
+   "A": "Set distribution to Private, as public apps cannot use Maestro workflows.",
+   "B": "Set distribution to Public in the manifest and ensure the company is a Docusign partner.",
+   "C": "Set distribution to Private and list all Docusign account IDs globally.",
+   "D": "Set distribution to Public and classify the integration key as a customer or SI."
+  },
+  "answer": "B",
+  "explanation": "Why each option — and what it does: A False premise — public apps CAN be used in Maestro workflows. Private would also restrict the global reach the vendor wants. B Correct. Global availability requires Public distribution, and publishing publicly to the App Center requires Docusign partner status. C Listing every account ID globally is impossible to maintain and is the opposite of how public distribution works. D Public distribution is right, but the proper classification for a vendor publishing to all customers is ISV/partner — not 'customer or SI'."
+ },
+ {
+  "n": 28,
+  "part": "2",
+  "stem": "After a developer submits an extension app for review via the Developer Console, which area is explicitly covered by the required Docusign review?",
+  "options": {
+   "A": "Passing a minimum of 20 successful eSignature API calls",
+   "B": "Security compliance and technical architecture",
+   "C": "The developer's adherence to envelope usage fees",
+   "D": "Ensuring the app uses the most recent SDK version"
+  },
+  "answer": "B",
+  "explanation": "Why each option — and what it does: A The '20 API calls' threshold relates to the older go-live process for integration keys, not the extension-app content review. B Correct. The extension app review evaluates security compliance and the technical architecture of the app. C Billing/usage fees are a commercial matter, not part of the technical app review. D Using the latest SDK is good practice but isn't the explicit review criterion described. Docusign Developer — Combined Q&A with Explanations Page 15"
+ },
+ {
+  "n": 29,
+  "part": "2",
+  "stem": "A government agency needs to confirm the validity of a U.S. Social Security Number during document preparation before routing for signature. Which extension type uses the eSignature Add Fields view as an extension point to check this predefined, standard data value?",
+  "options": {
+   "A": "Data IO",
+   "B": "File IO",
+   "C": "Connected Fields",
+   "D": "Data Verification"
+  },
+  "answer": "C",
+  "explanation": "Why each option — and what it does: A Data IO reads/writes structured data to external systems generally; the scenario specifies the Add Fields view extension point for a standard/predefined field, which is Connected Fields. B File IO is about documents/files, not validating a data field like an SSN. C Correct. Connected Fields uses the eSignature Add Fields view as its extension point to validate predefined/standard field values such as an SSN. D Data Verification validates data in real time during the Signing ceremony (custom values), whereas this question specifies the Add Fields view and a predefined standard value fi Connected Fields. n Close-call: C (Connected Fields) vs D (Data Verification). Both validate data. Key discriminators: Connected Fields = Add Fields view + predefined/standard value; Data Verification = real-time check during the Signing ceremony, often custom values. Here it's the Add Fields view + standard SSN fi Connected Fields."
+ },
+ {
+  "n": 30,
+  "part": "2",
+  "stem": "In the extension app JSON manifest, which core object is responsible for defining the authentication mechanism required for the app to access the external platform?",
+  "options": {
+   "A": "publisher",
+   "B": "actions",
+   "C": "connections",
+   "D": "extensions"
+  },
+  "answer": "C",
+  "explanation": "Why each option — and what it does: A publisher holds identifying info about who made the app (name, etc.), not authentication. B actions define the operations/endpoints the app performs; they reference auth but don't define the auth mechanism itself. C Correct. The connections object defines the authentication mechanism (OAuth params, etc.) used to reach the external platform. D extensions define the extension points/types (where the app plugs into Docusign), not the auth configuration. Docusign Developer — Combined Q&A with Explanations Page 16"
+ },
+ {
+  "n": 31,
+  "part": "2",
+  "stem": "A large real estate firm needs to verify that a postal address entered by a client on a tax document is valid and deliverable, and to enforce correction before signing can proceed. Which extension type addresses this required real-time validation?",
+  "options": {
+   "A": "File IO",
+   "B": "Data IO",
+   "C": "Connected Fields",
+   "D": "Data Verification"
+  },
+  "answer": "D",
+  "explanation": "Why each option — and what it does: A File IO handles document/file transfer, not validating an address field. B Data IO reads/writes data to external systems but doesn't enforce real-time, block-until-corrected validation during the ceremony. C Connected Fields surfaces/links predefined field values; the emphasis here is real-time validation that BLOCKS progress until corrected — that's Data Verification. D Correct. Data Verification performs real-time validation (address deliverability) and can prevent signing from proceeding until the value is corrected. n Close-call: C vs D again. The phrase 'enforce correction before signing can proceed' (real-time, blocking, during signing) points to Data Verification rather than Connected Fields."
+ },
+ {
+  "n": 32,
+  "part": "2",
+  "stem": "A financial institution creates an extension app to verify client data against its proprietary internal system. The app must only be installable by administrators within their designated corporate Docusign accounts. Which classification must be chosen when publishing in production?",
+  "options": {
+   "A": "Public extension app",
+   "B": "Private extension app",
+   "C": "Internal-only application",
+   "D": "Developer preview app"
+  },
+  "answer": "B",
+  "explanation": "Why each option — and what it does: A Public would make it installable by any Docusign customer — the opposite of the restriction required. B Correct. Private distribution limits installation to the organization's own designated accounts, matching the requirement. C 'Internal-only application' isn't the production distribution classification Docusign offers for this; the correct term is Private. D 'Developer preview' is a pre-release/testing state, not a production distribution classification. Docusign Developer — Combined Q&A with Explanations Page 17"
+ },
+ {
+  "n": 33,
+  "part": "2",
+  "stem": "An extension app passes review and receives 'Approved' status in the Developer Console. What must the developer do next to allow Docusign account administrators to find and install the app in production?",
+  "options": {
+   "A": "Perform an additional functional test in a production envelope.",
+   "B": "Publish the app to the Docusign App Center",
+   "C": "Submit a Go-Live request for the underlying integration key.",
+   "D": "Begin making API calls against the production endpoint."
+  },
+  "answer": "B",
+  "explanation": "Why each option — and what it does: A A production functional test isn't the gating step that makes the app discoverable/installable to admins. B Correct. After approval, publishing to the Docusign App Center is what makes the app discoverable and installable by account administrators. C Go-Live applies to promoting an integration key's API usage; for an approved extension app, the next step is publishing to the App Center. D Making production API calls is downstream usage, not the action that lists the app for admins to install. n Mild close-call: C (Go-Live) vs B (Publish to App Center). Go-Live is the classic integration-key step and tempts you, but for an APPROVED extension app the discoverability step is publishing to the App Center."
+ },
+ {
+  "n": 34,
+  "part": "2",
+  "stem": "Where is the call to an external API defined within an extension app's structure?",
+  "options": {
+   "A": "A Maestro workflow variable definition",
+   "B": "An extension point identifying the external platform parameters",
+   "C": "A connection referencing the Docusign API gateway",
+   "D": "An action referencing an external platform endpoint"
+  },
+  "answer": "D",
+  "explanation": "Why each option — and what it does: A Workflow variables hold data within Maestro; they don't define the external API call. B An extension point defines WHERE the app plugs into Docusign, not the outbound API call itself. C Connections define authentication, and they point to the external platform's auth — not to a 'Docusign API gateway,' and they don't define the call itself. D Correct. An action references the external platform endpoint — that's where the call to the external API is defined. Docusign Developer — Combined Q&A with Explanations Page 18"
+ },
+ {
+  "n": 35,
+  "part": "2",
+  "stem": "A retailer requires an extension to dynamically check a customer's customized loyalty ID against their system of record right when the customer is entering details during the signing ceremony. Which extension type and extension point should be used?",
+  "options": {
+   "A": "Data Verification; Post-signing event",
+   "B": "File Archive; Maestro workflow",
+   "C": "Connected Fields; eSignature Add Fields view and Signing",
+   "D": "Data IO; Maestro workflow"
+  },
+  "answer": "C",
+  "explanation": "Why each option — and what it does: A A post-signing event happens after the ceremony — too late to check the value 'right when the customer is entering' it. Also the pairing's timing is wrong. B File Archive moves documents and Maestro workflow is orchestration; neither checks a field value during signing. C Correct. Connected Fields with the eSignature Add Fields view + Signing extension point checks the (customized) loyalty ID against the system of record during the signing ceremony. D Data IO via Maestro reads/writes data in a workflow, not in real time during the live signing ceremony. n Close-call: C (Connected Fields) vs the Data Verification family. Here the value is a CUSTOMIZED loyalty ID surfaced in the Add Fields view + Signing, which the source keys to Connected Fields. Compare with Q9/Q11 where blocking real-time correction pushed toward Data Verification — these are the trickiest distinctions on the exam. Docusign Developer — Combined Q&A with Explanations Page 19"
+ },
+ {
+  "n": 36,
+  "part": "3",
+  "stem": "As part of the Go-Live process, which two items need to be configured in the production account? (Select two)",
+  "options": {
+   "A": "Redirect URI",
+   "B": "Account ID",
+   "C": "Production API endpoints",
+   "D": "Account Base URI",
+   "E": "Secret or RSA Key Pair"
+  },
+  "answer": "C & D",
+  "explanation": "Why each option — and what it does: A Redirect URI is part of OAuth app config that you set up, but the two items this question targets as production-account configuration are the endpoints and base URI. (Note: redirect URIs do need manual setup in production generally — see the close-call note.) B Account ID is read/obtained, not something you 'configure'; it's assigned, so it isn't one of the two answers. C Correct (1 of 2). You must point your integration at the production API endpoints (demo fi production host). D Correct (2 of 2). The Account Base URI differs in production and must be configured so calls hit the right base path. E Secrets/RSA key pairs do need to be set up in production, but this question's keyed pair is endpoints + base URI. n Close-call: A (Redirect URI) and E (Secret/RSA Key Pair) are legitimately things you reconfigure in production too — recall Part 1 Q9, which stresses secrets and redirect URIs are NOT auto-copied. This question, however, is keyed to C & D (endpoints + base URI). If your exam variant asks 'which OAuth credentials must be re-set,' the answer shifts toward A and E. Read the stem carefully."
+ },
+ {
+  "n": 37,
+  "part": "3",
+  "stem": "The requirement is to capture Docusign signatures from your application. What should be added to your eSignature REST API payload to ensure recipients sign within the application?",
+  "options": {
+   "A": "email property set to null",
+   "B": "clientUserId property",
+   "C": "emailSubject property",
+   "D": "emailNotification property set to false"
+  },
+  "answer": "B",
+  "explanation": "Why each option — and what it does: A Setting email to null doesn't make a recipient embedded and would actually be invalid — email is still required for the recipient record. B Correct. Adding clientUserId marks the recipient as embedded/captive so they sign inside your app rather than via emailed remote signing. C emailSubject just customizes the notification subject line — irrelevant to embedded signing. Docusign Developer — Combined Q&A with Explanations Page 20 D Turning off email notifications suppresses emails but does NOT convert the recipient to embedded signing; you still need clientUserId."
+ },
+ {
+  "n": 38,
+  "part": "3",
+  "stem": "A company wants recipients redirected to a contact page after completing remote signing. Which option controls where recipients are redirected after signing?",
+  "options": {
+   "A": "Branding Resource File",
+   "B": "Brand Destination URLs",
+   "C": "Custom Landing pages",
+   "D": "In-Session Landing pages"
+  },
+  "answer": "B",
+  "explanation": "Why each option — and what it does: A A Branding Resource File customizes text/labels in the signing experience, not the post-signing redirect destination. B Correct. Brand Destination URLs configure where remote-signing recipients are redirected after they finish. C 'Custom Landing pages' isn't the Docusign feature name for the post-signing redirect; it's a distractor. D 'In-Session Landing pages' is likewise not the redirect-control feature for remote signing. n Mild close-call: For EMBEDDED signing you control the return via returnUrl in the recipient view; for REMOTE signing (as stated here) it's Brand Destination URLs. Match the feature to remote vs embedded."
+ },
+ {
+  "n": 39,
+  "part": "3",
+  "stem": "Which endpoint extracts agreement data from Docusign so it can be sent to an external system?",
+  "options": {
+   "A": "Agreements:createAgreementSummary",
+   "B": "Workflows:getWorkflowsList",
+   "C": "Agreements:getAgreementsList",
+   "D": "Agreements:getAgreement"
+  },
+  "answer": "D",
+  "explanation": "Why each option — and what it does: A createAgreementSummary would create/generate a summary, not retrieve the agreement's structured data for export. B getWorkflowsList returns workflows, not agreement data. C getAgreementsList returns a list of agreements (identifiers/metadata), but to extract the actual data of a specific agreement you call getAgreement. D Correct. Agreements:getAgreement retrieves the structured data of a specific agreement for sending to an external system. n Close-call: C (getAgreementsList) vs D (getAgreement). List gives you the index; getAgreement gives you the full data of one agreement. To 'extract agreement data,' use the singular getAgreement. Docusign Developer — Combined Q&A with Explanations Page 21"
+ },
+ {
+  "n": 40,
+  "part": "3",
+  "stem": "The API call to create an envelope failed. Which parameter lets you retry without creating a duplicate envelope?",
+  "options": {
+   "A": "envelopeId",
+   "B": "recipientId",
+   "C": "transactionId",
+   "D": "retryId"
+  },
+  "answer": "C",
+  "explanation": "Why each option — and what it does: A envelopeId is assigned by Docusign only AFTER successful creation — you don't have it to prevent the duplicate on retry. B recipientId identifies a recipient within an envelope; it has nothing to do with idempotent retries. C Correct. Supplying the same transactionId makes the create request idempotent, so a retry won't create a second envelope. D There is no 'retryId' parameter in the eSignature API — it's a fabricated distractor."
+ },
+ {
+  "n": 41,
+  "part": "3",
+  "stem": "Where do you specify allowed origins for an eSignature integration that implements CORS?",
+  "options": {
+   "A": "In the Apps and Keys section of Docusign eSignature Admin.",
+   "B": "In the CORS section of Docusign eSignature Admin.",
+   "C": "In the list of scopes provided when obtaining an access token.",
+   "D": "In the request headers for each API request."
+  },
+  "answer": "A",
+  "explanation": "Why each option — and what it does: A Correct. Allowed CORS origins are configured per integration key in the Apps and Keys section of eSignature Admin. B There is no separate standalone 'CORS section' in eSignature Admin; CORS origins live under the integration key in Apps and Keys. C Scopes govern permissions/access, not allowed browser origins. D You don't declare allowed origins in your own request headers — the server (Docusign) enforces them based on the configured allowlist."
+ },
+ {
+  "n": 42,
+  "part": "3",
+  "stem": "A company's internal dashboard shows whether each individual recipient has signed an envelope. What is the most efficient way to obtain this status?",
+  "options": {
+   "A": "Connect subscription to the recipient-completed event.",
+   "B": "Polling request to the Envelopes: listStatus endpoint.",
+   "C": "Polling request to the EnvelopeRecipients: list endpoint.",
+   "D": "Connect subscription to the envelope-completed event."
+  },
+  "answer": "A",
+  "explanation": "Why each option — and what it does: Docusign Developer — Combined Q&A with Explanations Page 22 A Correct. A Connect (webhook) subscription to recipient-completed pushes per-recipient status in real time — far more efficient than polling. B Polling Envelopes:listStatus repeatedly is inefficient (wastes calls, adds latency) and gives envelope-level, not per-recipient, granularity. C Polling EnvelopeRecipients:list also wastes calls and isn't event-driven; webhooks are the efficient pattern. D envelope-completed fires only when the WHOLE envelope is done — it can't tell you each individual recipient's progress. n Close-call: A (recipient-completed) vs D (envelope-completed). The requirement is per-INDIVIDUAL-recipient status fi recipient-completed. envelope-completed is too coarse."
+ },
+ {
+  "n": 43,
+  "part": "3",
+  "stem": "An HR department implements embedded signing with its HR system. Users report a timeout expiration error when trying to sign. Which practice could cause this error?",
+  "options": {
+   "A": "Creating the envelope before the user indicates they are ready to sign.",
+   "B": "Creating the envelope for remote signing instead of embedded signing.",
+   "C": "Creating the envelope in draft status.",
+   "D": "Creating the envelope using a composite template."
+  },
+  "answer": "A",
+  "explanation": "Why each option — and what it does: A Correct. Embedded signing URLs are short-lived. If you create the envelope and generate the signing URL too early (before the user is ready), the token can expire before they click, causing the timeout. B Choosing remote vs embedded changes the delivery method, but it isn't what produces the signing-URL timeout error. C A draft (created) envelope simply isn't sent yet; that doesn't cause a signing-session timeout. D Composite templates are a construction method; they don't cause embedded URL expiration."
+ },
+ {
+  "n": 44,
+  "part": "3",
+  "stem": "An organization has 4,000 agents using a client-server portal to send Docusign quotes, and agents must track their own envelopes. What is the recommended OAuth model?",
+  "options": {
+   "A": "Implicit Grant",
+   "B": "JSON Web Token (JWT) Grant",
+   "C": "Public Authorization Code Grant",
+   "D": "Confidential Authorization Code Grant"
+  },
+  "answer": "D",
+  "explanation": "Why each option — and what it does: A Implicit Grant is deprecated and for browser clients that can't store secrets — not a secure client-server portal. B JWT Grant uses one service account with no individual user context, so agents couldn't track THEIR OWN envelopes as distinct users. Docusign Developer — Combined Q&A with Explanations Page 23 C Public Auth Code Grant is for clients that can't store a secret; a client-server portal can store one, so the Confidential variant is preferred. D Correct. Each agent logs in individually and the server can store secrets fi Confidential Authorization Code Grant, which preserves per-agent identity for tracking. n Close-call: B (JWT) vs D (Confidential). JWT tempts because of scale (4,000 agents), but the requirement that each agent track their OWN envelopes demands individual user identity fi Confidential Auth Code. JWT would collapse everyone into one service account."
+ },
+ {
+  "n": 45,
+  "part": "3",
+  "stem": "A financial institution needs real-time validation of a customer's bank account information while the customer is signing the loan agreement. Which Docusign extension type and extension point should be implemented?",
+  "options": {
+   "A": "Data verification, triggered by workflows.",
+   "B": "Data IO, triggered at the eSignature Add Fields view.",
+   "C": "Data verification, triggered at the eSignature Signing.",
+   "D": "File archive, triggered by eSignature Signing."
+  },
+  "answer": "C",
+  "explanation": "Why each option — and what it does: A Data Verification is the right type, but 'triggered by workflows' is the wrong extension point — the requirement is real-time DURING signing, not in a workflow step. B Data IO at the Add Fields view reads/writes data during preparation, not real-time validation during the live signing ceremony. C Correct. Data Verification triggered at the eSignature Signing point validates the bank account info in real time as the customer signs. D File archive moves documents and has nothing to do with validating bank data. n Close-call: A vs C — both are Data Verification; the discriminator is the extension POINT. 'While the customer is signing' = eSignature Signing (C), not workflows (A)."
+ },
+ {
+  "n": 46,
+  "part": "3",
+  "stem": "A bank wants customers to initiate account opening from their secure online banking portal: collect info via a Docusign Web Form, pre-fill some fields with existing customer data, give a seamless integrated experience, and end in signing. Which combination of workflow settings and practices should the developer use?",
+  "options": {
+   "A": "Set the workflow start method to 'From a Link', pass data through the trigger URL to populate starting variables, and embed the workflow instance URL in an iframe within the portal.",
+   "B": "Use 'From an API call' start method, utilize publicly accessible Web Form URLs, and pre-fill by constructing a URL with query parameters via the Web Forms builder.",
+   "C": "Configure 'Manually by someone in your organization' start method and use step variables to pre-fill form data.",
+   "D": "Use the Workflow Builder API to trigger the workflow, set the signing step to remote signing, and rely on Docusign Connect for pre-filling data."
+  },
+  "answer": "A",
+  "explanation": "Docusign Developer — Combined Q&A with Explanations Page 24 Why each option — and what it does: A Correct. 'From a Link' lets the portal launch the workflow via a trigger URL whose parameters populate starting variables (the pre-fill), and embedding that instance URL in an iframe delivers the seamless in-portal experience. B 'From an API call' plus PUBLIC web form URLs breaks the seamless/secure embedded experience, and pre-filling via the Web Forms builder URL isn't the workflow-level mechanism described. C 'Manually by someone in your organization' contradicts the requirement that the CUSTOMER initiates it from the portal. D Connect is an outbound event webhook — it does not PRE-FILL data into a form. Remote signing also undercuts the seamless embedded experience. n Close-call: A (From a Link) vs B (From an API call). Both can be portal-driven. The deciding factors: pre-fill via TRIGGER URL variables + embed via IFRAME = the 'From a Link' pattern (A). Compare to Part 1 Q15, where a backend button programmatically firing a workflow was 'From an API call' — the embedding/iframe + URL-variable pre-fill detail is what makes this one a Link."
+ },
+ {
+  "n": 47,
+  "part": "3",
+  "stem": "After a successful POST to Envelopes:create for an embedded recipient, what is the next API step required to initiate the signing session?",
+  "options": {
+   "A": "Redirect the user's browser to docusign.net/embedded.",
+   "B": "Display the sending interface to the user to enter tab information.",
+   "C": "Send an email notification to the recipient with the signing link.",
+   "D": "Make an API call to request the signing URL."
+  },
+  "answer": "D",
+  "explanation": "Why each option — and what it does: A There's no generic docusign.net/embedded URL to redirect to; you must first request a per-recipient signing URL via the API. B Entering tab info is preparation/sending, not the step that starts the embedded signing session. C Embedded (captive) signing intentionally does not email a link — the host app drives the redirect; emailing is the remote pattern. D Correct. Call the recipient view endpoint (EnvelopeViews:createRecipient) to obtain the short-lived signing URL, then redirect the embedded user to it. n This is a duplicate of Part 1 Q20 (kept per your request to retain repeats). Same answer, same reasoning. Docusign Developer — Combined Q&A with Explanations Page 25"
+ }
+]

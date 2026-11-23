@@ -265,6 +265,19 @@ select {
   font-weight: 750;
 }
 
+.multi-note {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  margin: -8px 0 18px;
+  padding: 0 11px;
+  border-radius: 8px;
+  background: #eaf2ff;
+  color: #155eef;
+  font-size: 13px;
+  font-weight: 800;
+}
+
 .options {
   display: grid;
   gap: 12px;
@@ -524,3 +537,169 @@ select {
     grid-template-columns: 1fr;
   }
 }
+
+/* ---------- Mock exam ---------- */
+.side-action.mock-entry { background: #0b2545; color: #ffffff; border-color: #0b2545; }
+.side-action.mock-entry:hover { background: #13386b; }
+.mock-shell { min-height: 100vh; padding: 24px 16px; display: flex; justify-content: center; }
+.mock-card { width: 100%; max-width: 900px; background: #ffffff; border: 1px solid #dce4ef; border-radius: 8px; box-shadow: 0 18px 40px rgba(20, 37, 63, 0.07); padding: 24px; }
+.mock-head { display: flex; gap: 14px; align-items: center; color: #0b2545; }
+.mock-head h1 { margin: 0; font-size: 26px; }
+.mock-head p { margin: 2px 0 0; color: #667085; }
+.mock-rules { margin: 18px 0; padding-left: 20px; line-height: 1.7; }
+.mock-table { width: 100%; border-collapse: collapse; margin: 8px 0 16px; font-size: 14px; }
+.mock-table th, .mock-table td { text-align: left; padding: 7px 10px; border-bottom: 1px solid #eaecf0; }
+.mock-table th { background: #f5f7fb; color: #344054; font-weight: 600; }
+.mock-actions { display: flex; justify-content: space-between; gap: 12px; margin-top: 18px; flex-wrap: wrap; }
+.mock-actions .submit-button { display: inline-flex; align-items: center; gap: 8px; }
+.mock-subtitle { margin: 22px 0 6px; color: #0b2545; }
+.mock-pass { color: #039855; font-weight: 700; }
+.mock-fail { color: #d92d20; font-weight: 700; }
+.mock-score { display: flex; gap: 18px; align-items: center; padding: 18px; border-radius: 8px; }
+.mock-score.pass { background: #ecfdf3; color: #05603a; }
+.mock-score.fail { background: #fef3f2; color: #912018; }
+.mock-score-num { font-size: 44px; font-weight: 800; }
+.mock-score strong { display: block; font-size: 20px; }
+.mock-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(38px, 1fr)); gap: 6px; margin: 12px 0; }
+.mock-cell { height: 34px; border: 1px solid #d0d5dd; background: #ffffff; border-radius: 6px; cursor: pointer; font-weight: 600; color: #344054; }
+.mock-cell.done { background: #e0eaff; border-color: #84adff; }
+.mock-cell.flag { box-shadow: inset 0 -4px 0 #f79009; }
+.mock-cell.ok { background: #d1fadf; border-color: #32d583; }
+.mock-cell.bad { background: #fee4e2; border-color: #f97066; }
+.mock-cell.current { outline: 2px solid #0b2545; outline-offset: 1px; }
+.mock-timer { display: flex; align-items: center; gap: 8px; font-size: 26px; font-weight: 800; color: #0b2545; margin-bottom: 10px; }
+.mock-timer.low { color: #d92d20; }
+.mock-submit { width: 100%; margin: 8px 0; }
+.mock-flagged { background: #fffaeb; border-color: #f79009; color: #b54708; }
+.mock-review { margin-top: 10px; padding: 14px; border: 1px solid #eaecf0; border-radius: 8px; display: grid; gap: 8px; }
+.mock-review .option { cursor: default; }
+.mock-you { color: #0b2545; font-weight: 600; }
+.mock-why { display: block; margin-top: 4px; color: #475467; font-size: 13px; }
+.mock-expl { margin: 6px 0 0; line-height: 1.5; }
+@media (max-width: 1100px) {
+  .app-shell.mock-running { grid-template-columns: 1fr; }
+  .app-shell.mock-running .analysis-panel { display: none; }
+}
+
+/* ---------- Study plan ---------- */
+.side-action.plan-entry { background: #ecfdf3; border-color: #6ce9a6; color: #05603a; }
+.plan-days { display: grid; gap: 8px; margin: 14px 0; }
+.plan-day { text-align: left; display: grid; gap: 3px; padding: 10px 12px; border: 1px solid #dce4ef; border-left: 5px solid #98a2b3; border-radius: 8px; background: #ffffff; cursor: pointer; color: #102033; }
+.plan-day:hover { background: #f5f8ff; }
+.plan-day.active { outline: 2px solid #0b2545; background: #f5f8ff; }
+.plan-day.past { opacity: 0.7; }
+.plan-day.phase-quick { border-left-color: #12b76a; }
+.plan-day.phase-risk { border-left-color: #f04438; }
+.plan-day.phase-broad { border-left-color: #f79009; }
+.plan-day.phase-sim { border-left-color: #2e90fa; }
+.plan-day.phase-exam { border-left-color: #6941c6; background: #f9f5ff; }
+.plan-day-label { display: flex; align-items: center; gap: 6px; font-weight: 700; font-size: 14px; }
+.plan-day-label em { margin-left: auto; font-style: normal; font-size: 11px; font-weight: 700; color: #ffffff; background: #d92d20; padding: 1px 7px; border-radius: 10px; }
+.plan-day-title { font-size: 12.5px; color: #475467; line-height: 1.35; }
+.plan-day-progress { font-size: 11.5px; color: #667085; font-weight: 600; }
+.plan-h3 { margin: 4px 0 10px; color: #0b2545; font-size: 17px; }
+.plan-tasks { display: grid; gap: 8px; margin-bottom: 18px; }
+.plan-task { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: center; padding: 10px 12px; border: 1px solid #dce4ef; border-radius: 8px; background: #ffffff; }
+.plan-task.done { background: #f6fef9; border-color: #a6f4c5; }
+.plan-task.done .plan-task-text { color: #667085; text-decoration: line-through; }
+.plan-check { border: 0; background: transparent; cursor: pointer; color: #039855; padding: 0; display: flex; }
+.plan-task:not(.done) .plan-check { color: #98a2b3; }
+.plan-task-text { line-height: 1.45; }
+.plan-go { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; border: 1px solid #b2ccff; background: #eff4ff; color: #1849a9; border-radius: 6px; padding: 7px 11px; font-weight: 600; cursor: pointer; }
+.plan-go:hover { background: #d1e0ff; }
+.plan-memo { margin: 0; padding: 12px 12px 12px 30px; background: #fef3f2; border-left: 4px solid #d92d20; border-radius: 6px; line-height: 1.6; }
+.plan-stats td:first-child { font-size: 13px; }
+.plan-focus { background: #fffaeb; font-weight: 600; }
+.plan-mid { color: #b54708; font-weight: 700; }
+.plan-note { color: #667085; font-size: 13px; margin: 6px 2px; }
+@media (max-width: 1100px) {
+  .app-shell.plan-shell { grid-template-columns: 1fr; }
+  .plan-task { grid-template-columns: auto 1fr; }
+  .plan-go { grid-column: 2; justify-self: start; }
+}
+
+/* ---------- Importance tags, trap badge, why-not block ---------- */
+.topic-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.topic-row .topic { margin: 0; }
+.imp-tag { display: inline-block; font-size: 11px; font-weight: 800; letter-spacing: 0.04em; color: #ffffff; padding: 3px 8px; border-radius: 4px; vertical-align: middle; }
+.imp-high { background: #d92d20; }
+.imp-medium { background: #f79009; }
+.imp-low { background: #84adff; }
+.trap-badge { margin-left: 8px; font-style: normal; font-size: 10.5px; font-weight: 800; color: #b54708; background: #fffaeb; border: 1px solid #fec84b; padding: 1px 6px; border-radius: 4px; }
+.why-not { background: #fffaeb; border-left: 4px solid #f79009; padding-left: 12px; border-radius: 6px; }
+.mock-expl.why-not { padding: 8px 12px; }
+.mock-paper-note { color: var(--muted, #667085); font-size: 0.9rem; margin: 0 0 8px; }
+
+/* Study-plan sidebar: scroll inside the panel instead of overflowing it; never squash the buttons */
+.plan-shell .sidebar { overflow-y: auto; }
+.plan-shell .sidebar > * { flex-shrink: 0; }
+.plan-shell .side-action { white-space: nowrap; }
+.concept-link { display: inline-flex; align-items: center; text-decoration: none; }
+
+/* ---------- one-week plan settings, decode drill, paper list ---------- */
+.plan-date { display: grid; gap: 4px; font-size: 13px; font-weight: 600; color: #475467; }
+.plan-date input, .plan-date select { font: inherit; font-weight: 500; padding: 7px 9px; border: 1px solid #d0d5dd; border-radius: 6px; background: #fff; color: #102033; }
+.plan-score { width: 58px; font: inherit; padding: 3px 5px; border: 1px solid #d0d5dd; border-radius: 4px; }
+.plan-weight { color: #98a2b3; }
+.paper-list { display: grid; gap: 8px; margin-bottom: 8px; }
+.paper-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.paper-row .submit-button { min-width: 150px; }
+.paper-row .mock-paper-note { margin: 0; }
+.drill-prompt { font-weight: 700; color: #155eef; margin: 14px 0 8px; }
+.drill-box { margin-top: 12px; padding: 12px 14px; border-radius: 8px; }
+.drill-box h3 { margin: 0 0 6px; font-size: 15px; }
+.drill-box p { margin: 4px 0; }
+.drill-box ul { margin: 6px 0 0; padding-left: 20px; }
+.drill-checklist { padding-left: 20px; line-height: 1.55; font-size: 14px; }
+.drill-checklist li { margin-bottom: 8px; }
+.decode-box { background: #eff4ff; border-left: 4px solid #2e90fa; }
+
+/* ---------- 45-day plan ---------- */
+.plan-dates { display: grid; grid-template-columns: 1fr; gap: 6px; }
+.plan-dates .plan-date { grid-template-columns: 80px 1fr; align-items: center; }
+.plan-dates input { min-width: 0; }
+.plan-days.compact { gap: 4px; margin: 6px 0; }
+.plan-week { display: grid; gap: 4px; margin-bottom: 8px; }
+.plan-week-title { font-size: 11.5px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; color: #667085; margin: 6px 2px 2px; }
+.plan-days.compact .plan-day { padding: 6px 9px; gap: 1px; border-left-width: 4px; }
+.plan-days.compact .plan-day-label { font-size: 12.5px; }
+.plan-days.compact .plan-day-title { font-size: 11.5px; }
+.plan-day-count { margin-left: auto; font-size: 11px; color: #667085; font-weight: 600; }
+.plan-day-label em + .plan-day-count { margin-left: 6px; }
+.plan-budget { font-weight: 600; font-size: 12.5px; color: #667085; margin-left: 8px; }
+.plan-min { color: #667085; font-weight: 600; }
+.status-badge { display: inline-block; font-size: 11px; font-weight: 800; padding: 2px 7px; border-radius: 10px; color: #fff; }
+.status-weak { background: #d92d20; }
+.status-strong { background: #039855; }
+.status-mastered { background: #6941c6; }
+.plan-rules { font-size: 12.5px; color: #475467; padding-left: 18px; line-height: 1.5; }
+.topic-setup { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 16px 0 6px; }
+
+/* ---------- topic-test results: every question explained on one page ---------- */
+.topic-review-bar { position: sticky; top: 0; z-index: 2; background: #fff; padding: 10px 0; border-bottom: 1px solid #eaecf0; display: grid; gap: 8px; }
+.topic-review-bar .mock-cell { text-decoration: none; display: inline-flex; align-items: center; justify-content: center; }
+.topic-filter { font-size: 14px; color: #344054; display: flex; gap: 8px; align-items: center; }
+.topic-item { margin-top: 18px; scroll-margin-top: 120px; border-left: 4px solid #d0d5dd; padding-left: 14px; }
+.topic-item.is-ok { border-left-color: #12b76a; }
+.topic-item.is-bad { border-left-color: #f04438; }
+.topic-verdict { display: inline-block; font-size: 11px; font-weight: 800; color: #fff; padding: 2px 8px; border-radius: 10px; margin-right: 6px; }
+.topic-verdict.ok { background: #039855; }
+.topic-verdict.bad { background: #d92d20; }
+.topic-right { color: #039855; font-weight: 700; font-style: normal; }
+.history-row { cursor: pointer; }
+.history-row:hover td { background: #f5f8ff; }
+.history-actions { text-align: right; width: 40px; }
+.icon-button { border: 1px solid #fecdca; background: #fff; color: #b42318; border-radius: 6px; padding: 4px 6px; cursor: pointer; display: inline-flex; }
+.icon-button:hover { background: #fef3f2; }
+.mistake-note { color: #b42318; }
+.mistakes-summary { align-self: end; margin: 0 0 8px; }
+
+/* ---------- embedding lab ---------- */
+.embed-buttons { display: grid; gap: 8px; }
+.plan-date textarea { font: inherit; font-size: 12px; padding: 7px 9px; border: 1px solid #d0d5dd; border-radius: 6px; resize: vertical; }
+.embed-stage { min-height: 640px; }
+.embed-frame { width: 100%; height: 620px; border: 1px solid #d0d5dd; border-radius: 8px; background: #fff; }
+.embed-frame.hidden { display: none; }
+.embed-code { background: #f2f4f7; border-radius: 6px; padding: 10px; font-size: 12px; white-space: pre-wrap; word-break: break-all; }
+.embed-log { font-family: Consolas, monospace; font-size: 11.5px; max-height: 220px; overflow-y: auto; background: #101828; color: #d0d5dd; padding: 8px; border-radius: 6px; display: grid; gap: 3px; }
+.embed-warn { background: #fffaeb; border-left: 4px solid #f79009; padding: 8px 10px; border-radius: 6px; font-size: 13px; }

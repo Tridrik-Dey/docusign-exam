@@ -2,6 +2,25 @@
 
 Cleaned study material from the self-paced courses in the certification learning paths.
 
+## Official Exam Overview (Prep Guide v. 2026)
+
+- 60 multiple-choice items. **Some questions have more than one correct answer.** Answer every question; there is no penalty for guessing.
+- 150 minutes, proctored online via Certiverse (Safe Exam Browser, webcam, government photo ID).
+- Passing score: 70%. Retake waiting period: 45 days.
+
+| Section | Weight |
+|---|---|
+| 1. API Authentication | 13% |
+| 2. Go Live Process | 11% |
+| 3. Docusign Connect | 12% |
+| 4. eSignature API | 16% |
+| 5. eSignature Features & Web Forms | 11% |
+| 6. Agreement Manager API | 6% |
+| 7. Workflow Builder & Workflow API | 15% |
+| 8. App Center & Extension Apps | 16% |
+
+Out of scope (removed from these notes): Responsive Signing, PowerForms, Workspaces API, and the Agreement Manager UI-only topics (sharing permissions, dashboards/reports/renewals). No official exam objective covers them.
+
 ## Get Started with Docusign for Developers
 
 ### Docusign for Developers Overview 30 min
@@ -28,7 +47,6 @@ eSignature API
 Agreement Manager API
 Workflow Builder API
 Web Forms API
-Workspaces API (beta)
 Connected Fields API
 ID Evidence API
 Workflow Builder
@@ -126,7 +144,6 @@ Integrate More Features with Additional Agreement APIs
 Objective: After reviewing this topic, you will be able to identify additional Docusign agreement APIs and describe use cases each one supports for custom integrations.
 In addition to the eSignature API, Agreement Manager API, and Workflow Builder API, Docusign offers agreement APIs for a number of other features, including the following:
 Web Forms API: Create, manage, and embed Docusign Web Forms.
-Workspaces API: Create and manage Docusign Workspaces.
 Connected Fields API: Integrate data verification into Docusign agreements or workflows.
 ID Evidence API: Retrieve evidence from a Docusign ID Verification event.
 Note: The agreement APIs listed are available in all developer accounts, but only in certain production account plans. Contact Docusign Support
@@ -139,16 +156,6 @@ In addition to the Web Forms API, Docusign provides a JavaScript client SDK, Doc
 Business Use Cases
 Financial Aid Application
 Insurance Claims
-Workspaces API
-Docusign Workspaces offers improved efficiency, real-time collaboration, and streamlined document and task tracking through personalized digital spaces that give a shared view into each transaction. Participants can easily upload and sign documents, and find all necessary information in one place, making navigating multi-step agreement processes efficient and hassle-free.
-Workspaces API
-You can use the Workspaces API to create and update workspaces from within your custom integrations.
-Workspaces API requests enable you to:
-Create a workspace.
-Create envelopes within a workspace.
-Add documents to your envelopes.
-Manage workspace users.
-Note: The Workspaces API is currently in open beta.
 Connected Fields API
 Docusign data verification enables you to verify signer-provided information in real time with trusted databases. Implementing data verification avoids the need to correct data later, reducing costs and accelerating your agreement processes.
 You can use Basic or Premium data verification to verify several common types of data using sources integrated with Docusign. You can also implement Custom data verification to securely verify data against internal systems or other authoritative data sources that you choose.
@@ -192,7 +199,6 @@ Integrate More Features with Additional Agreement APIs
 Objective: After reviewing this topic, you will be able to identify additional Docusign agreement APIs and describe use cases each one supports for custom integrations.
 In addition to the eSignature API, Agreement Manager API, and Workflow Builder API, Docusign offers agreement APIs for a number of other features, including the following:
 Web Forms API: Create, manage, and embed Docusign Web Forms.
-Workspaces API: Create and manage Docusign Workspaces.
 Connected Fields API: Integrate data verification into Docusign agreements or workflows.
 ID Evidence API: Retrieve evidence from a Docusign ID Verification event.
 Note: The agreement APIs listed are available in all developer accounts, but only in certain production account plans. Contact Docusign Support
@@ -206,16 +212,6 @@ Business Use Cases
 Financial Aid Application
 Robin is a developer for a university. An administrator created a form using Docusign Web Forms that students can complete to start the process of applying for financial aid each term. Robin used the Web Forms API to integrate this form into the university's website so students can complete the form and then sign the application while they're using the site.
 Insurance Claims
-Workspaces API
-Docusign Workspaces offers improved efficiency, real-time collaboration, and streamlined document and task tracking through personalized digital spaces that give a shared view into each transaction. Participants can easily upload and sign documents, and find all necessary information in one place, making navigating multi-step agreement processes efficient and hassle-free.
-Workspaces API
-You can use the Workspaces API to create and update workspaces from within your custom integrations.
-Workspaces API requests enable you to:
-Create a workspace.
-Create envelopes within a workspace.
-Add documents to your envelopes.
-Manage workspace users.
-Note: The Workspaces API is currently in open beta.
 Connected Fields API
 Docusign data verification enables you to verify signer-provided information in real time with trusted databases. Implementing data verification avoids the need to correct data later, reducing costs and accelerating your agreement processes.
 You can use Basic or Premium data verification to verify several common types of data using sources integrated with Docusign. You can also implement Custom data verification to securely verify data against internal systems or other authoritative data sources that you choose.
@@ -259,7 +255,6 @@ Integrate More Features with Additional Agreement APIs
 Objective: After reviewing this topic, you will be able to identify additional Docusign agreement APIs and describe use cases each one supports for custom integrations.
 In addition to the eSignature API, Agreement Manager API, and Workflow Builder API, Docusign offers agreement APIs for a number of other features, including the following:
 Web Forms API: Create, manage, and embed Docusign Web Forms.
-Workspaces API: Create and manage Docusign Workspaces.
 Connected Fields API: Integrate data verification into Docusign agreements or workflows.
 ID Evidence API: Retrieve evidence from a Docusign ID Verification event.
 Note: The agreement APIs listed are available in all developer accounts, but only in certain production account plans. Contact Docusign Support
@@ -274,16 +269,6 @@ Financial Aid Application
 Robin is a developer for a university. An administrator created a form using Docusign Web Forms that students can complete to start the process of applying for financial aid each term. Robin used the Web Forms API to integrate this form into the university's website so students can complete the form and then sign the application while they're using the site.
 Insurance Claims
 William is a developer for an insurance company. He built a form using Docusign Web Forms for customers to provide information about new claims. His integration calls the Web Forms API to pre-populate form fields with basic customer information pulled from the company's other systems, so users only have to complete the fields specific to the claim they are filing.
-Workspaces API
-Docusign Workspaces offers improved efficiency, real-time collaboration, and streamlined document and task tracking through personalized digital spaces that give a shared view into each transaction. Participants can easily upload and sign documents, and find all necessary information in one place, making navigating multi-step agreement processes efficient and hassle-free.
-Workspaces API
-You can use the Workspaces API to create and update workspaces from within your custom integrations.
-Workspaces API requests enable you to:
-Create a workspace.
-Create envelopes within a workspace.
-Add documents to your envelopes.
-Manage workspace users.
-Note: The Workspaces API is currently in open beta.
 Connected Fields API
 Docusign data verification enables you to verify signer-provided information in real time with trusted databases. Implementing data verification avoids the need to correct data later, reducing costs and accelerating your agreement processes.
 You can use Basic or Premium data verification to verify several common types of data using sources integrated with Docusign. You can also implement Custom data verification to securely verify data against internal systems or other authoritative data sources that you choose.
@@ -355,7 +340,6 @@ Integrate More Features with Additional Agreement APIs
 Objective: After reviewing this topic, you will be able to identify additional Docusign agreement APIs and describe use cases each one supports for custom integrations.
 In addition to the eSignature API, Agreement Manager API, and Workflow Builder API, Docusign offers agreement APIs for a number of other features, including the following:
 Web Forms API: Create, manage, and embed Docusign Web Forms.
-Workspaces API: Create and manage Docusign Workspaces.
 Connected Fields API: Integrate data verification into Docusign agreements or workflows.
 ID Evidence API: Retrieve evidence from a Docusign ID Verification event.
 Note: The agreement APIs listed are available in all developer accounts, but only in certain production account plans. Contact Docusign Support
@@ -370,16 +354,6 @@ Financial Aid Application
 Robin is a developer for a university. An administrator created a form using Docusign Web Forms that students can complete to start the process of applying for financial aid each term. Robin used the Web Forms API to integrate this form into the university's website so students can complete the form and then sign the application while they're using the site.
 Insurance Claims
 William is a developer for an insurance company. He built a form using Docusign Web Forms for customers to provide information about new claims. His integration calls the Web Forms API to pre-populate form fields with basic customer information pulled from the company's other systems, so users only have to complete the fields specific to the claim they are filing.
-Workspaces API
-Docusign Workspaces offers improved efficiency, real-time collaboration, and streamlined document and task tracking through personalized digital spaces that give a shared view into each transaction. Participants can easily upload and sign documents, and find all necessary information in one place, making navigating multi-step agreement processes efficient and hassle-free.
-Workspaces API
-You can use the Workspaces API to create and update workspaces from within your custom integrations.
-Workspaces API requests enable you to:
-Create a workspace.
-Create envelopes within a workspace.
-Add documents to your envelopes.
-Manage workspace users.
-Note: The Workspaces API is currently in open beta.
 Connected Fields API
 Docusign data verification enables you to verify signer-provided information in real time with trusted databases. Implementing data verification avoids the need to correct data later, reducing costs and accelerating your agreement processes.
 You can use Basic or Premium data verification to verify several common types of data using sources integrated with Docusign. You can also implement Custom data verification to securely verify data against internal systems or other authoritative data sources that you choose.
@@ -3182,7 +3156,6 @@ Continue learning about the topics covered in this course. Search Docusign Unive
 | Employee
 | Partner
 )
-Send Using PowerForms and Bulk Send
 Trigger Actions with eSignature Data
 Configure Docusign Connect Webhooks with the eSignature API
 Best-practice Guide: Bulk Send Best Practices
@@ -3244,7 +3217,6 @@ Continue learning about the topics covered in this course. Search Docusign Unive
 | Employee
 | Partner
 )
-Send Using PowerForms and Bulk Send
 Trigger Actions with eSignature Data
 Configure Docusign Connect Webhooks with the eSignature API
 Best-practice Guide: Bulk Send Best Practices
@@ -3783,7 +3755,6 @@ Continue learning about the topics covered in this course. Search Docusign Unive
 | Partner
 )
 Build Envelopes and Use Templates with the eSignature API
-Configure Responsive Signing with the eSignature API
 Additional Resources
 Docusign Support
 Docusign Community
@@ -3857,7 +3828,6 @@ Continue learning about the topics covered in this course. Search Docusign Unive
 | Partner
 )
 Build Envelopes and Use Templates with the eSignature API
-Configure Responsive Signing with the eSignature API
 Additional Resources
 Docusign Support
 Docusign Community
@@ -4091,7 +4061,6 @@ Your application should make the API call to fetch the embedded signing URL only
 •
 The envelope ID for a specific customer should be stored in your own system so that it can be used for subsequent API calls. Every createEnvelope call will return an envelope ID.
 •
-Consider enabling the Allow recipients to view mobile-friendly documents with responsive signing option in Signing Settings to improve the experience for mobile users. This setting is disabled by default.
 •
 Test the mobile experience for your integration on slower networks and ensure that your app keeps users engaged between the steps in the embedded signing process. Consider displaying a progress indicator before the document loads, and supplementing this with additional content that holds user interest on slower connections.
 Embed the Recipient Signing URL
@@ -4266,7 +4235,6 @@ Your application should make the API call to fetch the embedded signing URL only
 •
 The envelope ID for a specific customer should be stored in your own system so that it can be used for subsequent API calls. Every createEnvelope call will return an envelope ID.
 •
-Consider enabling the Allow recipients to view mobile-friendly documents with responsive signing option in Signing Settings to improve the experience for mobile users. This setting is disabled by default.
 •
 Test the mobile experience for your integration on slower networks and ensure that your app keeps users engaged between the steps in the embedded signing process. Consider displaying a progress indicator before the document loads, and supplementing this with additional content that holds user interest on slower connections.
 
@@ -4398,7 +4366,6 @@ Your application should make the API call to fetch the embedded signing URL only
 •
 The envelope ID for a specific customer should be stored in your own system so that it can be used for subsequent API calls. Every createEnvelope call will return an envelope ID.
 •
-Consider enabling the Allow recipients to view mobile-friendly documents with responsive signing option in Signing Settings to improve the experience for mobile users. This setting is disabled by default.
 •
 Test the mobile experience for your integration on slower networks and ensure that your app keeps users engaged between the steps in the embedded signing process. Consider displaying a progress indicator before the document loads, and supplementing this with additional content that holds user interest on slower connections.
 Activity: Construct Embedded Signing Requests
@@ -4472,121 +4439,6 @@ Sign and complete the agreement. Your browser is automatically redirects to http
 or whichever redirect URL you specified when you created the embedded signing link. Note key-value pair event=signing_complete at the end of the URL.
 Note: If your local system does not have a server running at http://127.0.0.1, the browser may display an error, which you can ignore. In a custom integration, the redirect URL value is generally either the page from which the embedded signing session was launched or a custom confirmation page.
 Lesson 6 - Activity: Construct Embedded Signing Requests
-
-### Configure Responsive Signing with the eSignature API 30 min
-
-Configure Responsive Signing with the eSignature API
-What is Responsive Signing?
-Responsive Signing with the API
-CREATING RESPONSIVE SIGNING CONTENT
-Using PDF to HTML Conversion
-​Coding JSON Markers
-Using Docusign HTML Elements and Attributes
-Using Smart Sections
-Activity: Create Responsive Envelopes with the API
-What is Responsive Signing?
-Provide your recipients with documents that are easy to read and navigate, no matter what device they use to view them.
-During the sign phase of the system of agreement, recipients can view documents in many different formats. Most documents uploaded into a Docusign envelope were meant to be printed. These documents contain content that is not responsive, which is great for a larger displays but not for mobile devices. On a smaller screen, such as on a tablet, mobile phone, or other mobile device, recipients often need to pinch to zoom, scroll, drag, or rotate the device to view and complete signing.
-Docusign has created responsive signing because recipients increasingly interact with Docusign envelopes using mobile devices. Responsive signing is a truly mobile-first signing experience that allows recipients to read and interact with agreements naturally on any device.
-Responsive Signing can be enabled for all Docusign plans.
-How Responsive Signing Works
-When enabled by an eSignature administrator, responsive signing automatically presents any agreement as a responsive HTML document, without requiring any additional customization or steps during the sending process. You can preview responsive signing while adding fields to the document during the sending process.
-Docusign Iris, the AI engine for features across the agreement lifecycle, powers the AI-assisted responsive signing experience in eSignature.
-When an administrator enables Enable responsive signing and sets the default view to Optimize View for User’s Device, Docusign first determines whether to show a mobile-friendly HTML (responsive) view or the traditional PDF (desktop) view for each document a recipient opens on a mobile device.
-In AI-assisted mode (the default where AI tools are enabled), Docusign Iris evaluates the actual mobile HTML rendering of the document and chooses the mobile-friendly HTML view when readability and formatting quality are good; otherwise, it opens in the PDF view to better preserve layout.
-In Basic (non-AI) mode, Docusign instead analyzes only the original document’s structure and complexity—such as layout, tables, and formatting—to predict whether it is likely to render well in mobile-friendly HTML, and then selects HTML or PDF accordingly, without evaluating the generated HTML output itself.
-In both cases, when responsive signing is used, Docusign provides a smoother, more readable experience on phones and tablets than viewing the original PDF.
-For more information of how responsive signing works and situations where it can be useful, check the links below:
-Introduction to Responsive Signing﻿
-Optimize document display for signers.
-SUPPORT CENTER
-Responsive Signing with the API
-Implement responsive signing using the eSignature API.
-DEVELOPER CENTER
-To ensure that responsive signing is enabled on your Docusign account, reach out to your Docusign contact.
-Lesson 2 - Responsive Signing with the API
-
-Configure Responsive Signing with the eSignature API
-Welcome to the Configure Responsive Signing with the eSignature API course. After reviewing this course, you will be able to describe how to create and manage a signing experience with responsive elements using the Docusign eSignature REST API.
-What is Responsive Signing?
-Responsive Signing with the API
-CREATING RESPONSIVE SIGNING CONTENT
-Using PDF to HTML Conversion
-​Coding JSON Markers
-Using Docusign HTML Elements and Attributes
-Using Smart Sections
-Activity: Create Responsive Envelopes with the API
-
-Configure Responsive Signing with the eSignature API
-What is Responsive Signing?
-Responsive Signing with the API
-CREATING RESPONSIVE SIGNING CONTENT
-Using PDF to HTML Conversion
-​Coding JSON Markers
-Using Docusign HTML Elements and Attributes
-Using Smart Sections
-Activity: Create Responsive Envelopes with the API
-Lesson 5 - Using Docusign HTML Elements and Attributes
-Using Smart Sections
-Objective: By the end of this topic, you will be able to describe how to implement responsive signing using freeform HTML and section anchors to generate smart sections.
-During some signing experiences it might be necessary to visually reduce what portions of a document are displayed by default. Smart Sections allow you to create responsive and collapsible section markers within your document that enable an accordion behavior for users. To create Smart Sections you must apply start and end anchors to each portion of the HTML you'd like to become a smart section, and any child elements within those anchors will become part of the collapsible structure. If you do not include both anchors the section is ignored and not processed.
-Anchors
-Anchors that define your smart section should be unique strings of text within the HTML document, and it is recommended you give them a prefix of at least 4 characters. This prefix speeds up the parsing of the document, as it improves anchor processing performance.
-/myPrefix-myStartAnchorName/
-<div>This is my Smart Section</div>
-/myPrefix-myEndAnchorName/
-Smart Sections API Example
-The following JSON code shows a displayAnchors object, which is specified as part of the htmlDefinition object in the document definition. The values of the startAnchor and endAnchor values correspond to strings used in the HTML document to indicate where a Smart Section begins and ends.
-The following HTML code shows HTML content that references start and end anchors for a Smart Section. The display settings and other settings specified in the previous displayAnchors object will be applied to this section when the HTML is rendered.
-The following JSON code is an envelope request body that includes a stringified version of the previous HTML code as the htmlDefinition.source value, along with the displayAnchors object. The htmlDefinition object includes a displayAnchorPrefix value of /anch-. Declaring this prefix and using it in all anchors speeds up the matching process.
-Lesson 7 - Activity: Create Responsive Envelopes with the API
-
-Configure Responsive Signing with the eSignature API
-What is Responsive Signing?
-Responsive Signing with the API
-CREATING RESPONSIVE SIGNING CONTENT
-Using PDF to HTML Conversion
-​Coding JSON Markers
-Using Docusign HTML Elements and Attributes
-Using Smart Sections
-Activity: Create Responsive Envelopes with the API
-Using Docusign HTML Elements and Attributes
-Objective: By the end of this topic, you will be able to describe the methodology for implementing responsive signing using freeform HTML with Docusign elements and data attributes.
-When creating your own custom HTML to be used as a responsive document, you have two options for creating responsive HTML tags within your document that are not JSON markers:
-1
-Insert Docusign tabs using Docusign-specified HTML tags
-2
-Insert Docusign tabs using Docusign-specified data attributes
-How to Use Custom HTML Tags and Data Attributes
-Custom HTML Tags
-You can specify Docusign tabs by using some special HTML tags created by Docusign. You would do this when not using standard input tags in your HTML. You can insert custom HTML tags (with XML-like naming conventions) that Docusign has created into your HTML structure. The responsive engine intelligently converts those HTML tags to responsive Docusign tabs within the generated responsive HTML document. An example of this might be where you’d like to insert a signature field in a document. You can do so via the <ds-signature /> HTML tag. When using inputs, keep in mind that you do not need a custom HTML tag.
-HTML Data Attributes
-Docusign has created special attributes you can apply to HTML tags that can empower them with special behavior. This allows you to target HTML tags that will be expressed as Docusign tabs and define their behavior with pinpoint accuracy. This can be used on many standard HTML tags, as well as in conjunction with the custom Docusign provided HTML tags. For example, you can create a button:
-<button data-ds-type="approve" name="Approve" title="I agree">I Agree</button>
-This adds a special button to the signing experience where the user has to agree to the information in a particular section. You could also do the following using a custom Docusign tab in conjunction with a data attribute.
-<ds-signature data-ds-recipient-id="1" name="signature" />
-This creates a Docusign tab of the signature type and binds it to the recipient with an ID value of 1.
-Using these new HTML features can allow you to bypass the need to insert all of your Docusign tabs inside your API call, allowing you instead to inline them in your HTML document. This lets you more easily target and locate particular Docusign tabs, and embeds the tabs in a completely responsive experience, with you in control over where each Docusign tab goes.
-HTML Tabs Documentation
-Select the button to review documentation of all available custom HTML attributes in the Docusign Developer Center.
-DOCUMENTATION
-Custom HTML Tags and Data Attributes API Example
-In the following JSON code, the signer object includes a recipientId value. This value can be referenced in the document HTML using a data attribute to assign a tab to the signer.
-In the following HTML code for the document, the button element uses a Docusign data attribute of data-ds-type to add an approve tab. It also uses the ds-signature custom element along with the datad-ds-recipient attribute with a value matching the recipientId value in the previous signer object. This reference assigns the signature tab to the signer specified in the previous recipients object.
-The following JSON code shows an envelope request body that includes the recipients object code and specifies a stringified version of the previous HTML code as the value of the htmlDefinition.source property.
-Using Smart Sections
-Objective: By the end of this topic, you will be able to describe how to implement responsive signing using freeform HTML and section anchors to generate smart sections.
-During some signing experiences it might be necessary to visually reduce what portions of a document are displayed by default. Smart Sections allow you to create responsive and collapsible section markers within your document that enable an accordion behavior for users. To create Smart Sections you must apply start and end anchors to each portion of the HTML you'd like to become a smart section, and any child elements within those anchors will become part of the collapsible structure. If you do not include both anchors the section is ignored and not processed.
-Anchors
-Anchors that define your smart section should be unique strings of text within the HTML document, and it is recommended you give them a prefix of at least 4 characters. This prefix speeds up the parsing of the document, as it improves anchor processing performance.
-/myPrefix-myStartAnchorName/
-<div>This is my Smart Section</div>
-/myPrefix-myEndAnchorName/
-Smart Sections API Example
-The following JSON code shows a displayAnchors object, which is specified as part of the htmlDefinition object in the document definition. The values of the startAnchor and endAnchor values correspond to strings used in the HTML document to indicate where a Smart Section begins and ends.
-The following HTML code shows HTML content that references start and end anchors for a Smart Section. The display settings and other settings specified in the previous displayAnchors object will be applied to this section when the HTML is rendered.
-The following JSON code is an envelope request body that includes a stringified version of the previous HTML code as the htmlDefinition.source value, along with the displayAnchors object. The htmlDefinition object includes a displayAnchorPrefix value of /anch-. Declaring this prefix and using it in all anchors speeds up the matching process.
-Lesson 6 - Using Smart Sections
 
 ## Plan and Manage eSignature API Integrations
 
@@ -6056,23 +5908,12 @@ Lesson 5 - Use and Manage Workflows
 
 Create Forms to Enhance the Signing Experience
 Introduction to Docusign Forms
-CREATE AND MANAGE POWERFORMS
-Create PowerForms
-Manage PowerForms
 CREATE AND MANAGE WEB FORMS
 Create Web Forms
 Manage Web Forms
 Knowledge Check
 Lesson 5 - Manage Web Forms
 Knowledge Check
-What is the first step in creating a PowerForm?
-Define recipient permissions.
-Test the PowerForm functionality.
-Identify an existing template or create a new one.
-SUBMIT
-Incorrect
-The first step is to identify a template or create a new one. Templates are essential for setting up PowerForms.
-TAKE AGAIN
 When is a standalone Web Form typically used?
 When you need to collect data and require a signature.
 When you want to use a Web Form as part of a Workflow.
@@ -6082,15 +5923,6 @@ SUBMIT
 Incorrect
 A standalone Web Form is typically used when you want to use a Web Form as part of a Maestro workflow.
 TAKE AGAIN
-Bella wants to create a PowerForm from an existing template that has a named recipient in the first position. What will happen when she clicks the Create a PowerForm option?
-She will receive an error.
-She will generate a PowerForm link.
-She will be prompted to edit the template.
-She will be prompted to add an additional recipient.
-SUBMIT
-Incorrect
-PowerForms require a placeholder role as the first recipient, so if a named recipient is used in this position, it will trigger an error. This allows the form to remain reusable for different recipients.
-TAKE AGAIN
 What is the purpose of "Descriptive Data Labels" in an envelope template used for a Web Form?
 To control the appearance of the Web Form.
 To ensure clear identification of fields within the Web Form builder.
@@ -6098,15 +5930,6 @@ To automatically populate fields with signer information.
 SUBMIT
 Incorrect
 The purpose of "Descriptive Data Labels" in an envelope template is to ensure clear identification of fields within the Web Form builder.
-TAKE AGAIN
-When a PowerForm is created, by default, who is the sender of the envelopes generated from the form?
-The account administrator.
-The signer in the first position.
-The PowerForm creator.
-The template creator.
-SUBMIT
-Incorrect
-By default, the PowerForm creator is designated as the sender, receiving notifications and managing the envelopes generated from the form.
 TAKE AGAIN
 What happens when you import an envelope template into the Web Forms builder?
 The original eSignature template is modified.
@@ -6116,24 +5939,6 @@ The template is deleted from the system.
 SUBMIT
 Incorrect
 When you import an eSignature template into the Web Form builder a copy of the template, called a Web Form template, is created.
-TAKE AGAIN
-Maria is going on vacation for two weeks and needs Kavita to have access to all of the new PowerForm responses that she manages. What is the easiest way to make this possible?
-Maria should edit the PowerForm and change the Sender to Kavita.
-Maria should deactivate the current PowerForm where she is the sender, and create a new PowerForm with Kavita as the sender.
-Maria should give Kavita access to his account.
-Maria should ask their Administrator to transfer ownership of her envelopes to Kavita.
-SUBMIT
-Incorrect
-By changing the sender to Kavita, she will receive access to all new PowerForm responses during Mari'as absence, making this the most efficient and secure solution.
-TAKE AGAIN
-How many templates can be referenced in a single PowerForm?
-Unlimited
-Ten
-Five
-One
-SUBMIT
-Incorrect
-A single PowerForm can only reference one template. This ensures consistency and simplifies the form creation process.
 TAKE AGAIN
 What is the primary function of conditional rules in Docusign Web Forms?
 To validate the data entered by the signer.
@@ -6147,470 +5952,20 @@ TAKE AGAIN
 Create Forms to Enhance the Signing Experience
 RESUME COURSE
 Welcome to the Create Forms to Enhance the Signing Experience course. After reviewing this course, you will be able to:
-Identify when to use a PowerForm vs a Web Form.
-Create and manage Docusign PowerForms.
 Create and manage Docusign Web Forms.
 Recommended Prerequisites:
 Create Docusign Templates to Simplify Sending
 Introduction to Docusign Forms
-CREATE AND MANAGE POWERFORMS
-Create PowerForms
-Manage PowerForms
 CREATE AND MANAGE WEB FORMS
 Create Web Forms
 Manage Web Forms
 Knowledge Check
-
-Create Forms to Enhance the Signing Experience
-Introduction to Docusign Forms
-CREATE AND MANAGE POWERFORMS
-Create PowerForms
-Manage PowerForms
-CREATE AND MANAGE WEB FORMS
-Create Web Forms
-Manage Web Forms
-Knowledge Check
-Create PowerForms
-Objective: After reviewing this topic, you will be able to create and distribute a Docusign PowerForm.
-A Docusign PowerForm is generated from an envelope template and must comply with specific template requirements. You can create a new envelope template or use an existing template as long as those requirements are met.
-Template Requirements for PowerForms
-Visit Docusign Support to learn more about PowerForm template requirements.
-By default, the person who creates a PowerForm becomes the PowerForm sender. The sender:
-Is the owner of the envelopes generated by the form.
-Sees the envelopes generated by the PowerForm in their account as sent items.
-Receives the email notifications when a PowerForm is completed.
-The PowerForm creator can change the sender to any other user on the account who has the necessary permissions.
-Note: Access to PowerForm data is only available to a single PowerForm sender at a time. If you wish to designate another account user to manage the PowerForm's incoming responses, you will need to change the PowerForm sender.
-Change the PowerForm Sender
-Visit Docusign Support to learn more about changing a PowerForm sender.
-How to Create a PowerForm
-To create a PowerForm:
-1
-From the Templates page, locate the template you want to use for the PowerForm.
-2
-From the drop-down menu next to the template, select Create PowerForm.
-3
-Update the information as necessary.
-4
-Click Create to create and activate your PowerForm.
-Best Practice
-Once you create a PowerForm, you should test it before distributing it for signers to access. If you find you need to make changes, you can edit and test again as necessary.
-Distribute a PowerForm
-PowerForms are accessed through unique URLs generated when each form is created. After a PowerForm has been created and is active, you can make it available to signers in one of two ways:
-By distributing the URL directly to recipients by pasting it into an email message.
-By embedding the URL into a web page for recipients to access on demand.
-Note:
-You do not need to be a PowerForm creator/owner/sender to copy and share a PowerForm URL.
-To copy a PowerForm URL for distribution:
-1
-From the Agreements page, click PowerForms in the left panel to display the PowerForms you can access.
-2
-Locate the PowerForm you want to distribute.
-3
-Click the actions drop-down menu and select Copy URL.
-4
-In the PowerForm URL dialog box, select the option that corresponds to the method you will use to distribute the PowerForm. Then click Copy.
-Notes:
-You can use PowerForms with conditional routing to construct business rules that route the form automatically to the appropriate parties. Visit Docusign Support to learn more about conditional routing and PowerForms
-You can simplify the signer's experience by bypassing the initial signer information page and sending them directly to your document to sign. Visit Docusign Support to learn more about bypassing the signer information page.
-Knowledge Check
-What is the first step in creating a PowerForm?
-Define recipient permissions.
-Test the PowerForm functionality.
-Identify an existing template or create a new one.
-SUBMIT
-Incorrect
-The first step is to identify a template or create a new one. Templates are essential for setting up PowerForms.
-TAKE AGAIN
-When is a standalone Web Form typically used?
-When you need to collect data and require a signature.
-When you want to use a Web Form as part of a Workflow.
-Only when you are using the Web Forms API.
-When you have an existing eSignature template.
-SUBMIT
-Incorrect
-A standalone Web Form is typically used when you want to use a Web Form as part of a Maestro workflow.
-TAKE AGAIN
-Bella wants to create a PowerForm from an existing template that has a named recipient in the first position. What will happen when she clicks the Create a PowerForm option?
-She will receive an error.
-She will generate a PowerForm link.
-She will be prompted to edit the template.
-She will be prompted to add an additional recipient.
-SUBMIT
-Incorrect
-PowerForms require a placeholder role as the first recipient, so if a named recipient is used in this position, it will trigger an error. This allows the form to remain reusable for different recipients.
-TAKE AGAIN
-What is the purpose of "Descriptive Data Labels" in an envelope template used for a Web Form?
-To control the appearance of the Web Form.
-To ensure clear identification of fields within the Web Form builder.
-To automatically populate fields with signer information.
-SUBMIT
-Incorrect
-The purpose of "Descriptive Data Labels" in an envelope template is to ensure clear identification of fields within the Web Form builder.
-TAKE AGAIN
-When a PowerForm is created, by default, who is the sender of the envelopes generated from the form?
-The account administrator.
-The signer in the first position.
-The PowerForm creator.
-The template creator.
-SUBMIT
-Incorrect
-By default, the PowerForm creator is designated as the sender, receiving notifications and managing the envelopes generated from the form.
-TAKE AGAIN
-What happens when you import an envelope template into the Web Forms builder?
-The original eSignature template is modified.
-A copy of the template, called a Web Form template, is created.
-The template is directly converted into a PDF.
-The template is deleted from the system.
-SUBMIT
-Incorrect
-When you import an eSignature template into the Web Form builder a copy of the template, called a Web Form template, is created.
-TAKE AGAIN
-Maria is going on vacation for two weeks and needs Kavita to have access to all of the new PowerForm responses that she manages. What is the easiest way to make this possible?
-Maria should edit the PowerForm and change the Sender to Kavita.
-Maria should deactivate the current PowerForm where she is the sender, and create a new PowerForm with Kavita as the sender.
-Maria should give Kavita access to his account.
-Maria should ask their Administrator to transfer ownership of her envelopes to Kavita.
-SUBMIT
-Incorrect
-By changing the sender to Kavita, she will receive access to all new PowerForm responses during Mari'as absence, making this the most efficient and secure solution.
-TAKE AGAIN
-How many templates can be referenced in a single PowerForm?
-Unlimited
-Ten
-Five
-One
-SUBMIT
-Incorrect
-A single PowerForm can only reference one template. This ensures consistency and simplifies the form creation process.
-TAKE AGAIN
-What is the primary function of conditional rules in Docusign Web Forms?
-To validate the data entered by the signer.
-To control the layout of the Web Form.
-To personalize the signing experience based on signer responses.
-SUBMIT
-Incorrect
-The primary function of conditional rules in Docusign Web Forms is to personalize the signing experience based on signer responses.
-TAKE AGAIN
-Lesson 3 - Manage PowerForms
-
-Create Forms to Enhance the Signing Experience
-Introduction to Docusign Forms
-CREATE AND MANAGE POWERFORMS
-Create PowerForms
-Manage PowerForms
-CREATE AND MANAGE WEB FORMS
-Create Web Forms
-Manage Web Forms
-Knowledge Check
-Manage PowerForms
-Objective: After reviewing this topic, you will be able to manage Docusign PowerForms.
-After you create your Docusign PowerForms, you can edit them and view PowerForm responses.
-Edit a PowerForm
-If you have the necessary user permissions, you can edit your PowerForms to make changes to the PowerForm settings, including:
-Changing the name of the PowerForm.
-Changing whether email validation is required.
-Replacing the associated template.
-Changes made will apply to any future use of the PowerForm.
-To edit a PowerForm:
-1
-From the Agreements page, click PowerForms to display all of your PowerForms.
-2
-Locate the PowerForm and click Edit from the actions menu.
-Note: If you need to change any template details, such as the documents, recipients, or fields, you need to edit the associated template. If you edit a template that has been used for a PowerForm, the PowerForm reflects the changes made to the template. If you delete the template, the associated PowerForm is also deleted, while any completed documents from the PowerForm remain in your account.
-View PowerForm Responses
-PowerForm responses will appear on your Agreements page and in a list of responses grouped by individual PowerForm. You can view all completed and in-process responses to a PowerForm for which you were the sender. If you are a PowerForm administrator, you may be able to view all envelopes, depending on your user permissions.
-To view completed and in-process envelopes for a PowerForm :
-1
-From the Agreements page, click PowerForms in the left panel.
-2
-Scan the list or use the filters to locate the PowerForm responses you want to view.
-3
-From the actions menu, click View Envelopes.
-If the PowerForm's email subject includes merge fields, such as the recipient's name, this field data is added to the envelope title, making it easier to identify and locate specific responses.
-4
-Click Download next to an envelope to download individual envelopes or click Export as CSV to download the individual responses as a CSV file.
-Create PowerForms
-Objective: After reviewing this topic, you will be able to create and distribute a Docusign PowerForm.
-A Docusign PowerForm is generated from an envelope template and must comply with specific template requirements. You can create a new envelope template or use an existing template as long as those requirements are met.
-Template Requirements for PowerForms
-Visit Docusign Support to learn more about PowerForm template requirements.
-By default, the person who creates a PowerForm becomes the PowerForm sender. The sender:
-Is the owner of the envelopes generated by the form.
-Sees the envelopes generated by the PowerForm in their account as sent items.
-Receives the email notifications when a PowerForm is completed.
-The PowerForm creator can change the sender to any other user on the account who has the necessary permissions.
-Note: Access to PowerForm data is only available to a single PowerForm sender at a time. If you wish to designate another account user to manage the PowerForm's incoming responses, you will need to change the PowerForm sender.
-Change the PowerForm Sender
-Visit Docusign Support to learn more about changing a PowerForm sender.
-How to Create a PowerForm
-To create a PowerForm:
-1
-From the Templates page, locate the template you want to use for the PowerForm.
-2
-From the drop-down menu next to the template, select Create PowerForm.
-3
-Update the information as necessary.
-4
-Click Create to create and activate your PowerForm.
-Best Practice
-Once you create a PowerForm, you should test it before distributing it for signers to access. If you find you need to make changes, you can edit and test again as necessary.
-Distribute a PowerForm
-PowerForms are accessed through unique URLs generated when each form is created. After a PowerForm has been created and is active, you can make it available to signers in one of two ways:
-By distributing the URL directly to recipients by pasting it into an email message.
-By embedding the URL into a web page for recipients to access on demand.
-Note:
-You do not need to be a PowerForm creator/owner/sender to copy and share a PowerForm URL.
-To copy a PowerForm URL for distribution:
-1
-From the Agreements page, click PowerForms in the left panel to display the PowerForms you can access.
-2
-Locate the PowerForm you want to distribute.
-3
-Click the actions drop-down menu and select Copy URL.
-4
-In the PowerForm URL dialog box, select the option that corresponds to the method you will use to distribute the PowerForm. Then click Copy.
-Notes:
-You can use PowerForms with conditional routing to construct business rules that route the form automatically to the appropriate parties. Visit Docusign Support to learn more about conditional routing and PowerForms
-You can simplify the signer's experience by bypassing the initial signer information page and sending them directly to your document to sign. Visit Docusign Support to learn more about bypassing the signer information page.
-Lesson 4 - Create Web Forms
-
-Create Forms to Enhance the Signing Experience
-Introduction to Docusign Forms
-CREATE AND MANAGE POWERFORMS
-Create PowerForms
-Manage PowerForms
-CREATE AND MANAGE WEB FORMS
-Create Web Forms
-Manage Web Forms
-Knowledge Check
-Lesson 2 - Create PowerForms
-Manage PowerForms
-Objective: After reviewing this topic, you will be able to manage Docusign PowerForms.
-After you create your Docusign PowerForms, you can edit them and view PowerForm responses.
-Edit a PowerForm
-If you have the necessary user permissions, you can edit your PowerForms to make changes to the PowerForm settings, including:
-Changing the name of the PowerForm.
-Changing whether email validation is required.
-Replacing the associated template.
-Changes made will apply to any future use of the PowerForm.
-To edit a PowerForm:
-1
-From the Agreements page, click PowerForms to display all of your PowerForms.
-2
-Locate the PowerForm and click Edit from the actions menu.
-Note: If you need to change any template details, such as the documents, recipients, or fields, you need to edit the associated template. If you edit a template that has been used for a PowerForm, the PowerForm reflects the changes made to the template. If you delete the template, the associated PowerForm is also deleted, while any completed documents from the PowerForm remain in your account.
-View PowerForm Responses
-PowerForm responses will appear on your Agreements page and in a list of responses grouped by individual PowerForm. You can view all completed and in-process responses to a PowerForm for which you were the sender. If you are a PowerForm administrator, you may be able to view all envelopes, depending on your user permissions.
-To view completed and in-process envelopes for a PowerForm :
-1
-From the Agreements page, click PowerForms in the left panel.
-2
-Scan the list or use the filters to locate the PowerForm responses you want to view.
-3
-From the actions menu, click View Envelopes.
-If the PowerForm's email subject includes merge fields, such as the recipient's name, this field data is added to the envelope title, making it easier to identify and locate specific responses.
-4
-Click Download next to an envelope to download individual envelopes or click Export as CSV to download the individual responses as a CSV file.
-Lesson 4 - Create Web Forms
-
-Create Forms to Enhance the Signing Experience
-Introduction to Docusign Forms
-CREATE AND MANAGE POWERFORMS
-Create PowerForms
-Manage PowerForms
-CREATE AND MANAGE WEB FORMS
-Create Web Forms
-Manage Web Forms
-Knowledge Check
-Create PowerForms
-Objective: After reviewing this topic, you will be able to create and distribute a Docusign PowerForm.
-A Docusign PowerForm is generated from an envelope template and must comply with specific template requirements. You can create a new envelope template or use an existing template as long as those requirements are met.
-Template Requirements for PowerForms
-Visit Docusign Support to learn more about PowerForm template requirements.
-By default, the person who creates a PowerForm becomes the PowerForm sender. The sender:
-Is the owner of the envelopes generated by the form.
-Sees the envelopes generated by the PowerForm in their account as sent items.
-Receives the email notifications when a PowerForm is completed.
-The PowerForm creator can change the sender to any other user on the account who has the necessary permissions.
-Note: Access to PowerForm data is only available to a single PowerForm sender at a time. If you wish to designate another account user to manage the PowerForm's incoming responses, you will need to change the PowerForm sender.
-Change the PowerForm Sender
-Visit Docusign Support to learn more about changing a PowerForm sender.
-How to Create a PowerForm
-To create a PowerForm:
-1
-From the Templates page, locate the template you want to use for the PowerForm.
-2
-From the drop-down menu next to the template, select Create PowerForm.
-3
-Update the information as necessary.
-4
-Click Create to create and activate your PowerForm.
-Best Practice
-Once you create a PowerForm, you should test it before distributing it for signers to access. If you find you need to make changes, you can edit and test again as necessary.
-Distribute a PowerForm
-PowerForms are accessed through unique URLs generated when each form is created. After a PowerForm has been created and is active, you can make it available to signers in one of two ways:
-By distributing the URL directly to recipients by pasting it into an email message.
-By embedding the URL into a web page for recipients to access on demand.
-Note:
-You do not need to be a PowerForm creator/owner/sender to copy and share a PowerForm URL.
-To copy a PowerForm URL for distribution:
-1
-From the Agreements page, click PowerForms in the left panel to display the PowerForms you can access.
-2
-Locate the PowerForm you want to distribute.
-3
-Click the actions drop-down menu and select Copy URL.
-4
-In the PowerForm URL dialog box, select the option that corresponds to the method you will use to distribute the PowerForm. Then click Copy.
-Notes:
-You can use PowerForms with conditional routing to construct business rules that route the form automatically to the appropriate parties. Visit Docusign Support to learn more about conditional routing and PowerForms
-You can simplify the signer's experience by bypassing the initial signer information page and sending them directly to your document to sign. Visit Docusign Support to learn more about bypassing the signer information page.
-Manage PowerForms
-Objective: After reviewing this topic, you will be able to manage Docusign PowerForms.
-After you create your Docusign PowerForms, you can edit them and view PowerForm responses.
-Edit a PowerForm
-If you have the necessary user permissions, you can edit your PowerForms to make changes to the PowerForm settings, including:
-Changing the name of the PowerForm.
-Changing whether email validation is required.
-Replacing the associated template.
-Changes made will apply to any future use of the PowerForm.
-To edit a PowerForm:
-1
-From the Agreements page, click PowerForms to display all of your PowerForms.
-2
-Locate the PowerForm and click Edit from the actions menu.
-Note: If you need to change any template details, such as the documents, recipients, or fields, you need to edit the associated template. If you edit a template that has been used for a PowerForm, the PowerForm reflects the changes made to the template. If you delete the template, the associated PowerForm is also deleted, while any completed documents from the PowerForm remain in your account.
-View PowerForm Responses
-PowerForm responses will appear on your Agreements page and in a list of responses grouped by individual PowerForm. You can view all completed and in-process responses to a PowerForm for which you were the sender. If you are a PowerForm administrator, you may be able to view all envelopes, depending on your user permissions.
-To view completed and in-process envelopes for a PowerForm :
-1
-From the Agreements page, click PowerForms in the left panel.
-2
-Scan the list or use the filters to locate the PowerForm responses you want to view.
-3
-From the actions menu, click View Envelopes.
-If the PowerForm's email subject includes merge fields, such as the recipient's name, this field data is added to the envelope title, making it easier to identify and locate specific responses.
-4
-Click Download next to an envelope to download individual envelopes or click Export as CSV to download the individual responses as a CSV file.
-Lesson 3 - Manage PowerForms
-
-Create Forms to Enhance the Signing Experience
-Introduction to Docusign Forms
-CREATE AND MANAGE POWERFORMS
-Create PowerForms
-Manage PowerForms
-CREATE AND MANAGE WEB FORMS
-Create Web Forms
-Manage Web Forms
-Knowledge Check
-Lesson 1 - Introduction to Docusign Forms
-Create PowerForms
-Objective: After reviewing this topic, you will be able to create and distribute a Docusign PowerForm.
-A Docusign PowerForm is generated from an envelope template and must comply with specific template requirements. You can create a new envelope template or use an existing template as long as those requirements are met.
-Template Requirements for PowerForms
-Visit Docusign Support to learn more about PowerForm template requirements.
-By default, the person who creates a PowerForm becomes the PowerForm sender. The sender:
-Is the owner of the envelopes generated by the form.
-Sees the envelopes generated by the PowerForm in their account as sent items.
-Receives the email notifications when a PowerForm is completed.
-The PowerForm creator can change the sender to any other user on the account who has the necessary permissions.
-Note: Access to PowerForm data is only available to a single PowerForm sender at a time. If you wish to designate another account user to manage the PowerForm's incoming responses, you will need to change the PowerForm sender.
-Change the PowerForm Sender
-Visit Docusign Support to learn more about changing a PowerForm sender.
-How to Create a PowerForm
-To create a PowerForm:
-1
-From the Templates page, locate the template you want to use for the PowerForm.
-2
-From the drop-down menu next to the template, select Create PowerForm.
-3
-Update the information as necessary.
-4
-Click Create to create and activate your PowerForm.
-Best Practice
-Once you create a PowerForm, you should test it before distributing it for signers to access. If you find you need to make changes, you can edit and test again as necessary.
-Distribute a PowerForm
-PowerForms are accessed through unique URLs generated when each form is created. After a PowerForm has been created and is active, you can make it available to signers in one of two ways:
-By distributing the URL directly to recipients by pasting it into an email message.
-By embedding the URL into a web page for recipients to access on demand.
-Note:
-You do not need to be a PowerForm creator/owner/sender to copy and share a PowerForm URL.
-To copy a PowerForm URL for distribution:
-1
-From the Agreements page, click PowerForms in the left panel to display the PowerForms you can access.
-2
-Locate the PowerForm you want to distribute.
-3
-Click the actions drop-down menu and select Copy URL.
-4
-In the PowerForm URL dialog box, select the option that corresponds to the method you will use to distribute the PowerForm. Then click Copy.
-Notes:
-You can use PowerForms with conditional routing to construct business rules that route the form automatically to the appropriate parties. Visit Docusign Support to learn more about conditional routing and PowerForms
-You can simplify the signer's experience by bypassing the initial signer information page and sending them directly to your document to sign. Visit Docusign Support to learn more about bypassing the signer information page.
-Lesson 3 - Manage PowerForms
 
 ## Docusign Agreement Manager API
 
 ### Docusign Agreement Manager for Business Users 30 min
 
-Docusign Agreement Manager for Business Users
-Get Started with Docusign Agreement Manager
-Find and Share Agreements
-Review and Validate Agreements
-Lesson 1 - Get Started with Docusign Agreement Manager
-Find and Share Agreements
-Objective: After reviewing this topic, you will be able to find and share agreements.
-Agreement Manager helps you quickly locate an existing agreement by searching for key attributes associated with the agreement, such as the agreement type and date ranges. Completed envelopes from Docusign eSignature are automatically uploaded into Agreement Manager. Agreements can also be manually uploaded and imported, either individually or in bulk, by contract administrators with access to organize and manage all agreements.
-Note: Learn how to upload agreements in the Docusign Agreement Manager for Administrators course.
-Access Completed Agreements
-→ From the Docusign Home page, select the Agreements tab, and then click Completed in the left panel.
-View Your Buy-Side and Sell-Side Agreements
-When using the Parties filter, you have the option to further refine your search with Party Role to view agreements where your organization is either the buyer or seller. It identifies the role the party has in an agreement, such as Buyer, Seller, or Other. These roles are extracted and identified during agreement processing.
-1
-To view your buy-side agreements, click Filters and then select Parties.
-2
-Select your organization's name.
-3
-Select Buyer from Party Role, then click Apply to view all agreements where your organization is the buyer.
-To view the sell-side agreements that your organization has with other parties, select Seller from Party Role.
-Search for Agreements
-Best Practice
-To further refine your search results, you can perform a keyword search and then apply filters. The search field and filters operate independently, so you can clear and update the search terms without affecting previously applied filters.
-Multiple values used within the same filter implies an "or" relationship. For example, you can select two parties to view agreements with either contracting party.
-Multiple values in separate filters with entered search criteria implies an "and" relationship. If you use both the Parties filter and the Expiration Date filter, the agreements that are selected to be surfaced must match both conditions set by the filters.
-Filter Agreements for Review
-You can leverage the filters to locate and select agreements that need review. As a reviewer, you can focus on agreements with AI-suggested values that you can review, edit, and approve.
-For example, you can select the AI Suggestions filter to specifically look at agreements that need review. Agreement Manager will list agreements with a purple spark, indicating that the fields and AI-suggested values have not been reviewed.
-AI Suggestions - Needs Review
-Share Agreements
-Note: Learn how to manage Agreement Manager access in the Docusign Agreement Manager for Administrators course.
-Share from the Agreement List and Agreement Preview
-Before you can share an individual agreement, you need to have the right level of access. These are the levels of access a user can have for an individual agreement:
-Level of Access
-Description
-Can Manage
-Share the agreement with others
-Assign any access to the agreement
-Can remove the agreement from Agreement Manager
-Can remove user access to the agreement.
-Can Edit
-Edit AI-suggested attributes.
-Share the agreement with others.
-Can assign Can Edit or Can View access only.
-Can View
-Can only read and download the agreement.
-Based on these access levels, you need Can Edit or Can Manage access to an agreement to share it with users or groups within your account. You can share an agreement from the agreement list and agreement preview.
-1
-From the agreement list on the Completed page, you can share an agreement by selecting the actions menu.
-2
-When you select an agreement from the Completed page, the agreement preview loads. You can click the dropdown menu and choose Share.
-Share from Agreement List and Agreement Preview
-3
-Add the user or group you want to share the agreement with, and select the appropriate access level.
-Add user or group
-Share Agreements Examples
-Lesson 3 - Review and Validate Agreements
+_UI-only content (finding and sharing agreements) removed as out of exam scope. For API-relevant Agreement Manager topics, see "Exam Gap Topics > Section 6" at the end of this file._
 
 ### Docusign Agreement Manager for Administrators 60 min
 
@@ -6883,206 +6238,6 @@ Every agreement type is associated with a list of fields that capture relevant, 
 In some cases, you may want to capture information that isn't covered by the standard fields associated with the agreement type. For these instances, you can add custom fields to both standard and custom agreement types to match specific business use cases.
 Note: After adding a field to an agreement type, enable AI to automatically detect and surface the value of the custom field from agreements.
 Lesson 5 - Dashboards, Insights, and Renewals
-
-Docusign Agreement Manager for Administrators
-Access Management
-Import Agreements
-Agreement Types
-Parties and Obligations
-Dashboards, Insights, and Renewals
-Objective: After reviewing this topic, you will be able to use the IAM dashboards and reports to keep track of important agreement data, take action on insights, manage renewals, and ensure compliance.
-The Insights tab provides centralized access to all reports and dashboards in Agreement Manager. From here, you can quickly view available dashboards and reports for envelopes, agreements, obligNaations, renewals, and requests, as well as create custom dashboards and reports for your organization. You can also manage subscriptions through report notifications, keeping you informed of key agreement details, actions, and obligations.
-Overview
-When you select Insights from the global header, you are directed to the Overview page. From here, you can:
-Search for any report or custom dashboards in Agreement Manager.
-Access recently viewed and starred (favorite) reports.
-Review agreements that are active this month, expiring, and renewing in the next 90 days.
-Explore Docusign Insights on upcoming renewals and envelope metrics like status, usage, and environmental savings.
-Create custom dashboards and reports.
-Insights > Overview
-Dashboards
-Dashboards display a collection of reports, providing a bigger picture, a visual overview, or a summary of key agreement details for quick insights.
-My dashboard and Admistrator dashboard
-These dashboards provide an overview of your account and your organization's envelope activities and the environmental savings associated with reduced paper use.
-Agreements
-The Agreements dashboard provides a visual summary of all completed agreements, offering top-level insights into actionable content, such as active agreements and those with upcoming expiration and renewal dates within the next 90 days.
-VIEW THE AGREEMENTS DASHBOARD
-VIEW REPORT DETAILS
-MANAGE REPORT SUBSCRIPTIONS
-Some navigation actions are available across the IAM dashboards and reports. You can:
-Select the Favorite (star) icon to add them to your favorites on the Overview dashboard.
-Use the filters to refine the dashboard, and your selection applies to all charts and reports.
-Click on a chart or select View Report from the menu to view the detailed report. The report details are described in the next tab.
-From the chart, you can also select:
-View as table: To display the data in a table within the chart.
-Download as png: To download an image of the chart to your local Downloads folder.
-Best Practice
-Select a bar or section from a bar, pie, or donut chart to view the agreements represented in the bar or section. The report view opens and the corresponding agreements are displayed in the table.
-Obligations
-The Obligations dashboard provides a visual summary of agreement obligations that were surfaced with Docusign Iris and those manually added. This dashboard includes these charts:
-Obligations by due date: Displays the number of obligations due over the next six months.
-Obligations by type: Displays all obligations grouped by obligation type.
-Renewals
-An agreement renewal is the process extending an agreement beyond its initial term. The renewal process is based on the agreement's renewal type, which specifies how the agreement can be renewed or extended. For example, an agreement with an Automatic Renewal type automatically renews at the end of its term, while an Evergreen agreement continues indefinitely unless a party decides to terminate it.
-Docusign Agreement Manager helps you retrieve the agreement data needed to proactively take action on agreement renewals and terminations. Managing renewals can help your organization achieve:
-Operational efficiency by providing one source of truth and automated processes to help keep your organization's employees informed of terminated or automatically renewed agreements.
-Cost savings through making your users aware of upcoming renewals and terminations that must be managed. Organizations waste money when they unintentionally miss renegotiation and termination windows for expiring agreements.
-Increased revenue by enabling your users to proactively reach out to customers to negotiate renewals while cutting down on unintentional agreement terminations.
-Mitigating risk because renewal management helps your users stay on top of important dates and ensure compliance.
-Drive Agreement Renewals Through AI-Assisted Insights
-Attribute values are automatically extracted from Agreement Manager agreements. These attribute values drive insight into agreement renewals and feed data into the Renewals dashboard and the renewal email notifications. The Docusign Agreement Manager for Business Users course highlights the importance of validating agreement data by updating and reviewing AI-suggested attribute values, including renewal-related fields, so the Renewals dashboard remains accurate.
-Renewals Dashboard
-As contract administrators or business users, you can stay ahead of upcoming renewals by using the Renewals dashboard. By leveraging renewal attribute values extracted from agreements, the dashboard delivers a clear visual summary through the available charts and tables.
-Configure Renewal Notifications
-To get notified automatically when a renewal is nearing its due date, you can set up email notifications which will send you an email reminder using the frequency you choose.
-Renewal Management Use Cases
-The Stellar Logical Software renewals management cross-functional team is having their monthly meeting to coordinate renewals. Click the plus sign icons below to learn more about how the Stellar Logical Software renewals management team leverages Agreement Manager to help them manage agreement renewals.
-DRIVE NEGOTIATIONS FOR RENEWAL
-GAIN TIMELY VISIBILITY INTO UPCOMING RENEWALS
-STAY INFORMED OF TIME-SENSITIVE RENEWALS
-At Stellar Logical Software, Mei is a contract manager who has set up renewal email notifications so she can be alerted when a renewal is coming due in 120 days. This usually gives her enough time to renegotiate the agreements for more favorable terms.
-Mei relies on the Renewals dashboard to find out what the status or relationship is of the parties included in the agreement. This also helps Mei to see when renewal notices are coming due so she can better plan workloads for herself and her staff.
-Reports
-The Reports section allows contract administrators to view report activities across all users in the account, while business users can review their own report activity. The available reports are grouped in tabs to quickly review recently accessed reports, standard and custom reports, and any downloaded reports.
-Note: Review the information provided on envelopes, recipients, and account activities in the List of Standard Reports
-. Read the Document Data Reports
-to focus on field-level data in your eSignature agreements.
-Create Custom Dashboards and Reports
-Create reports and dashboards
-While Docusign Agreement Manager offers predefined reports and dashboards to surface key agreement information, sometimes you may need to analyze specialized information such as custom extractions. With the ability to create custom dashboards and reports, you can obtain more information about your agreements, enabling more data-driven decision-making.
-Custom Dashboards and Reports
-Parties and Obligations
-Objective: After reviewing this topic, you will be able to review and manage agreement parties and obligations.
-A party in an agreement refers to an individual, company, or organization that is legally bound by the terms of the agreement. When agreements are added to Agreement Manager, key data points such as party names are automatically surfaced to help you identify who is involved in each agreement. A party could be a customer in sales or a vendor in procurement. Managing parties allows you to quickly find agreements linked to each party.
-Navigate the Parties Page
-→ From the Agreements page, click Parties in the left panel.
-I need to quickly identify all agreements that are nearing expiration for Fontara, one of the customers I oversee.
-To do this, I navigate to the Parties page in Agreement Manager and search for Fontara. I select Fontara from the list, and the party hub loads. The party hub is a unified summary of all agreements and obligations associated with Fontara.
-Paul, Contract Manager at Stellar Logical Software
-Select Fontara from the Parties page.
-Manage Parties
-Setting the party as internal or external.
-Merging duplicate parties that use different variations of the same name.
-Manually merging parties that were not flagged as duplicates.
-Unmerging parties merged by mistake.
-On the Manage Parties page, each party is identified as internal or external. This designation gives you the context needed to manage relationships, risks, and obligations.
-As Docusign Iris captures party names from agreements, slight name variations may result in duplicate party names. Through duplicate party management, you can merge duplicate parties into a single preferred name.
-After merging parties, it may take up to an hour for the changes to reflect in the Agreements and Reports pages.
-View and Manage Obligations
-Obligations are the actions or commitments that one or more parties agree to fulfill as part of an agreement. They are made up of attributes and extracted contractual data contained within clauses across one or multiple documents. With obligation management, contract administrators can take a proactive approach to ensuring that contract commitments are captured, tracked, and fulfilled.
-Agreement Manager automatically surfaces certain obligation types with AI, while also allowing you to manually create additional obligations as needed. By tracking these obligations, you have visibility into the required actions and support compliance.
-Surface Obligations with Docusign Iris
-Docusign Iris processes your agreements to extract key attributes, including payment, renewal, and termination obligations, so you can effectively capture, track, and fulfill them. The attributes for these obligation types are extracted when they are present in the agreement.
-Obligation Type
-Obligation Name
-Payment
-One-Time Payment
-Deposit Payment
-Renewal
-Renewal Notice
-Termination
-Termination for Cause Notice
-Termination for Convenience Notice
-View Obligations in an Agreement
-You can view the obligations for a specific agreement by opening an agreement from the Completed page.
-Select the Obligations tab in the agreement preview.
-In this example, you can verify that an obligation for a Termination for Convenience Notice was surfaced by AI. Click the obligation to view the details.
-The extracted obligation attributes from the agreement are displayed. Review the attribute values. Click the spark (*) icon to review the attribute against the data in the agreement.
-View the Obligations for a Party
-Navigate to Parties and then select a party to access a summary of the agreements and obligations associated with the party.
-Click the Obligations tab, and all obligations related to the party are listed.
-Select an obligation to open the obligation details in the agreement preview.
-Review the attribute values.
-View Obligations for a Party
-Note: View the complete list of obligation types and extracted attributes for obligations surfaced with AI and manually created obligations in the Obligation Management
-support article.
-Create an Obligation
-In addition to the payment, renewal, and termination obligation types extracted by AI, you can manually create and add other types of obligations to the agreement.
-From the agreement preview, select the Obligations to review existing obligations. You can select an obligation to view the additional details.
-To create a new obligation, highlight the specific clause that you would like to create an obligation for. Select Create Obligation.
-Complete and save the details of the obligation. The new obligation is added to the Obligations.
-Note: Review the Manually Create an Obligation
-support article for guidance on completing the obligation fields.
-Assign an Obligation
-As a contract administrator, you can assign obligations to other users or team members to ensure clear ownership, accountability, and ongoing compliance with the agreement's requirements.
-Assign an obligation
-After reviewing the list of obligations for an agreement, select the obligation to assign. Update the Owner field by entering the name or the email address of the assignee and selecting the user from the prompted list. Save the changes.
-The obligation owner information can be used as a filter in the Obligations dashboard, allowing you to view obligations assigned to a specific user. You'll learn more about working with dashboards and reports in the next lesson.
-Manage Obligation Types
-You've seen that standard obligation types are available for both AI-assisted and manually created obligations. However, you can also create custom obligation types to categorize your obligations more accurately.
-From the Completed page, select the gear icon and then select Obligations.
-The list of standard obligation types indicates that they were created by Docusign. Create a new obligation type.
-Enter a name for the custom obligation type and then save. The new type is added as a User-created obligation type. The custom type can now be used when editing or creating an obligation.
-
-Docusign Agreement Manager for Administrators
-Access Management
-Import Agreements
-Agreement Types
-Parties and Obligations
-Dashboards, Insights, and Renewals
-Lesson 4 - Parties and Obligations
-Dashboards, Insights, and Renewals
-Objective: After reviewing this topic, you will be able to use the IAM dashboards and reports to keep track of important agreement data, take action on insights, manage renewals, and ensure compliance.
-The Insights tab provides centralized access to all reports and dashboards in Agreement Manager. From here, you can quickly view available dashboards and reports for envelopes, agreements, obligNaations, renewals, and requests, as well as create custom dashboards and reports for your organization. You can also manage subscriptions through report notifications, keeping you informed of key agreement details, actions, and obligations.
-Overview
-When you select Insights from the global header, you are directed to the Overview page. From here, you can:
-Search for any report or custom dashboards in Agreement Manager.
-Access recently viewed and starred (favorite) reports.
-Review agreements that are active this month, expiring, and renewing in the next 90 days.
-Explore Docusign Insights on upcoming renewals and envelope metrics like status, usage, and environmental savings.
-Create custom dashboards and reports.
-Insights > Overview
-Dashboards
-Dashboards display a collection of reports, providing a bigger picture, a visual overview, or a summary of key agreement details for quick insights.
-My dashboard and Admistrator dashboard
-These dashboards provide an overview of your account and your organization's envelope activities and the environmental savings associated with reduced paper use.
-Agreements
-The Agreements dashboard provides a visual summary of all completed agreements, offering top-level insights into actionable content, such as active agreements and those with upcoming expiration and renewal dates within the next 90 days.
-VIEW THE AGREEMENTS DASHBOARD
-VIEW REPORT DETAILS
-MANAGE REPORT SUBSCRIPTIONS
-Some navigation actions are available across the IAM dashboards and reports. You can:
-Select the Favorite (star) icon to add them to your favorites on the Overview dashboard.
-Use the filters to refine the dashboard, and your selection applies to all charts and reports.
-Click on a chart or select View Report from the menu to view the detailed report. The report details are described in the next tab.
-From the chart, you can also select:
-View as table: To display the data in a table within the chart.
-Download as png: To download an image of the chart to your local Downloads folder.
-Best Practice
-Select a bar or section from a bar, pie, or donut chart to view the agreements represented in the bar or section. The report view opens and the corresponding agreements are displayed in the table.
-Obligations
-The Obligations dashboard provides a visual summary of agreement obligations that were surfaced with Docusign Iris and those manually added. This dashboard includes these charts:
-Obligations by due date: Displays the number of obligations due over the next six months.
-Obligations by type: Displays all obligations grouped by obligation type.
-Renewals
-An agreement renewal is the process extending an agreement beyond its initial term. The renewal process is based on the agreement's renewal type, which specifies how the agreement can be renewed or extended. For example, an agreement with an Automatic Renewal type automatically renews at the end of its term, while an Evergreen agreement continues indefinitely unless a party decides to terminate it.
-Docusign Agreement Manager helps you retrieve the agreement data needed to proactively take action on agreement renewals and terminations. Managing renewals can help your organization achieve:
-Operational efficiency by providing one source of truth and automated processes to help keep your organization's employees informed of terminated or automatically renewed agreements.
-Cost savings through making your users aware of upcoming renewals and terminations that must be managed. Organizations waste money when they unintentionally miss renegotiation and termination windows for expiring agreements.
-Increased revenue by enabling your users to proactively reach out to customers to negotiate renewals while cutting down on unintentional agreement terminations.
-Mitigating risk because renewal management helps your users stay on top of important dates and ensure compliance.
-Drive Agreement Renewals Through AI-Assisted Insights
-Attribute values are automatically extracted from Agreement Manager agreements. These attribute values drive insight into agreement renewals and feed data into the Renewals dashboard and the renewal email notifications. The Docusign Agreement Manager for Business Users course highlights the importance of validating agreement data by updating and reviewing AI-suggested attribute values, including renewal-related fields, so the Renewals dashboard remains accurate.
-Renewals Dashboard
-As contract administrators or business users, you can stay ahead of upcoming renewals by using the Renewals dashboard. By leveraging renewal attribute values extracted from agreements, the dashboard delivers a clear visual summary through the available charts and tables.
-Configure Renewal Notifications
-To get notified automatically when a renewal is nearing its due date, you can set up email notifications which will send you an email reminder using the frequency you choose.
-Renewal Management Use Cases
-The Stellar Logical Software renewals management cross-functional team is having their monthly meeting to coordinate renewals. Click the plus sign icons below to learn more about how the Stellar Logical Software renewals management team leverages Agreement Manager to help them manage agreement renewals.
-DRIVE NEGOTIATIONS FOR RENEWAL
-GAIN TIMELY VISIBILITY INTO UPCOMING RENEWALS
-STAY INFORMED OF TIME-SENSITIVE RENEWALS
-At Stellar Logical Software, Mei is a contract manager who has set up renewal email notifications so she can be alerted when a renewal is coming due in 120 days. This usually gives her enough time to renegotiate the agreements for more favorable terms.
-Mei relies on the Renewals dashboard to find out what the status or relationship is of the parties included in the agreement. This also helps Mei to see when renewal notices are coming due so she can better plan workloads for herself and her staff.
-Reports
-The Reports section allows contract administrators to view report activities across all users in the account, while business users can review their own report activity. The available reports are grouped in tabs to quickly review recently accessed reports, standard and custom reports, and any downloaded reports.
-Note: Review the information provided on envelopes, recipients, and account activities in the List of Standard Reports
-. Read the Document Data Reports
-to focus on field-level data in your eSignature agreements.
-Create Custom Dashboards and Reports
-Create reports and dashboards
-While Docusign Agreement Manager offers predefined reports and dashboards to surface key agreement information, sometimes you may need to analyze specialized information such as custom extractions. With the ability to create custom dashboards and reports, you can obtain more information about your agreements, enabling more data-driven decision-making.
-Custom Dashboards and Reports
 
 Docusign Agreement Manager for Administrators
 Access Management
@@ -8295,3 +7450,100 @@ Once your manifest has passed all validation checks, click Create App to finish 
 You are taken to the App Overview page where you can test, preview, and publish your app.
 Your app is also assigned an App ID that you can provide if you need to reach out to Docusign about your extension app.
 Lesson 4 - Test and Publish your Extension App
+
+
+
+## Exam Gap Topics (official objectives the courses cover lightly)
+
+Sources: Docusign Developer Center pages listed as "Support Resources" in the official Prep Guide.
+
+### Section 1 - Obtain and revoke consent
+- Three ways to get consent: **individual consent**, **admin consent for internal apps** (the integration key is owned by your org; granted in Docusign Admin > Connected Apps > Authorize Application), and **admin consent for external apps** (an ISV app; browser goes to `/oauth/auth?response_type=code&scope=openid&client_id=...&redirect_uri=...&admin_consent_scope=signature%20impersonation`).
+- Admin consent requires **Access Management** and a **claimed domain**. It applies to users in the reserved domains.
+- With `openid`, the response includes an **ID token**. Its `coid` claim lists the consenting organization IDs. This is the only way to get that list. The ID token is not used to call APIs.
+- Best practice for JWT/ISV apps: try admin consent, and **always build an individual consent fallback**.
+- **Revoking consent**:
+  - Individual: Manage Profile > **Connected Apps** > Revoke.
+  - Admin-granted consent: revoke in **Docusign Admin**. Users in reserved domains **cannot** revoke individually.
+  - Revoking **invalidates refresh tokens** and blocks new tokens. **Live access tokens (including JWT ones) keep working until they expire.**
+- `extended` scope = reusable refresh token, **Authorization Code Grant only**. JWT never returns a refresh token (its token lasts 1 hour; mint a new JWT).
+
+### Section 2 - API limits and efficiency score
+- Default **3,000 calls/hour per account**, shared by all integrations; resets on the hour. Exceeding it blocks calls until the next hour ("The maximum number of hourly API invocations has been exceeded").
+- **Burst limit**: 500 calls per 30 seconds in production, 200 in demo.
+- **Polling**: at most **once per 15 minutes per envelope**. Violations can fail Go-Live review. Prefer **Connect**. For catch-up, use `Envelopes:listStatusChanges` with overlapping time spans.
+- Per-envelope error codes: `Hourly_Envelope_Polling_Limit_Exceeded`, `Burst_Envelope_Polling_Limit_Exceeded`, `Hourly_APIInvocation_Envelope_Limit_Exceeded`, `Burst_APIInvocation_Envelope_Limit_Exceeded`.
+- Read the `X-RateLimit-*` response headers, log usage, alert near the limit, and back off. Aim for 5 or fewer calls to create/update an envelope.
+- **API Usage Center** (Admin > Integrations > API Usage Center): calls by integration key, limit status, **efficiency scores**, and an **Update Hourly Limit** option.
+- **Efficiency score factors**: blocked API calls; exceeded burst limit; exceeded hourly limit; excessive document retrieval requests; excessive envelope API requests; excessive envelope status requests; excessive recipient status requests; excessive requests for nonexistent envelopes; excessive requests per envelope; low call activity.
+- Raising the limit yourself requires all of these: the plan includes limit management, you are an account admin, no Support-set limit is in effect, apps are efficient (fix the flagged issues first), and there is enough call history.
+
+### Section 5 - Recipient authentication: comparison
+| Method | How it is configured | Notes |
+|---|---|---|
+| Access code | `accessCode` on the recipient | Shared out of band. Lightest enforced method. |
+| Phone (call or SMS) | `identityVerification.workflowId` (from `IdentityVerifications:list`) | Second factor. SMS can cost extra. |
+| KBA | e.g. `idCheckConfigurationName` = "ID Check $" | Public-record questions, **US only**, LexisNexis. Heavy for low-risk documents. |
+| ID verification (IDV) | `identityVerification.workflowId` (REST v2.1) | Government photo ID or eID. **Not enabled by default in demo**; ask the account manager. |
+| Embedded record | `authenticationMethod` (+ `authenticationInstant`, `assertionId`, `securityDomain`) on `createRecipient` | **Records** your app's authentication on the certificate. It does **not enforce** anything. |
+- All methods except IDV are enabled in demo, and production may cost extra. Match the method to the document's risk.
+- Retrieve IDV evidence (ID images and events) with the **ID Evidence API**.
+
+### Section 5 - EU Standards-Based Signatures (SBS)
+- Signature types: electronic, **AES** (certificates from Docusign or your organization), and **QES** (from government-certified **QTSPs**).
+- Add `recipientSignatureProviders` (`signatureProviderName` plus `signatureProviderOptions`, for example `oneTimePassword` or `sms`) to at least one signer in `Envelopes:create`.
+- Available providers: `GET /restapi/v2.1/accounts/{accountId}/signatureProviders` (AccountSignatureProviders:list).
+- **Not compatible with SBS**: attachment by fax, concatenating signer attachments, legacy digital signatures, Markup, Notary.
+- **Works differently with SBS**:
+  - Advanced Correct: no adding or deleting fields after the first signature.
+  - Combined PDF download is **not** digitally signed.
+  - Free-form signing: only signature and initials fields after someone has signed.
+  - Watermarks are added as annotations.
+  - Wet-signed documents are added as new documents.
+
+### Section 5 - Web forms with vs. without an envelope
+- **Template-based** configuration: built from an eSignature template (copied into a *web form template*). An **envelope is generated** after submission.
+  - **Remote** instance: the envelope is created when `createInstance` is processed.
+  - **Embedded** instance: the envelope is created when the **first user submits**.
+- **Standalone** configuration: **no envelope**, data collection only. The `envelopes` array is empty.
+- **Embedded** instances need `clientUserId` (max 100 characters) and render with the Docusign JS SDK.
+- **Remote** instances use `sendOption` and `recipients[]` with `roleName`; users are reached by email.
+- Prefill with `formValues`. Get field names from `Configurations:getForm`.
+- Read results with `Instances:getInstance` / `listInstances`: `status` is INITIATED, INPROGRESS, SUBMITTED, EXPIRED or FAILED; also `instanceRecipientStatus`, `formValues` and `envelopes[]`.
+- **Record of recipient authentication** (`authenticationMethod`, `authenticationInstant`, `assertionId`, `securityDomain` in `createInstance`): only for **embedded signing** of template-based forms. **Not supported** for remote instances or standalone configurations.
+
+### Section 6 - Agreement Manager API: RAG and review
+- Retrieve agreements and their AI-extracted data (parties, dates, provisions) with the Agreement Manager API (for example `getAgreement`).
+- Index that data in your AI system's retrieval store, keyed by agreement ID, so answers can cite their source.
+- Bulk-import legacy agreements so AI extraction runs on them too. Then review and correct the extractions (an external review step) before relying on them downstream.
+
+### Section 7 - Workflow instance management (Maestro / Workflow Builder API)
+- Base path: `https://api-d.docusign.com/v1` (demo) or `https://api.docusign.com/v1` (production). Scope: **`aow_manage`**, in addition to normal OAuth.
+| Operation | Method and path |
+|---|---|
+| GetWorkflowsList | GET `/accounts/{accountId}/workflows` |
+| GetWorkflowTriggerRequirements | GET `/workflows/{workflowId}/trigger-requirements` |
+| TriggerWorkflow | POST `/workflows/{workflowId}/actions/trigger` |
+| getWorkflowInstancesList | GET `/workflows/{workflowId}/instances` |
+| **getWorkflowInstance** | GET `/workflows/{workflowId}/instances/{instanceId}` (status, start/end times, `started_by`) |
+| cancelWorkflowInstance | POST `/instances/{instanceId}/actions/cancel` (stops one running instance) |
+| pauseNewWorkflowInstances / resumePausedWorkflow | POST `/workflows/{workflowId}/actions/pause` or `resume` (affects **new** instances only) |
+- Publishing runs an automated pre-publication check. If consent is missing, open the returned `consentUrl`, grant consent, and publish again (without `isPreRunCheck=true`).
+
+### Section 8 - Extensions and extension points
+| Extension | Extension point | Manifest value |
+|---|---|---|
+| Connected fields | eSignature Add Fields and signing | `ConnectedFields.Version1.Verify` (+ `DataIO.Version6.GetTypeNames` and `GetTypeDefinitions`) |
+| Data IO | Maestro workflows | read/write system of record |
+| Bank account owner verification | eSignature | `Verify.Version1.BankAccountOwner` (owner or authorized signatory; US ABA routing only) |
+| Bank account verification | eSignature | `Verify.Version3.BankAccount` |
+| Email / Phone verification | eSignature **and Web Forms** | `Verify.Version1.Email` / `Verify.Version1.PhoneNumber` |
+| Business FEIN | eSignature | `Verify.Version1.BusinessEntity` |
+| SSN, Postal address | eSignature | |
+| File output cloud storage | Maestro workflows | use this for **new** apps (file archive is legacy) |
+- Connected fields: when a connection is created or refreshed, Docusign calls Get Type Names, then Get Type Definitions (**Concerto** data model). Verify runs when the signer completes the required fields.
+- Connected fields are **not supported in Maestro**.
+- Sending by API: `TabInfo:GetConnectedFieldsTabGroups`, then put the data in each tab's `extensionData`, then `Envelopes:create`.
+- Verification results come through the Connect **extension-executed** event (**JSON SIM only**), and also appear in envelope history and the certificate of completion.
+- Org-specific verification usually belongs in a **private** extension app.
+- Lifecycle: register (form or manifest) in the **Developer Console**, run connection and extension tests, run functional tests, then publish (public App Center review, or private).

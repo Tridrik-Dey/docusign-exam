@@ -1991,7 +1991,7 @@ D. Connect JSON SIM
 - C. EnvelopeViews:createRecipient can be valid in a different Docusign scenario, but it does not match the requirement in this question. The key clue points to Docusign JS client SDK: Docusign JS renders Web Form instances in the host page.
 - D. Connect JSON SIM can be valid in a different Docusign scenario, but it does not match the requirement in this question. The key clue points to Docusign JS client SDK: Docusign JS renders Web Form instances in the host page.
 
-**Q118. (Agreement Manager API - Legacy import)** In a quick architecture review, the team wants the best answer without extra workflow context. Which capability matters?
+**Q118. (Agreement Manager API - Legacy import)** A legal team has signed contracts from a previous system and wants them searchable in Agreement Manager with their metadata. Which capability matters?
 
 A. Agreement upload or bulk import using the Agreement Manager API
 B. Recipient view URLs
@@ -3096,7 +3096,7 @@ D. Create a bulk send list
 - C. Use recipient authentication instead can be valid in a different Docusign scenario, but it does not match the requirement in this question. The key clue points to Configure the event payload to include only needed data: Connect payload options should match data minimization and processing needs.
 - D. Create a bulk send list can be valid in a different Docusign scenario, but it does not match the requirement in this question. The key clue points to Configure the event payload to include only needed data: Connect payload options should match data minimization and processing needs.
 
-**Q183. (eSignature API - Bulk send)** In a quick architecture review, the team wants the best answer without extra workflow context. Which feature is designed for that scenario?
+**Q183. (eSignature API - Bulk send)** A sales operations app must send the same agreement package to hundreds of recipients with personalized recipient data. Which eSignature feature is designed for that scenario?
 
 A. Bulk Send
 B. Recipient authentication only
@@ -3147,7 +3147,7 @@ D. Brand resource file upload
 - C. Remote signing email only can be valid in a different Docusign scenario, but it does not match the requirement in this question. The key clue points to From an API call with Workflow Builder API trigger requirements: API-triggered workflows use trigger requirements and workflow API calls.
 - D. Brand resource file upload can be valid in a different Docusign scenario, but it does not match the requirement in this question. The key clue points to From an API call with Workflow Builder API trigger requirements: API-triggered workflows use trigger requirements and workflow API calls.
 
-**Q186. (App Center and Extension Apps - Data Verification)** In a quick architecture review, the team wants the best answer without extra workflow context. Which extension pattern fits?
+**Q186. (App Center and Extension Apps - Data Verification)** During signing, a customer enters a bank account value that must be checked against an external validation service before the signer can continue. Which extension pattern fits?
 
 A. Data Verification triggered during eSignature signing
 B. Public Auth Code only
@@ -4405,7 +4405,7 @@ D. Go-live classification
 - C. File archive only can be valid in a different Docusign scenario, but it does not match the requirement in this question. The key clue points to Connected Fields: Connected Fields extensions integrate data validation into eSignature field/signing experiences.
 - D. Go-live classification can be valid in a different Docusign scenario, but it does not match the requirement in this question. The key clue points to Connected Fields: Connected Fields extensions integrate data validation into eSignature field/signing experiences.
 
-**Q260. (API Authentication - Consent)** In a quick architecture review, the team wants the best answer without extra workflow context. What must be obtained before token requests succeed?
+**Q260. (API Authentication - Consent)** A JWT service integration has the right integration key and private key, but token requests fail because the user has not approved the scopes. What must be obtained before token requests succeed?
 
 A. Individual or admin consent for the integration key and scopes
 B. A production account ID only
@@ -4422,7 +4422,7 @@ D. A new envelope template ID
 - C. A Connect listener URL can be valid in a different Docusign scenario, but it does not match the requirement in this question. The key clue points to Individual or admin consent for the integration key and scopes: JWT and other OAuth flows require consent for requested scopes before access tokens can be issued.
 - D. A new envelope template ID can be valid in a different Docusign scenario, but it does not match the requirement in this question. The key clue points to Individual or admin consent for the integration key and scopes: JWT and other OAuth flows require consent for requested scopes before access tokens can be issued.
 
-**Q261. (Docusign Connect - JSON SIM)** In a quick architecture review, the team wants the best answer without extra workflow context. Which message format is required for workflow-related events?
+**Q261. (Docusign Connect - JSON SIM)** A developer configures Connect to receive Maestro workflow lifecycle events such as workflow-completed. Which message format is required for those workflow-related events?
 
 A. JSON SIM format
 B. Legacy XML only
@@ -4439,7 +4439,7 @@ D. PDF attachment only
 - C. CSV export format can be valid in a different Docusign scenario, but it does not match the requirement in this question. The key clue points to JSON SIM format: Workflow events rely on the JSON SIM event model.
 - D. PDF attachment only can be valid in a different Docusign scenario, but it does not match the requirement in this question. The key clue points to JSON SIM format: Workflow events rely on the JSON SIM event model.
 
-**Q262. (eSignature API - Bulk send)** In a quick architecture review, the team wants the best answer without extra workflow context. Which feature is designed for that scenario?
+**Q262. (eSignature API - Bulk send)** A university needs to send individualized consent forms to an entire student cohort from one prepared recipient list. Which feature is designed for that scenario?
 
 A. Bulk Send
 B. Recipient authentication only
@@ -4473,7 +4473,7 @@ D. The app must use implicit grant
 - C. The envelope must be voided first can be valid in a different Docusign scenario, but it does not match the requirement in this question. The key clue points to The extension app must be installed and available for the workflow step: Workflow Builder can use installed extension applications in extension steps.
 - D. The app must use implicit grant can be valid in a different Docusign scenario, but it does not match the requirement in this question. The key clue points to The extension app must be installed and available for the workflow step: Workflow Builder can use installed extension applications in extension steps.
 
-**Q264. (App Center and Extension Apps - Data Verification)** In a quick architecture review, the team wants the best answer without extra workflow context. Which extension pattern fits?
+**Q264. (App Center and Extension Apps - Data Verification)** A government form requires a signer-entered identifier to be validated in the eSignature experience, not later in a back-office review. Which extension pattern fits?
 
 A. Data Verification triggered during eSignature signing
 B. Public Auth Code only
@@ -4966,7 +4966,7 @@ D. A recipient view URL from EnvelopeViews:createRecipient
 - C. A brand resource file can be valid in a different Docusign scenario, but it does not match the requirement in this question. The key clue points to A recipient view URL from EnvelopeViews:createRecipient: Embedded signing requires requesting a short-lived recipient view URL.
 - D. Embedded signing requires requesting a short-lived recipient view URL.
 
-**Q293. (Workflow Builder and Workflow API - Installed extensions)** In a quick architecture review, the team wants the best answer without extra workflow context. What must be true?
+**Q293. (Workflow Builder and Workflow API - Installed extensions)** A workflow designer adds an extension step but the action is not selectable at runtime. What must be true before the workflow can use that extension?
 
 A. The extension app must be installed and available for the workflow step
 B. The envelope must be voided first
@@ -5068,7 +5068,7 @@ D. Go-live classification
 - C. File archive only can be valid in a different Docusign scenario, but it does not match the requirement in this question. The key clue points to Connected Fields: Connected Fields extensions integrate data validation into eSignature field/signing experiences.
 - D. Go-live classification can be valid in a different Docusign scenario, but it does not match the requirement in this question. The key clue points to Connected Fields: Connected Fields extensions integrate data validation into eSignature field/signing experiences.
 
-**Q299. (eSignature API - Bulk send)** In a quick architecture review, the team wants the best answer without extra workflow context. Which feature is designed for that scenario?
+**Q299. (eSignature API - Bulk send)** An HR department wants one campaign to generate many personalized envelopes from a shared template and recipient list. Which feature is designed for that scenario?
 
 A. Bulk Send
 B. Recipient authentication only
@@ -5085,7 +5085,7 @@ D. Organization Connect only
 - C. Brand destination URLs can be valid in a different Docusign scenario, but it does not match the requirement in this question. The key clue points to Bulk Send: Bulk Send supports large batches of personalized envelopes.
 - D. Organization Connect only can be valid in a different Docusign scenario, but it does not match the requirement in this question. The key clue points to Bulk Send: Bulk Send supports large batches of personalized envelopes.
 
-**Q300. (App Center and Extension Apps - Data Verification)** In a quick architecture review, the team wants the best answer without extra workflow context. Which extension pattern fits?
+**Q300. (App Center and Extension Apps - Data Verification)** A partner app exposes a reusable validation capability so customers can check signer-entered data during the signing session. Which extension pattern fits?
 
 A. Data Verification triggered during eSignature signing
 B. Public Auth Code only
