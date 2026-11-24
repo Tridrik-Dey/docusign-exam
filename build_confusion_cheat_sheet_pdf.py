@@ -57,6 +57,8 @@ NUMBERS = [
     ("H", "API hourly limit", "<b>3,000 calls / hour per ACCOUNT</b>, shared by all apps, resets on the hour; excess calls blocked", "NOT per app, NOT per user"),
     ("H", "Burst limit", "<b>500 calls / 30 s</b> production; 200 demo", "hourly limit is 3,000"),
     ("H", "Polling", "max <b>1 status GET per envelope every 15 minutes</b>; use Connect instead", ""),
+    ("H", "Connect reply window", "waits up to <b>100 s</b> for HTTP 200; aim for under <b>5 s</b>", "5 s is guidance, not the cut-off"),
+    ("H", "Connect retry schedule", "5, 10, 20, 40 min, 1 h, 2 h, 1 day, then <b>daily for 15 days</b>", "after 15 days: republish by hand"),
     ("H", "20 API calls before Go-Live", "<b>No longer required</b>; start Go-Live right after creating the key", "old course material"),
     ("H", "Go-Live manual review", "up to <b>48 hours</b>; <i>Review Expired</i> if not promoted within <b>90 days</b>", ""),
     ("M", "API request logging", "off by default, keeps <b>50 logs</b> (My Preferences), any user", "API Dashboard = 90-day view"),
@@ -85,6 +87,10 @@ PAIRS = [
          "Refresh tokens stop working at once; <b>access tokens already issued keep working until they expire</b>."),
         ("H", "Auth host  vs  API base URI",
          f"Tokens come from {C}account-d{E} (demo) / {C}account{E} (prod). API calls go to <b>base_uri from /oauth/userinfo</b> (account with is_default=true)."),
+        ("H", "API call sent to account-d  vs  to base_uri",
+         f"{C}account-d/restapi/...{E} returns <b>200 but an HTML login page</b>: 200 is not success. API calls go to <b>base_uri</b>."),
+        ("H", "PARTNER_AUTHENTICATION_FAILED (\"Invalid account specified for user\")",
+         "Wrong <b>account_id</b> (or <b>sub</b> used in its place), or demo and production mixed. The key itself is usually fine."),
         ("M", "ID token  vs  access token", "ID token (openid) identifies the user; it is <b>never</b> used to call APIs. Its coid claim lists orgs that gave admin consent."),
         ("M", "JWT claims", "iss = integration key, sub = user GUID, aud = account-d.docusign.com (no https), alg RS256. Do not swap iss and sub."),
     ]),
@@ -95,22 +101,38 @@ PAIRS = [
         ("H", "Go-Live error: no accounts listed", "The <b>integration type does not match the account type</b> you logged into. It is not a permission or 20-calls problem."),
         ("H", "Who submits Go-Live", "Must log in to the <b>production</b> account and be an <b>admin</b> of it."),
         ("H", "API Usage Center  vs  API Dashboard  vs  request logging",
-         "Usage Center = <b>efficiency score</b> + raise the hourly limit. Dashboard = <b>failed requests, 90 days</b>. Request logging = <b>50 raw logs</b> for one user."),
+         "Usage Center = <b>efficiency score</b> + raise the hourly limit; charts go back <b>30 days</b> max. Dashboard = timeline up to <b>90 days</b>, call log filtered by "
+         "<b>response code</b>. Request logging = <b>50 raw logs</b> for one user."),
+        ("H", "Update Hourly Limit  vs  Improve App Efficiency window",
+         "The window means: <b>fix the listed apps first</b>, then the button works. Scores start improving after <b>48 h</b>, fully after <b>8 days</b> (not hourly)."),
+        ("H", "Big batch job inside the shared limit",
+         "Limit is per <b>account</b>: a new integration key adds nothing. Read <b>X-RateLimit-Remaining / -Reset</b>, pause until the reset, ramp up slowly, no tight retry loops."),
         ("H", "Hourly limit  vs  burst limit", "3,000/hour per account (resets on the hour)  vs  500 per 30 seconds. Error names: Hourly_... / Burst_..._Limit_Exceeded."),
         ("M", "Status names", "Course: <i>App is live / Pending approval</i>. Developer Center: <i>Under Review -> Review Passed -> Live</i>, <i>Declined</i>, <i>Review Expired</i>. Both may appear."),
         ("M", "After Go-Live", "Switch to <b>production</b> auth host + base URI, re-create secrets / RSA keys / redirect URIs, update template IDs (they differ)."),
     ]),
     ("3. Docusign Connect (12%)", [
         ("H", "Org  vs  Account  vs  Envelope level",
-         "<b>Org</b> = many accounts, Org Admin, <b>JSON SIM only</b>. <b>Account</b> = one account, eSignature Admin or ConnectConfigurations API. "
-         f"<b>Envelope</b> = {C}eventNotification{E} on Envelopes:create, <b>API only</b>, cannot cover envelopes received from others."),
+         "<b>Org</b> = all or <b>selected</b> accounts, one config in Org Admin, <b>JSON SIM only</b>. <b>Account</b> = one account, eSignature Admin or ConnectConfigurations API. "
+         f"<b>Envelope</b> = {C}eventNotification{E} on Envelopes:create, <b>API only</b>: misses envelopes sent from the <b>web app</b> or a partner system (Workday...)."),
         ("H", "Connect  vs  polling", "Connect messages <b>do not count against API limits</b> and arrive only on change. Polling: 1 per envelope per 15 min."),
         ("H", "JSON SIM  vs  legacy XML / aggregate",
-         "JSON SIM (Connect 2.0) = recommended, smaller, works at all levels, needed for extension events. XML and <b>aggregate</b> = account and envelope level only."),
+         "JSON SIM = <b>one message per event</b>, recommended, all levels. <b>Aggregate</b> (JSON or XML, legacy) = related events in <b>one message</b> "
+         "(recipient-completed + envelope-completed); account / envelope level only, <b>never org</b>."),
         ("H", "HMAC  vs  Basic  vs  mutual TLS  vs  OAuth",
          "HMAC (SHA-256, X-DocuSign-Signature-1) proves the <b>payload came from Docusign and was not changed</b>. Basic = username/password. mTLS = certificates at the transport layer. "
          "OAuth for Connect = token. Org-level Connect does not offer Basic auth."),
+        ("H", "Include HMAC  vs  Require Acknowledgement",
+         "<b>HMAC = security</b>: proves the message is from Docusign and unchanged. <b>Require Acknowledgement = reliable delivery</b>: listener must return 2xx "
+         "fast, else Connect retries (5, 10, 20, 40 min, 1 h, 2 h, 1 day, then daily for 15 days). Account config API: <b>includeHMAC</b> / <b>requiresAcknowledgement</b>."),
         ("H", "Retries", "Any <b>non-2xx or timeout</b> = failure, retried. Return <b>200 fast</b>, process later (queue), make processing <b>idempotent</b>."),
+        ("H", "Require Acknowledgement on  vs  off (account level)",
+         "<b>On</b>: failures retried automatically. <b>Off</b>: no retry, a lost event needs a <b>manual republish</b>. <b>Org level always retries.</b>"),
+        ("H", "Retry  vs  historical republish (API)",
+         "<b>Logged failures</b>: GET .../connect/failures, then PUT .../connect/envelopes/retry_queue (envelopeIds). "
+         "<b>Any envelopes, nothing logged</b>: POST .../connect/envelopes/publish/historical (ad hoc config, <b>JSON only</b>, Bulk Actions Log)."),
+        ("M", "Republish in the web app",
+         "Admin > Connect > <b>Failures > Actions > Republish</b> (failed events), or the <b>Publish</b> tab: filter, tick, Publish (or <b>CSV</b> for bulk)."),
         ("M", "Connected Fields result event", "Arrives as the <b>extension-executed</b> event, JSON SIM only."),
     ]),
     ("4. eSignature API (16%)", [

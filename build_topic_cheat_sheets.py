@@ -29,10 +29,26 @@ DOMAIN = {1: "API Authentication", 2: "Go Live Process", 3: "Docusign Connect", 
 NUM_FOR = {
     1: ["Authorization code lifetime", "Auth Code Grant access token", "JWT Grant access token", "Refresh token", "extended"],
     2: ["API hourly limit", "Burst limit", "Polling", "20 API calls before Go-Live", "Go-Live manual review", "API request logging", "API Dashboard"],
-    3: ["Polling"],
+    3: ["Polling", "Connect reply window", "Connect retry schedule"],
     4: ["Embedded signing URL", "Composite templates"],
     5: ["Recipient access code", "Web form clientUserId", "Geography limits"],
     8: ["Geography limits"],
+}
+# step-by-step flows shown right after the must-know facts (who -> where, call, result)
+_C, _E = "<font face='Courier'>", "</font>"
+FLOW = {
+    1: ("Auth Code Grant, step by step (demo; production: account.docusign.com)", [
+        ("1", "You -> Apps and Keys", "create integration key + secret + redirect URI", "registered on the <b>authorization server</b>"),
+        ("2", "Browser -> auth server", f"{_C}GET account-d.docusign.com/oauth/auth?response_type=code&amp;scope=signature&amp;client_id={{key}}&amp;redirect_uri={{uri}}{_E}",
+         "login + <b>consent</b> (once per user and app); redirect URI must match <b>exactly</b>"),
+        ("3", "Auth server -> browser -> app", f"redirect to {_C}{{uri}}?code=...{_E}", "<b>code</b>: 2 min, single use"),
+        ("4", "App -> auth server", f"{_C}POST account-d.docusign.com/oauth/token{_E}, Basic key:secret, {_C}grant_type=authorization_code&amp;code=...{_E}",
+         "<b>access token 8 h + refresh token 30 d</b>"),
+        ("5", "App -> auth server", f"{_C}GET account-d.docusign.com/oauth/userinfo{_E} (Bearer token)",
+         "sub = user ID; accounts[] -> is_default, <b>account_id</b>, <b>base_uri</b>"),
+        ("6", "App -> <b>API server</b>", f"{_C}GET {{base_uri}}/restapi/v2.1/accounts/{{account_id}}/envelopes{_E}", "your data"),
+        ("", "Refresh", f"{_C}POST /oauth/token{_E} with {_C}grant_type=refresh_token&amp;refresh_token=...{_E}", "new access token, no login"),
+    ]),
 }
 LEVEL = {"HIGH": ("#d92d20", "#fef3f2"), "MEDIUM": ("#f79009", "#fffaeb"), "LOW": ("#84adff", "#eff4ff")}
 
@@ -93,6 +109,12 @@ def build(sec):
 
     story += head("1. Must-know facts")
     story.append(table([[f] for f in sec["must_know"]], [180 * mm], [("#d92d20", "#fef3f2")] * len(sec["must_know"])))
+
+    if n in FLOW:
+        ftitle, steps = FLOW[n]
+        story += head(esc(ftitle))
+        story.append(table([[s, w, c, r] for s, w, c, r in steps], [7 * mm, 33 * mm, 85 * mm, 55 * mm],
+                           [("#d92d20", "#fef3f2")] * len(steps), ["#", "Who -> where", "Call", "Result"]))
 
     nums = [r for r in NUMBERS if any(r[1].startswith(k) or k in r[1] for k in NUM_FOR.get(n, []))]
     if nums:

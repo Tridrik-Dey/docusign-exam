@@ -199,7 +199,7 @@
     "explanation": "Maestro workflow events are delivered only in the JSON SIM message format. Because the billing system needs the XML feed, the clean fix is a separate JSON SIM configuration for the workflow events.",
     "whyNotOthers": "B is right because workflow events require JSON SIM, and a second configuration keeps the legacy XML feed intact for billing. The trap is D: HMAC and retries are already fine, and any XML configuration, secured or not, will never carry workflow events. A fails because aggregate is still XML; C fails because eventNotification only adds envelope-level events for a single envelope and does not produce workflow lifecycle events.",
     "optionExplanations": {
-      "A": "Aggregate mode is an XML-only legacy option that combines envelope events; it does not make workflow events available.",
+      "A": "Aggregate mode is a legacy option that combines envelope and recipient events into one message; it does not make workflow events available, which arrive only in JSON SIM.",
       "B": "Correct. Workflow events are delivered only in JSON SIM format, so a dedicated JSON SIM configuration receives them while the XML feed keeps serving billing.",
       "C": "eventNotification creates an envelope-level webhook for envelope and recipient events on that envelope; it does not deliver Maestro workflow events.",
       "D": "Security is not the problem: HMAC was already passing. The format is XML, and workflow events require JSON SIM regardless of security settings."
@@ -542,13 +542,13 @@
     ],
     "correct": "D",
     "answerText": "An account-level configuration in XML format using the aggregate delivery option",
-    "explanation": "The aggregate option, available only for configurations using the XML data type at account or envelope level, combines similar events such as recipient complete and envelope complete into one message.",
-    "whyNotOthers": "D is right because aggregation requires XML and combines the final recipient and envelope completion into one delivery. The trap is C: it is XML, but SIM mode by definition sends an individual message per event. A and B fail because JSON SIM always sends one message per event; including the envelope summary enlarges a message but does not merge events.",
+    "explanation": "The aggregate delivery option (legacy; JSON or XML, at account or envelope level, never organization level) combines related events such as recipient-completed and envelope-completed into one message. D is the only option that uses it.",
+    "whyNotOthers": "D is right because only the aggregate delivery option combines events into one message. The trap is C: XML SIM is also legacy XML, but SIM still sends one message per event. A fails because organization-level configurations are JSON SIM only, and B fails because adding the envelope summary enlarges each message without combining events.",
     "optionExplanations": {
       "A": "Organization-level configurations always use JSON SIM, which sends an individual message for each event, never an aggregated one.",
       "B": "JSON SIM sends one message per event; including the envelope summary adds data to each message but does not combine events.",
       "C": "XML SIM still sends individual messages for each event; only the aggregate option combines them.",
-      "D": "Correct. In an XML configuration (account or envelope level), the aggregate option combines recipient complete and envelope complete into a single message."
+      "D": "Correct. An account-level configuration with the aggregate delivery option combines recipient-completed and envelope-completed into a single message."
     },
     "trapOption": "C",
     "importance": "MEDIUM",

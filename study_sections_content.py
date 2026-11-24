@@ -135,7 +135,7 @@ SECTIONS = [
             "Connected Fields verification results arrive via the <b>extension-executed</b> event, which is available only with <b>JSON SIM</b>.",
         ],
         "important": [
-            "Aggregate mode (XML only) combines related events, e.g. recipient-completed + envelope-completed become one message.",
+            "Aggregate mode (JSON or XML, legacy) combines related events, e.g. recipient-completed + envelope-completed become one message; not available at organization level.",
             "Consider legacy XML only if you need a payload that never changes or have an existing SOAP integration.",
             "Pre-built account-level Connect solutions: Box, OneDrive (push completed docs), Salesforce, eOriginal (vaulting).",
             "Custom Connect is best for internal systems: trigger provisioning after completion or update line-of-business data.",
